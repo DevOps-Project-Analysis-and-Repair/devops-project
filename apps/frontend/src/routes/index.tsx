@@ -1,9 +1,16 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState, type ChangeEvent } from 'react';
 import { FileSelection } from '../components/FileSelection';
+import { Description } from '@mui/icons-material';
+import Button from '@mui/material/Button';
 
 export const Route = createFileRoute('/')({
   component: Index,
+  head: () => ({
+    meta: [
+      { title: 'Ask Vincent' }
+    ]
+  })
 });
 
 // Webkit directory is not stable, but required for getting the full path of directories
@@ -33,25 +40,38 @@ function Index() {
 
   return (
     <div>
-      <label htmlFor='upload-files'>Upload files</label>
-      <label htmlFor='upload-directory'>Upload directory</label>
+      <Button
+        component="label"
+        role={undefined}
+        variant="contained"
+        tabIndex={-1}
+        startIcon={<Description />}
+      >
+        Upload files
+        <input
+          type='file'
+          id='upload-files'
+          style={{display: 'none'}}
+          multiple
+          onChange={onChange}>
+        </input>
+      </Button>
 
-      <input
-        type='file'
-        id='upload-files'
-        style={{display: 'none'}}
-        multiple
-        onChange={onChange}>
-      </input>
-
-      <input
-        type='file'
-        id='upload-directory'
-        style={{display: 'none'}}
-        multiple
-        webkitdirectory='true'
-        onChange={onChange}>
-      </input>
+      <Button
+        component="label"
+        role={undefined}
+        variant="contained"
+        tabIndex={-1}
+        startIcon={<Description />}
+      >
+        Upload directory
+        <input
+          type='file'
+          style={{display: 'none'}}
+          webkitdirectory='true'
+          onChange={onChange}>
+        </input>
+      </Button>
 
       { FileSelection(files) }
     </div>
