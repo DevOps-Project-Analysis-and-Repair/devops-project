@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useState, type ChangeEvent, type JSX } from 'react';
+import { useEffect, useState, type ChangeEvent, type JSX } from 'react';
+import { dir, file, findInDirectory, type FileSystemNode } from '../filesystem';
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -10,6 +11,62 @@ declare module "react" {
   interface InputHTMLAttributes<T> extends HTMLAttributes<T> {
     webkitdirectory?: string;
   }
+}
+
+function filesToFileSystemTree(files: File[]): FileSystemNode | null {
+  if (files.length === 0) { return null; }
+
+  const root = dir(".");
+
+  for (const entry of files) {
+    const path = entry.webkitRelativePath || entry.name;
+    const pathParts = path.split('/');
+
+    const pathDirectories = pathParts.slice(0, -1);
+    const pathFile = pathParts.slice(-1)[0];
+    
+    let cwd = root;
+
+    for (const part of pathDirectories) {
+      const result = findInDirectory(part, cwd);
+
+      if (result === null) {
+        const newCwd = dir(part);
+        cwd.children.push(newCwd);
+        cwd = newCwd;
+        continue;
+      }
+
+      if (result.kind === "directory") {
+        cwd = result;
+        continue;
+      }
+    }
+
+    cwd.children.push(file(pathFile, entry));
+  }
+
+  return null;
+}
+
+function FileSelection(files: File[]): JSX.Element {
+  const [fileTree, setFileTree] = useState<FileSystemNode | null>(null);
+  const [fileContent, setFileContent] = useState<string | null>(null);
+
+
+  function renderFileTree(tree: FileSystemNode): JSX.Element {
+    return <></>
+  }
+
+  useEffect(() => {
+    setFileTree(filesToFileSystemTree(files));
+  }, [files]);
+
+  if (files.length === 0) { return <></> };
+
+  return (<>
+    <hr></hr>
+  </>);
 }
 
 function Index() {
@@ -25,6 +82,8 @@ function Index() {
     for (const file of fileTree) {
       files.push(file);
     }
+
+    // TODO: Filter files, only keep text based files (utf-8, ascii)
 
     setFiles(files);
   }
@@ -75,7 +134,7 @@ function Index() {
       
       { message && <p>{message}</p> }
 
-      { files.length >= 1 && renderFiles() }
+      { FileSelection(files) }
     </div>
   )
 };
