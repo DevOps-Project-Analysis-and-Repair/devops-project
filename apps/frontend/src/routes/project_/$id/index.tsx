@@ -7,7 +7,7 @@ export const Route = createFileRoute('/project_/$id/')({
 function Project() {
   const { id } = Route.useParams();
 
-  if (id !== "joey") { throw notFound(); }
+  if (id !== "123") { throw notFound(); }
   
   return <div className="p-2">Hello from project! { id }</div>
 };
