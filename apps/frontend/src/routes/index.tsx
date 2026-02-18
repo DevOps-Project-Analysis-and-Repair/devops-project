@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState, type ChangeEvent, type JSX } from 'react';
-import { dir, file, findInDirectory, type FileSystemNode } from '../filesystem';
+import { dir, file, findInDirectory, type FileSystemDirectory, type FileSystemFile, type FileSystemNode } from '../filesystem';
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -13,7 +13,7 @@ declare module "react" {
   }
 }
 
-function filesToFileSystemTree(files: File[]): FileSystemNode | null {
+function filesToFileSystemTree(files: File[]): FileSystemDirectory | null {
   if (files.length === 0) { return null; }
 
   const root = dir(".");
@@ -46,16 +46,44 @@ function filesToFileSystemTree(files: File[]): FileSystemNode | null {
     cwd.children.push(file(pathFile, entry));
   }
 
-  return null;
+  return root;
 }
 
 function FileSelection(files: File[]): JSX.Element {
-  const [fileTree, setFileTree] = useState<FileSystemNode | null>(null);
+  const [fileTree, setFileTree] = useState<FileSystemDirectory | null>(null);
   const [fileContent, setFileContent] = useState<string | null>(null);
 
+  function renderFileTree(root: FileSystemDirectory): JSX.Element {
+    function renderDirectory(directory: FileSystemDirectory): JSX.Element {
+      const hasChildren = directory.children.length > 0;
 
-  function renderFileTree(tree: FileSystemNode): JSX.Element {
-    return <></>
+      return (<li key={directory.id}>
+        <span>{directory.name}</span>
+        {hasChildren && <ul>{directory.children.map(node => renderNode(node))}</ul>}
+      </li>);
+    }
+
+    function renderFile(file: FileSystemFile): JSX.Element {
+      async function onClickName() {
+        const content = await file.handle.text(); // great naming once again
+        console.log(content);
+      }
+
+      return (<li key={file.id}><button onClick={() => onClickName()}>{file.name}</button></li>);
+    }
+
+    function renderNode(node: FileSystemNode): JSX.Element {
+      switch (node.kind) {
+        case 'directory': return renderDirectory(node);
+        case 'file': return renderFile(node);
+      }
+    }
+ 
+    return (
+      <ul className='directory-container'>
+        {root.children.map(node => renderNode(node))}
+      </ul>
+    );
   }
 
   useEffect(() => {
@@ -66,6 +94,8 @@ function FileSelection(files: File[]): JSX.Element {
 
   return (<>
     <hr></hr>
+
+    { fileTree && renderFileTree(fileTree) }
   </>);
 }
 
@@ -86,29 +116,6 @@ function Index() {
     // TODO: Filter files, only keep text based files (utf-8, ascii)
 
     setFiles(files);
-  }
-
-  async function onClickFile(file: File) {
-    console.log(file);
-
-    const text = await file.text();
-
-    console.log(text);
-  }
-
-  function renderFiles() {
-    let content: JSX.Element[] = [];
-    let index = 0;
-
-    for (const file of files) {
-      const name = file.webkitRelativePath || file.name;
-      content.push(<li key={index++}><button onClick={() => onClickFile(file)}>{name}</button></li>);
-    }
-
-    return (<>
-      <hr></hr>
-      <ul>{content}</ul>
-    </>);
   }
 
   return (
