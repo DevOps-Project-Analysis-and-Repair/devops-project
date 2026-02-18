@@ -1,12 +1,15 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState, type ChangeEvent, type JSX } from 'react';
 import { dir, file, findInDirectory, type FileSystemDirectory, type FileSystemFile, type FileSystemNode } from '../filesystem';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import cb from 'react-syntax-highlighter/dist/esm/styles/prism/cb';
 
 export const Route = createFileRoute('/')({
   component: Index,
 });
 
-// Webkit directory is not stable, but required for uploading complete folders
+// Webkit directory is not stable, but required for getting the full path of directories
+// It is however, supported by all major browser vendors: https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/webkitdirectory#browser_compatibility
 declare module "react" {
   interface InputHTMLAttributes<T> extends HTMLAttributes<T> {
     webkitdirectory?: string;
@@ -50,8 +53,10 @@ function filesToFileSystemTree(files: File[]): FileSystemDirectory | null {
 }
 
 function FileSelection(files: File[]): JSX.Element {
+  type FileContent = { content: string, language: string };
+
   const [fileTree, setFileTree] = useState<FileSystemDirectory | null>(null);
-  const [fileContent, setFileContent] = useState<string | null>(null);
+  const [fileContent, setFileContent] = useState<FileContent | null>(null);
 
   function renderFileTree(root: FileSystemDirectory): JSX.Element {
     function renderDirectory(directory: FileSystemDirectory): JSX.Element {
@@ -66,7 +71,13 @@ function FileSelection(files: File[]): JSX.Element {
     function renderFile(file: FileSystemFile): JSX.Element {
       async function onClickName() {
         const content = await file.handle.text(); // great naming once again
-        console.log(content);
+        const re = new RegExp("\.([^.]+)$");
+        const res = re.exec(file.name);
+
+        if (res === null) { throw "Invalid file name"; }
+
+        const ext = res[1];
+        setFileContent({ content, language: ext });
       }
 
       return (<li key={file.id}><button onClick={() => onClickName()}>{file.name}</button></li>);
@@ -96,13 +107,19 @@ function FileSelection(files: File[]): JSX.Element {
     <hr></hr>
 
     { fileTree && renderFileTree(fileTree) }
+    { fileContent &&
+      <SyntaxHighlighter
+        showLineNumbers
+        wrapLongLines
+        language={fileContent.language}
+        style={cb}>
+          {fileContent.content}
+      </SyntaxHighlighter> }
   </>);
 }
 
 function Index() {
   const [files, setFiles] = useState<File[]>([]);
-  const [uploading, setUploading] = useState(false);
-  const [message, setMessage] = useState("");
 
   function onChange(event: ChangeEvent<HTMLInputElement, HTMLInputElement>): void {
     // event.target.files is iterable, but not an array
@@ -138,8 +155,6 @@ function Index() {
         webkitdirectory='true'
         onChange={onChange}>
       </input>
-      
-      { message && <p>{message}</p> }
 
       { FileSelection(files) }
     </div>
