@@ -21,3 +21,39 @@ export function findInDirectory(name: string, dir: FileSystemDirectory): FileSys
 
   return null;
 }
+
+export function filesToFileSystemTree(files: File[]): FileSystemDirectory | null {
+  if (files.length === 0) { return null; }
+
+  const root = dir(".");
+
+  for (const entry of files) {
+    const path = entry.webkitRelativePath || entry.name;
+    const pathParts = path.split('/');
+
+    const pathDirectories = pathParts.slice(0, -1);
+    const pathFile = pathParts.slice(-1)[0];
+    
+    let cwd = root;
+
+    for (const part of pathDirectories) {
+      const result = findInDirectory(part, cwd);
+
+      if (result === null) {
+        const newCwd = dir(part);
+        cwd.children.push(newCwd);
+        cwd = newCwd;
+        continue;
+      }
+
+      if (result.kind === "directory") {
+        cwd = result;
+        continue;
+      }
+    }
+
+    cwd.children.push(file(pathFile, entry));
+  }
+
+  return root;
+}
