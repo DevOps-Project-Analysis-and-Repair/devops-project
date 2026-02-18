@@ -25,15 +25,8 @@ function Index() {
   const [files, setFiles] = useState<File[]>([]);
 
   function onChange(event: ChangeEvent<HTMLInputElement, HTMLInputElement>): void {
-    // event.target.files is iterable, but not an array
-    const fileTree = event.target.files ?? [];
-    const files: File[] = []
-
-    for (const file of fileTree) {
-      files.push(file);
-    }
-
     // TODO: Filter files, only keep text based files (utf-8, ascii)
+    const files: File[] = [...event.target.files ?? []];
 
     setFiles(files);
   }
@@ -73,7 +66,7 @@ function Index() {
         </input>
       </Button>
 
-      { FileSelection(files) }
+      <FileSelection files={files} />
     </div>
   )
 };

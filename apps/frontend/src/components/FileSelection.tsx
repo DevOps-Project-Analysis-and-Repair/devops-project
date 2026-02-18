@@ -2,7 +2,9 @@ import { type JSX, useState, useEffect } from "react";
 import { filesToFileSystemTree, type FileSystemDirectory, type FileSystemFile, type FileSystemNode } from "../filesystem";
 import { type CodeViewerParams, CodeViewer } from "./CodeViewer";
 
-export function FileSelection(files: File[]): JSX.Element {
+export function FileSelection(props: { files: File[] }): JSX.Element {
+  const { files } = props;
+
   const [fileTree, setFileTree] = useState<FileSystemDirectory | null>(null);
   const [fileContent, setFileContent] = useState<CodeViewerParams | null>(null);
 

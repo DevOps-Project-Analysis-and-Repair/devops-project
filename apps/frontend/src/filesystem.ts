@@ -2,14 +2,12 @@ export type FileSystemNode = FileSystemDirectory | FileSystemFile;
 export type FileSystemDirectory = { kind: 'directory', id: number, name: string, children: FileSystemNode[] };
 export type FileSystemFile = { kind: 'file', id: number, name: string, handle: File };
 
-let id = 0;
-
-export function dir(name: string): FileSystemDirectory {
-  return { kind: 'directory', id: id++, name, children: [] };
+function dir(name: string, id: number): FileSystemDirectory {
+  return { kind: 'directory', id, name, children: [] };
 }
 
-export function file(name: string, handle: File): FileSystemFile {
-  return { kind: 'file', id: id++, name, handle };
+function file(name: string, id: number, handle: File): FileSystemFile {
+  return { kind: 'file', id, name, handle };
 }
 
 export function findInDirectory(name: string, dir: FileSystemDirectory): FileSystemNode | null {
@@ -25,7 +23,8 @@ export function findInDirectory(name: string, dir: FileSystemDirectory): FileSys
 export function filesToFileSystemTree(files: File[]): FileSystemDirectory | null {
   if (files.length === 0) { return null; }
 
-  const root = dir(".");
+  let id = 0;
+  const root = dir(".", id++);
 
   for (const entry of files) {
     const path = entry.webkitRelativePath || entry.name;
@@ -40,7 +39,7 @@ export function filesToFileSystemTree(files: File[]): FileSystemDirectory | null
       const result = findInDirectory(part, cwd);
 
       if (result === null) {
-        const newCwd = dir(part);
+        const newCwd = dir(part, id++);
         cwd.children.push(newCwd);
         cwd = newCwd;
         continue;
@@ -52,7 +51,7 @@ export function filesToFileSystemTree(files: File[]): FileSystemDirectory | null
       }
     }
 
-    cwd.children.push(file(pathFile, entry));
+    cwd.children.push(file(pathFile, id++, entry));
   }
 
   return root;
