@@ -6,7 +6,13 @@ import { styled } from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, type ChangeEvent } from "react";
-import { FileSelection } from "../components/FileSelection";
+import { CodeViewer, type CodeViewerParams } from "../components/CodeViewer";
+import { FileTree } from "../components/FileTree";
+import {
+  filesToFileSystemTree,
+  type FileSystemDirectory,
+  type FileSystemFile,
+} from "../filesystem";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -65,16 +71,41 @@ declare module "react" {
   }
 }
 
+const EMPTY_ROOT_DIRECTORY: FileSystemDirectory = {
+  kind: "directory",
+  id: -1,
+  name: "Root",
+  children: [],
+};
+
 function Index() {
-  const [files, setFiles] = useState<File[]>([]);
+  const [files, setFiles] = useState<FileSystemDirectory>(EMPTY_ROOT_DIRECTORY);
+  const [fileContent, setFileContent] = useState<CodeViewerParams | null>(null);
 
   function onChange(
     event: ChangeEvent<HTMLInputElement, HTMLInputElement>,
   ): void {
     // TODO: Filter files, only keep text based files (utf-8, ascii)
     const files: File[] = [...(event.target.files ?? [])];
+    const directory = filesToFileSystemTree(files);
+    if (!directory) {
+      console.error("Could not convert to directory");
+      return;
+    }
+    setFiles(directory);
+  }
 
-    setFiles(files);
+  async function onFileClick(file: FileSystemFile) {
+    const content = await file.handle.text(); // great naming once again
+    const re = new RegExp("\.([^.]+)$");
+    const res = re.exec(file.name);
+
+    if (res === null) {
+      throw "Invalid file name";
+    }
+
+    const ext = res[1];
+    setFileContent({ content, language: ext });
   }
 
   return (
@@ -123,7 +154,13 @@ function Index() {
           ></input>
         </Button>
 
-        <FileSelection files={files} />
+        <FileTree directory={files} onFileClick={onFileClick} />
+        {fileContent && (
+          <CodeViewer
+            content={fileContent.content}
+            language={fileContent.language}
+          />
+        )}
       </Card>
     </SignInContainer>
   );

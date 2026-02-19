@@ -11,20 +11,14 @@ function file(name: string, id: number, handle: File): FileSystemFile {
 }
 
 export function findInDirectory(name: string, dir: FileSystemDirectory): FileSystemNode | null {
-  for (const child of dir.children) {
-    if (child.kind !== 'directory') { continue; }
-
-    if (child.name === name) { return child; }
-  }
-
-  return null;
+  return dir.children.find((child) => child.name === name && child.kind !== 'directory') || null;
 }
 
 export function filesToFileSystemTree(files: File[]): FileSystemDirectory | null {
   if (files.length === 0) { return null; }
 
   let id = 0;
-  const root = dir(".", id++);
+  const root = dir("Root", id++);
 
   for (const entry of files) {
     const path = entry.webkitRelativePath || entry.name;
@@ -32,7 +26,7 @@ export function filesToFileSystemTree(files: File[]): FileSystemDirectory | null
 
     const pathDirectories = pathParts.slice(0, -1);
     const pathFile = pathParts.slice(-1)[0];
-    
+
     let cwd = root;
 
     for (const part of pathDirectories) {
