@@ -1,0 +1,21 @@
+{
+  "name": "upload-service",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "esbuild src/index.ts --bundle --minify --sourcemap --platform=node --target=es2020 --outfile=dist/index.js"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.160",
+    "esbuild": "^0.27.3"
+  },
+  "dependencies": {
+    "@aws-lambda-powertools/event-handler": "^2.31.0",
+    "@aws-lambda-powertools/logger": "^2.31.0"
+  }
+}
