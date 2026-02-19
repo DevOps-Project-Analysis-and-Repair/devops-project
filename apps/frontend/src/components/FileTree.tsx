@@ -1,5 +1,6 @@
 import { TreeItem } from "@mui/x-tree-view";
 import { SimpleTreeView } from "@mui/x-tree-view/SimpleTreeView";
+import type { JSX } from "react";
 import type { FileSystemDirectory, FileSystemFile } from "../filesystem";
 
 export interface FileTreeProps {
@@ -12,7 +13,10 @@ export interface FileTreeItemProps {
   onFileClick: (file: FileSystemFile) => void;
 }
 
-export function FileTreeItem({ item, onFileClick }: FileTreeItemProps) {
+export function FileTreeItem({
+  item,
+  onFileClick,
+}: FileTreeItemProps): JSX.Element {
   switch (item.kind) {
     case "directory":
       return (
@@ -33,7 +37,10 @@ export function FileTreeItem({ item, onFileClick }: FileTreeItemProps) {
   }
 }
 
-export function FileTree({ directory, onFileClick }: FileTreeProps) {
+export function FileTree({
+  directory,
+  onFileClick,
+}: FileTreeProps): JSX.Element {
   if (!directory.children.length) return <></>;
 
   console.log(directory);

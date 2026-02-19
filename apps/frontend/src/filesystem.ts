@@ -11,6 +11,13 @@ function file(name: string, id: number, handle: File): FileSystemFile {
 }
 
 export function findInDirectory(name: string, dir: FileSystemDirectory): FileSystemNode | null {
+  for (const child of dir.children) {
+    if (child.kind !== 'directory') { continue; }
+
+    if (child.name === name) { return child; }
+  }
+
+  return null;
   return dir.children.find((child) => child.name === name && child.kind !== 'directory') || null;
 }
 

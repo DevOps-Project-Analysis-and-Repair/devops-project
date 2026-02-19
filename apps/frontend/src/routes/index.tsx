@@ -95,17 +95,21 @@ function Index() {
     setFiles(directory);
   }
 
+  function getFileExtension(filepath: string): string | undefined {
+    const extensionRegExp = new RegExp("\.([^.]+)$");
+    const res = extensionRegExp.exec(filepath);
+    return res?.[1];
+  }
+
   async function onFileClick(file: FileSystemFile) {
     const content = await file.handle.text(); // great naming once again
-    const re = new RegExp("\.([^.]+)$");
-    const res = re.exec(file.name);
+    const fileExtension = getFileExtension(file.name);
 
-    if (res === null) {
+    if (!fileExtension) {
       throw "Invalid file name";
     }
 
-    const ext = res[1];
-    setFileContent({ content, language: ext });
+    setFileContent({ content, language: fileExtension });
   }
 
   return (
