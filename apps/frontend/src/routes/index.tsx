@@ -6,13 +6,8 @@ import { styled } from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, type ChangeEvent } from "react";
-import { CodeViewer, type CodeViewerParams } from "../components/CodeViewer";
-import { FileTree } from "../components/FileTree";
-import {
-  filesToFileSystemTree,
-  type FileSystemDirectory,
-  type FileSystemFile,
-} from "../filesystem";
+import { SelectedFilesDialog } from "../dialogs/SelectedFilesDialog";
+import { filesToFileSystemTree, type FileSystemDirectory } from "../filesystem";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -80,7 +75,7 @@ const EMPTY_ROOT_DIRECTORY: FileSystemDirectory = {
 
 function Index() {
   const [files, setFiles] = useState<FileSystemDirectory>(EMPTY_ROOT_DIRECTORY);
-  const [fileContent, setFileContent] = useState<CodeViewerParams | null>(null);
+  const [open, setOpen] = useState(false);
 
   function onChange(
     event: ChangeEvent<HTMLInputElement, HTMLInputElement>,
@@ -92,24 +87,9 @@ function Index() {
       console.error("Could not convert to directory");
       return;
     }
+
     setFiles(directory);
-  }
-
-  function getFileExtension(filepath: string): string | undefined {
-    const extensionRegExp = new RegExp("\.([^.]+)$");
-    const res = extensionRegExp.exec(filepath);
-    return res?.[1];
-  }
-
-  async function onFileClick(file: FileSystemFile) {
-    const content = await file.handle.text(); // great naming once again
-    const fileExtension = getFileExtension(file.name);
-
-    if (!fileExtension) {
-      throw "Invalid file name";
-    }
-
-    setFileContent({ content, language: fileExtension });
+    setOpen(true);
   }
 
   return (
@@ -157,15 +137,8 @@ function Index() {
             onChange={onChange}
           ></input>
         </Button>
-
-        <FileTree directory={files} onFileClick={onFileClick} />
-        {fileContent && (
-          <CodeViewer
-            content={fileContent.content}
-            language={fileContent.language}
-          />
-        )}
       </Card>
+      <SelectedFilesDialog files={files} open={open} setOpen={setOpen} />
     </SignInContainer>
   );
 }

@@ -22,7 +22,11 @@ export function FileTreeItem({
       return (
         <TreeItem itemId={String(item.id)} label={item.name}>
           {item.children.map((child) => (
-            <FileTreeItem item={child} onFileClick={onFileClick} />
+            <FileTreeItem
+              key={child.id}
+              item={child}
+              onFileClick={onFileClick}
+            />
           ))}
         </TreeItem>
       );
@@ -43,13 +47,16 @@ export function FileTree({
 }: FileTreeProps): JSX.Element {
   if (!directory.children.length) return <></>;
 
-  console.log(directory);
   return (
     <>
-      <SimpleTreeView>
+      <SimpleTreeView defaultExpandedItems={["0"]}>
         <TreeItem itemId={String(directory.id)} label={directory.name}>
           {directory.children.map((child) => (
-            <FileTreeItem item={child} onFileClick={onFileClick} />
+            <FileTreeItem
+              key={child.id}
+              item={child}
+              onFileClick={onFileClick}
+            />
           ))}
         </TreeItem>
       </SimpleTreeView>
