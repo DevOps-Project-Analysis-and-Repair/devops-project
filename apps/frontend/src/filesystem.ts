@@ -32,7 +32,7 @@ export function filesToFileSystemTree(files: File[]): FileSystemDirectory | null
 
     const pathDirectories = pathParts.slice(0, -1);
     const pathFile = pathParts.slice(-1)[0];
-    
+
     let cwd = root;
 
     for (const part of pathDirectories) {
