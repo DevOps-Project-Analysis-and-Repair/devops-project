@@ -66,15 +66,8 @@ declare module "react" {
   }
 }
 
-const EMPTY_ROOT_DIRECTORY: FileSystemDirectory = {
-  kind: "directory",
-  id: -1,
-  name: "Root",
-  children: [],
-};
-
 function Index() {
-  const [files, setFiles] = useState<FileSystemDirectory>(EMPTY_ROOT_DIRECTORY);
+  const [files, setFiles] = useState<FileSystemDirectory | null>(null);
   const [open, setOpen] = useState(false);
 
   function onChange(
@@ -138,7 +131,9 @@ function Index() {
           ></input>
         </Button>
       </Card>
-      <SelectedFilesDialog files={files} open={open} setOpen={setOpen} />
+      {files && (
+        <SelectedFilesDialog files={files} open={open} setOpen={setOpen} />
+      )}
     </SignInContainer>
   );
 }

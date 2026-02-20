@@ -18,14 +18,13 @@ export function findInDirectory(name: string, dir: FileSystemDirectory): FileSys
   }
 
   return null;
-  return dir.children.find((child) => child.name === name && child.kind !== 'directory') || null;
 }
 
 export function filesToFileSystemTree(files: File[]): FileSystemDirectory | null {
   if (files.length === 0) { return null; }
 
   let id = 0;
-  const root = dir("Root", id++);
+  const root = dir(".", id++);
 
   for (const entry of files) {
     const path = entry.webkitRelativePath || entry.name;
