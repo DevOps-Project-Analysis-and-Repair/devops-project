@@ -56,3 +56,9 @@ export function filesToFileSystemTree(files: File[]): FileSystemDirectory | null
 
   return root;
 }
+
+export function getFileExtension(filepath: string): string | undefined {
+  const extensionRegExp = new RegExp("\.([^.]+)$");
+  const res = extensionRegExp.exec(filepath);
+  return res?.[1];
+}

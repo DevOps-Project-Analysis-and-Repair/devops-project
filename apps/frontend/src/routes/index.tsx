@@ -4,8 +4,9 @@ import Button from "@mui/material/Button";
 import MuiCard from "@mui/material/Card";
 import { styled } from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type ChangeEvent } from "react";
+import { setStoredFiles } from "../components/store";
 import { Container } from "../components/ui/Container";
 import { SelectedFilesDialog } from "../dialogs/SelectedFilesDialog";
 import { filesToFileSystemTree, type FileSystemDirectory } from "../filesystem";
@@ -47,6 +48,7 @@ declare module "react" {
 function Index() {
   const [files, setFiles] = useState<FileSystemDirectory | null>(null);
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
 
   function onChange(
     event: ChangeEvent<HTMLInputElement, HTMLInputElement>,
@@ -61,6 +63,13 @@ function Index() {
 
     setFiles(directory);
     setOpen(true);
+  }
+
+  async function upload() {
+    console.log("upload");
+    const projectId = 123;
+    setStoredFiles(files);
+    navigate({ to: `/project/${projectId}` });
   }
 
   return (
@@ -120,7 +129,12 @@ function Index() {
         </Link>
       </Card>
       {files && (
-        <SelectedFilesDialog files={files} open={open} setOpen={setOpen} />
+        <SelectedFilesDialog
+          files={files}
+          open={open}
+          setOpen={setOpen}
+          onClickAction={upload}
+        />
       )}
     </Container>
   );
