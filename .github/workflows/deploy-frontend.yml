@@ -1,0 +1,57 @@
+name: Deploy Frontend Docker Container
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/deploy-frontend.yml'
+      - 'apps/frontend/**'
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: eu-west-1
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./apps/frontend
+
+      - name: Build frontend
+        run: npm run build
+        working-directory: ./apps/frontend
+
+      - name: Deploy CloudFormation stack
+        run: |
+          aws cloudformation deploy \
+            --template-file ./apps/frontend/frontend-stack.yml \
+            --stack-name frontend-stack \
+            --capabilities CAPABILITY_IAM
+
+      - name: Upload to S3
+        run: |
+          BUCKET_NAME=$(aws cloudformation describe-stacks --stack-name frontend-stack --query "Stacks[0].Outputs[?OutputKey=='BucketName'].OutputValue" --output text)
+          aws s3 sync ./apps/frontend/dist s3://$BUCKET_NAME --delete
+
+      - name: Get and print frontend domain
+        run: |
+          SPADomain=$(aws cloudformation describe-stacks --stack-name frontend-stack --query "Stacks[0].Outputs[?OutputKey=='SPADomain'].OutputValue" --output text)
+          echo "SPADomain: $SPADomain"
