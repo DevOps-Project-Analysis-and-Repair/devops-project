@@ -2,8 +2,8 @@ name: Deploy UploadService
 
 on:
   push:
-    # branches:
-      # - main
+    branches:
+      - main
     paths:
       - '.github/workflows/deploy-upload-service.yml'
       - 'apps/upload-service/**'
@@ -41,23 +41,3 @@ jobs:
       - name: Deploy CloudFormation
         working-directory: ./apps/upload-service
         run: sh ./deploy.sh
-
-      # - name: Install dependencies
-      #   run: npm ci
-      #   working-directory: ./apps/frontend
-
-      # - name: Build frontend
-      #   run: npm run build
-      #   working-directory: ./apps/frontend
-
-      # - name: Validate CloudFormation template
-      #   run: |
-      #     aws cloudformation validate-template \
-      #       --template-body file://./apps/upload-service/upload-service-stack.yml
-
-      # - name: Deploy CloudFormation stack
-      #   run: |
-      #     aws cloudformation deploy \
-      #       --template-file ./apps/upload-service/upload-service-stack.yml \
-      #       --stack-name upload-service-stack \
-      #       --capabilities CAPABILITY_IAM
