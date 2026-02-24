@@ -30,7 +30,8 @@ jobs:
 # TODO: Run tests
 
       - name: Publish Dockerfile
-        run: sh ./apps/upload-service/publish.sh
+        working-directory: ./apps/upload-service
+        run: sh ./publish.sh
 
       - name: Validate CloudFormation template
         run: |
@@ -38,7 +39,8 @@ jobs:
             --template-body file://./apps/upload-service/upload-service-stack.yml
 
       - name: Deploy CloudFormation
-        run: sh ./apps/upload-service/deploy.sh
+        working-directory: ./apps/upload-service
+        run: sh ./deploy.sh
 
       # - name: Install dependencies
       #   run: npm ci
