@@ -1,48 +1,103 @@
-AWSTemplateFormatVersion: "2010-09-09"
-Transform: AWS::Serverless-2016-10-31
-Description: Upload service API Gateway REST API
-
-Globals:
-  Api:
-    TracingEnabled: true
-    Cors: # see CORS section
-      AllowOrigin: "*"
-      AllowHeaders: "'Content-Type,Authorization,X-Amz-Date'"
-      MaxAge: "'300'"
-    BinaryMediaTypes: # see Binary responses section
-      - "*~1*" # converts to */* for any binary type
-      # NOTE: use this stricter version if you're also using CORS; */* doesn't work with CORS
-      # see: https://github.com/aws-powertools/powertools-lambda-python/issues/3373#issuecomment-1821144779
-      # - "image~1*" # converts to image/*
-      # - "*~1csv" # converts to */csv, eg text/csv, application/csv
-
-  Function:
-    Timeout: 5
-    MemorySize: 256
-    Runtime: nodejs24.x
-    Tracing: Active
-    Environment:
-      Variables:
-        POWERTOOLS_LOG_LEVEL: INFO
-        POWERTOOLS_SERVICE_NAME: hello
+AWSTemplateFormatVersion: '2010-09-09'
 
 Resources:
-  ApiFunction:
-    Type: AWS::Serverless::Function
+  UploadServiceLambdaRole:
+    Type: AWS::IAM::Role
     Properties:
-      Handler: index.handler
-      CodeUri: upload_service
-      Description: Upload service API handler
-      Events:
-        # AnyApiEvent:
-        #   Type: Api
-        #   Properties:
-        #     # NOTE: this is a catch-all rule to simplify the documentation.
-        #     # explicit routes and methods are recommended for prod instead (see below)
-        #     Path: /{proxy+} # Send requests on any path to the lambda function
-        #     Method: ANY # Send requests using any http method to the lambda function
-        GetPing:
-           Type: Api
-           Properties:
-             Path: /ping
-             Method: GET
+      RoleName: !Sub '${AWS::StackName}-upload-service-lambda-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+  UploadServiceFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-upload-service'
+      PackageType: Image
+      Role: !GetAtt UploadServiceLambdaRole.Arn
+      Code:
+        ImageUri: 379245767025.dkr.ecr.eu-west-1.amazonaws.com/upload-service:latest
+      MemorySize: 128
+      Timeout: 30
+
+  UploadServiceLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${UploadServiceFunction}'
+      RetentionInDays: 14
+
+  UploadHttpApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: !Sub '${AWS::StackName}-upload-http-api'
+      ProtocolType: HTTP
+      Description: Open HTTP endpoint for upload-service Lambda proxying
+
+  UploadHttpApiIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref UploadHttpApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt UploadServiceFunction.Arn
+      PayloadFormatVersion: '2.0'
+      TimeoutInMillis: 30000
+
+  UploadRootRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref UploadHttpApi
+      RouteKey: 'ANY /upload-service'
+      Target: !Join
+        - /
+        - - integrations
+          - !Ref UploadHttpApiIntegration
+
+  UploadProxyRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref UploadHttpApi
+      RouteKey: 'ANY /upload-service/{proxy+}'
+      Target: !Join
+        - /
+        - - integrations
+          - !Ref UploadHttpApiIntegration
+
+  UploadDefaultStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref UploadHttpApi
+      StageName: '$default'
+      AutoDeploy: true
+
+  AllowHttpApiInvokeLambda:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref UploadServiceFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${UploadHttpApi}/*/*'
+
+Outputs:
+  HttpApiBaseUrl:
+    Description: Base URL of the HTTP API
+    Value: !GetAtt UploadHttpApi.ApiEndpoint
+
+  UploadServiceEndpoint:
+    Description: Root endpoint
+    Value: !Sub '${UploadHttpApi.ApiEndpoint}/upload-service'
+
+  UploadServiceProxyEndpointPattern:
+    Description: proxy endpoint pattern
+    Value: !Sub '${UploadHttpApi.ApiEndpoint}/upload-service/{proxy+}'
+
+  LambdaFunctionName:
+    Description: Lambda function name
+    Value: !Ref UploadServiceFunction
