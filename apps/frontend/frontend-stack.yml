@@ -147,3 +147,5 @@ Outputs:
     Value: !Sub "react-cors-spa-${AWS::StackName}"
   SPADomain:
     Value: !GetAtt CFDistributionSPA.DomainName
+  CFDistributionId:
+    Value: !GetAtt CFDistributionSPA
