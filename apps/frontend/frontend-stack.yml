@@ -86,6 +86,12 @@ Resources:
       OwnershipControls:
         Rules:
           - ObjectOwnership: BucketOwnerPreferred
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteLogsAfterRetetionPeriod
+            Status: Enabled
+            ExpirationInDays: 14
+            Prefix: ""
     DeletionPolicy: Delete
 
   # The Amazon CloudFront distribution exposing our Single Page Application
