@@ -33,7 +33,7 @@ jobs:
         working-directory: ./apps/frontend
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v6
         with:
           name: frontend-build
           path: ./apps/frontend/dist
@@ -74,7 +74,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download build artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v7
         with:
           name: frontend-build
           path: ./apps/frontend/dist
