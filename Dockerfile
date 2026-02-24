@@ -1,9 +1,9 @@
 # Stage 1: Build
-FROM node:18-alpine AS build
-WORKDIR /app
+FROM node:24-alpine AS build
+WORKDIR /app/frontend
 
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
 COPY . .
 RUN npm run build
