@@ -39,6 +39,11 @@ jobs:
         run: npm run build
         working-directory: ./apps/frontend
 
+      - name: Validate CloudFormation template
+        run: |
+          aws cloudformation validate-template \
+            --template-body file://./apps/frontend/frontend-stack.yml
+
       - name: Deploy CloudFormation stack
         run: |
           aws cloudformation deploy \
