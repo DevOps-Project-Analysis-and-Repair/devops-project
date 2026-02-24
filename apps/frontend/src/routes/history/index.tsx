@@ -43,7 +43,7 @@ function RouteComponent() {
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
                 <TableCell component="th" scope="row">
-                  <Link to={`/project_/${row}`}>{row}</Link>
+                  <Link to={`/project/$id`} params={{ id: row }}>{row}</Link>
                 </TableCell>
               </TableRow>
             ))}
