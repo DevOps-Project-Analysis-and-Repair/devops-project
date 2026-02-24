@@ -8,13 +8,12 @@ on:
       - '.github/workflows/deploy-frontend.yml'
       - 'apps/frontend/**'
 
+env:
+  AWS_REGION: eu-west-1
+
 jobs:
-  build_and_deploy:
+  setup:
     runs-on: ubuntu-latest
-
-    env:
-      AWS_REGION: eu-west-1
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -25,6 +24,13 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
+
+  build:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -39,6 +45,13 @@ jobs:
         run: npm run build
         working-directory: ./apps/frontend
 
+  deploy:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Validate CloudFormation template
         run: |
           aws cloudformation validate-template \
@@ -51,6 +64,18 @@ jobs:
             --stack-name frontend-stack \
             --capabilities CAPABILITY_IAM
 
+      - name: Get and print frontend domain
+        run: |
+          SPADomain=$(aws cloudformation describe-stacks --stack-name frontend-stack --query "Stacks[0].Outputs[?OutputKey=='SPADomain'].OutputValue" --output text)
+          echo "SPADomain: $SPADomain"
+
+  upload:
+    needs: [build, deploy]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Upload to S3
         run: |
           BUCKET_NAME=$(aws cloudformation describe-stacks --stack-name frontend-stack --query "Stacks[0].Outputs[?OutputKey=='BucketName'].OutputValue" --output text)
@@ -60,8 +85,3 @@ jobs:
         run: |
           DISTRIBUTION_ID=$(aws cloudformation describe-stacks --stack-name frontend-stack --query "Stacks[0].Outputs[?OutputKey=='CFDistributionId'].OutputValue" --output text)
           aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
-
-      - name: Get and print frontend domain
-        run: |
-          SPADomain=$(aws cloudformation describe-stacks --stack-name frontend-stack --query "Stacks[0].Outputs[?OutputKey=='SPADomain'].OutputValue" --output text)
-          echo "SPADomain: $SPADomain"
