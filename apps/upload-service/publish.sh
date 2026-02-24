@@ -8,6 +8,15 @@ aws ecr create-repository --repository-name $REPO --region $AWS_REGION 2>/dev/nu
 
 aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
 
-docker buildx build --platform linux/amd64 --provenance=false -t upload-service:latest .
+docker buildx build --platform linux/amd64 --provenance=false -t $REPO:latest .
 docker tag $REPO:latest $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO:latest
+
+if [ -n "${GIT_HASH:-}" ]; then
+  docker tag $REPO:latest $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO:$GIT_HASH
+fi
+
 docker push $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO:latest
+
+if [ -n "${GIT_HASH:-}" ]; then
+  docker push $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO:$GIT_HASH
+fi

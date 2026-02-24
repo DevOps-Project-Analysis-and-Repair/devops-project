@@ -1,5 +1,10 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
+Parameters:
+  UploadServiceImageUri:
+    Type: String
+    Default: 379245767025.dkr.ecr.eu-west-1.amazonaws.com/upload-service:latest
+
 Resources:
   UploadServiceLambdaRole:
     Type: AWS::IAM::Role
@@ -24,7 +29,7 @@ Resources:
       PackageType: Image
       Role: !GetAtt UploadServiceLambdaRole.Arn
       Code:
-        ImageUri: 379245767025.dkr.ecr.eu-west-1.amazonaws.com/upload-service:latest
+        ImageUri: !Ref UploadServiceImageUri
       MemorySize: 128
       Timeout: 30
 
