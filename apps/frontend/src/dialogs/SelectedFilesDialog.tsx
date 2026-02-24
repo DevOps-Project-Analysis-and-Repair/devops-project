@@ -22,9 +22,6 @@ export function SelectedFilesDialog({
   files,
 }: SelectedFilesDialogProps) {
   const [fileContent, setFileContent] = useState<CodeViewerParams | null>(null);
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
 
   const handleClose = () => {
     setOpen(false);
