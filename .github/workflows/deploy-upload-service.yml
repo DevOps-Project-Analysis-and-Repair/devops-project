@@ -2,8 +2,8 @@ name: Deploy UploadService
 
 on:
   push:
-    branches:
-      - main
+    # branches:
+      # - main
     paths:
       - '.github/workflows/deploy-upload-service.yml'
       - 'apps/upload-service/**'

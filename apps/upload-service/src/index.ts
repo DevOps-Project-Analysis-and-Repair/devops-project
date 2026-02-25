@@ -1,41 +1,69 @@
 import { Context } from 'aws-lambda';
-import { Router } from '@aws-lambda-powertools/event-handler/http';
+import { Router, UnauthorizedError } from '@aws-lambda-powertools/event-handler/http';
 import { Logger } from '@aws-lambda-powertools/logger';
 import { S3Client } from "@aws-sdk/client-s3";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { PutCommand, DynamoDBDocumentClient, GetCommand } from "@aws-sdk/lib-dynamodb";
+import { v4 as uuidv4 } from 'uuid';
+
+import { Project } from './types';
+import { createToken, verifyToken } from './auth';
 
 const serviceName = 'upload-service';
 
 const logger = new Logger({ serviceName });
 const app = new Router({ logger });
 
-const s3client = new S3Client({});
+// const s3client = new S3Client({});
 const db = new DynamoDBClient({});
+const doc = DynamoDBDocumentClient.from(db);
 
 app.post(`/${serviceName}/project`, async () => {
   // 1. create new project in db
-  // 2. create jwt to write to project
-  // 3. return jwt to user
+  const projectId: string = uuidv4();
 
-  return { token: "foobar" };
+  const item: Project = {
+    id: projectId,
+    name: `Upload ${datestring()}`,
+    files: []
+  };
+
+  const cmd = new PutCommand({
+    TableName: "Projects",
+    Item: item
+  });
+
+  await doc.send(cmd);
+
+  // 2. create jwt to with project id
+  // 3. return jwt to user
+  return { token: createToken(projectId) };
 });
 
 app.get(`/${serviceName}/project/:projectId`, async ({ params: { projectId }}) => {
   // 1. get project from db
+  const cmd = new GetCommand({ TableName: "Projects", Key: { id: projectId }});
+  const res = await doc.send(cmd);
+
   // 2. return project object, including file names
-  return { ok: true };
+  return res.Item;
 });
 
-app.post(`/${serviceName}/project/:projectId/files`, async ({ params: { projectId }}) => {
+app.post(`/${serviceName}/project/:projectId/files`, async ({ req, params: { projectId }}) => {
   // Note: Body should be send in binary
   // Other values have to be send via the headers/params
+  const token = req.headers.get('X-Project-Token');
 
   // 1. validate jwt, or fail
+  if (!verifyToken(token ?? '', projectId)) { throw new UnauthorizedError(); }
+  
+  const fileBinary = await req.arrayBuffer();
   // 2. fetch project from project id, or fail
+
   // 3. write file to s3
   // 4. add file to project
   // 5. update project
-
+  
   // things to save (filename, file contents (on s3), file reference to s3, mime-type?)
 
   return { ok: true };
@@ -49,7 +77,6 @@ app.get(`/${serviceName}/project/:projectId/files/:fileId`, async ({ params: { p
   return { ok: true };
 });
 
-app.get(`/${serviceName}/foobar`, () => { return { message: 'barfoo' }; });
-app.get(`/${serviceName}/`, () => { return { message: 'howdy world' }; });
-
-export const handler = async (event: unknown, context: Context) => app.resolve(event, context);
+export const handler = async (event: unknown, context: Context) => {
+  return app.resolve(event, context);
+};
