@@ -54,6 +54,9 @@ app.post(`/${serviceName}/project/:projectId/files`, async ({ req, params: { pro
   const token = req.headers.get('X-Project-Token');
 
   // 1. validate jwt, or fail
+  console.log(projectId);
+  console.log(token);
+
   if (!verifyToken(token ?? '', projectId)) { throw new UnauthorizedError(); }
   
   // 2. fetch project from project id, or fail
