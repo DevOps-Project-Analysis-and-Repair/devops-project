@@ -9,8 +9,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "esbuild src/index.ts --bundle --minify --sourcemap --platform=node --target=es2020 --outfile=dist/index.js",
-    "watch": "esbuild src/index.ts --bundle --minify --sourcemap --platform=node --target=es2020 --outfile=.aws-sam/build/LlmServiceFunction/index.js --watch",
-    "dev": "sam build && sam local start-api --port 4000"
+    "watch": "esbuild src/index.ts --bundle --sourcemap --platform=node --target=es2020 --outfile=.aws-sam/build/LlmServiceFunction/index.js --watch",
+    "dev": "npm run build && sam build && sam local start-api --env-vars env.json  --port 4000"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.160",
@@ -22,6 +22,7 @@
     "@aws-lambda-powertools/logger": "^2.31.0",
     "@aws-sdk/client-dynamodb": "^3.996.0",
     "@aws-sdk/client-s3": "^3.996.0",
+    "dotenv": "^17.3.1",
     "openai": "^6.25.0"
   }
 }

@@ -20,6 +20,9 @@ Resources:
       FunctionName: llm-service
       Handler: index.handler
       CodeUri: ./dist
+      Environment:
+        Variables:
+          OPENAI_API_KEY: !Ref OPENAI_API_KEY
       Events:
         AnalyzeEndpoint:
           Type: Api
