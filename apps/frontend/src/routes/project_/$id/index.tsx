@@ -1,13 +1,63 @@
-import { createFileRoute, notFound } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/project_/$id/')({
+import TroubleshootIcon from "@mui/icons-material/Troubleshoot";
+import { Button } from "@mui/material";
+import { createFileRoute, notFound } from "@tanstack/react-router";
+import { useState } from "react";
+import {
+  CodeViewer,
+  type CodeViewerParams,
+} from "../../../components/CodeViewer";
+import { FileTree } from "../../../components/FileTree";
+import { getStoredFiles } from "../../../components/store";
+import { Container } from "../../../components/ui/Container";
+import { getFileExtension, type FileSystemFile } from "../../../filesystem";
+export const Route = createFileRoute("/project_/$id/")({
   component: Project,
 });
 
 function Project() {
-  const { id } = Route.useParams();
+  const [fileContent, setFileContent] = useState<CodeViewerParams | null>(null);
 
-  if (id !== "123") { throw notFound(); }
-  
-  return <div className="p-2">Hello from project! { id }</div>
-};
+  const { id } = Route.useParams();
+  console.log(id);
+  if (id !== "123") {
+    throw notFound();
+  }
+
+  const files = getStoredFiles();
+
+  async function onFileClick(file: FileSystemFile) {
+    const content = await file.handle.text(); // great naming once again
+    const fileExtension = getFileExtension(file.name);
+
+    if (!fileExtension) {
+      throw "Invalid file name";
+    }
+
+    setFileContent({ content, language: fileExtension });
+  }
+
+  return (
+    <Container direction="row" overflow="auto">
+      <FileTree directory={files!} onFileClick={onFileClick} />
+      <div>
+        {fileContent && (
+          <>
+            <Button
+              component="label"
+              role={undefined}
+              variant="contained"
+              tabIndex={-1}
+              startIcon={<TroubleshootIcon />}
+            >
+              Analyze & Repair
+            </Button>
+            <CodeViewer
+              content={fileContent.content}
+              language={fileContent.language}
+            />
+          </>
+        )}
+      </div>
+    </Container>
+  );
+}

@@ -8,17 +8,23 @@ import {
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { CodeViewer, type CodeViewerParams } from "../components/CodeViewer";
 import { FileTree } from "../components/FileTree";
-import type { FileSystemDirectory, FileSystemFile } from "../filesystem";
+import {
+  getFileExtension,
+  type FileSystemDirectory,
+  type FileSystemFile,
+} from "../filesystem";
 
 interface SelectedFilesDialogProps {
   open: boolean;
   setOpen: Dispatch<SetStateAction<boolean>>;
+  onClickAction: () => void;
   files: FileSystemDirectory;
 }
 
 export function SelectedFilesDialog({
   open,
   setOpen,
+  onClickAction,
   files,
 }: SelectedFilesDialogProps) {
   const [fileContent, setFileContent] = useState<CodeViewerParams | null>(null);
@@ -26,12 +32,6 @@ export function SelectedFilesDialog({
   const handleClose = () => {
     setOpen(false);
   };
-
-  function getFileExtension(filepath: string): string | undefined {
-    const extensionRegExp = new RegExp("\.([^.]+)$");
-    const res = extensionRegExp.exec(filepath);
-    return res?.[1];
-  }
 
   async function onFileClick(file: FileSystemFile) {
     const content = await file.handle.text(); // great naming once again
@@ -59,7 +59,7 @@ export function SelectedFilesDialog({
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleClose} autoFocus>
+          <Button onClick={onClickAction} autoFocus>
             Start Upload
           </Button>
         </DialogActions>
