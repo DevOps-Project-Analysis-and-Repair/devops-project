@@ -68,7 +68,7 @@ app.post(`/${serviceName}/project/:projectId/files`, async ({ req, params: { pro
   const fileId = uuidv4();
 
   const command = new PutObjectCommand({
-    Bucket: "UploadServiceFiles",
+    Bucket: "uploadservicefiles",
     Key: fileId,
     Body: await req.bytes()
   });
