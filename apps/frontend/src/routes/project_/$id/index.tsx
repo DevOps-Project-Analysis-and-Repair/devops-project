@@ -9,7 +9,7 @@ import {
 import { FileTree } from "../../../components/FileTree";
 import { getStoredFiles } from "../../../components/store";
 import { Container } from "../../../components/ui/Container";
-import { getFileExtension } from "../../../filesystem";
+import { getFileExtension, type FileSystemFile } from "../../../filesystem";
 export const Route = createFileRoute("/project_/$id/")({
   component: Project,
 });
@@ -37,7 +37,7 @@ function Project() {
   }
 
   return (
-    <Container direction="row">
+    <Container direction="row" overflow="auto">
       <FileTree directory={files!} onFileClick={onFileClick} />
       <div>
         {fileContent && (
