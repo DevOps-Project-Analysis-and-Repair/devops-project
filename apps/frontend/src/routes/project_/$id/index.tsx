@@ -36,6 +36,16 @@ function Project() {
     setFileContent({ content, language: fileExtension });
   }
 
+  async function analyzeFile() {
+    fetch("http://127.0.0.1:4000/llm-service/analyze", {
+      method: "POST",
+      body: fileContent?.content || "",
+    })
+      .then((res) => res.text())
+      .then((data) => console.log(data))
+      .catch((err) => console.error(err));
+  }
+
   return (
     <Container direction="row" overflow="auto">
       <FileTree directory={files!} onFileClick={onFileClick} />
@@ -43,6 +53,7 @@ function Project() {
         {fileContent && (
           <>
             <Button
+              onClick={analyzeFile}
               component="label"
               role={undefined}
               variant="contained"

@@ -6,6 +6,8 @@ Globals:
   Function:
     Timeout: 30
     Runtime: nodejs20.x
+    Architectures:
+      - arm64
     MemorySize: 512
     Environment:
       Variables:
@@ -16,8 +18,8 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: llm-service
-      Handler: dist/handler.handler
-      CodeUri: .
+      Handler: index.handler
+      CodeUri: ./dist
       Events:
         AnalyzeEndpoint:
           Type: Api

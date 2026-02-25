@@ -9,6 +9,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "esbuild src/index.ts --bundle --minify --sourcemap --platform=node --target=es2020 --outfile=dist/index.js",
+    "watch": "esbuild src/index.ts --bundle --minify --sourcemap --platform=node --target=es2020 --outfile=.aws-sam/build/LlmServiceFunction/index.js --watch",
     "dev": "sam build && sam local start-api --port 4000"
   },
   "devDependencies": {
