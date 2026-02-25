@@ -1,4 +1,4 @@
-function datestring() {
+export function datestring() {
   const d = new Date();
 
   const yyyy = d.getFullYear();
