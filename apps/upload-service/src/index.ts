@@ -3,7 +3,7 @@ import { Router, UnauthorizedError } from '@aws-lambda-powertools/event-handler/
 import { Logger } from '@aws-lambda-powertools/logger';
 import { S3Client } from "@aws-sdk/client-s3";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { PutCommand, DynamoDBDocumentClient, GetCommand } from "@aws-sdk/lib-dynamodb";
+import { PutCommand, DynamoDBDocumentClient, GetCommand, DynamoDBDocument } from "@aws-sdk/lib-dynamodb";
 import { v4 as uuidv4 } from 'uuid';
 
 import { Project } from './types';
@@ -16,24 +16,22 @@ const app = new Router({ logger });
 
 // const s3client = new S3Client({});
 const db = new DynamoDBClient({});
-const doc = DynamoDBDocumentClient.from(db);
+const doc = DynamoDBDocument.from(db);
 
 app.post(`/${serviceName}/project`, async () => {
   // 1. create new project in db
   const projectId: string = uuidv4();
 
-  // const item: Project = {
-  //   id: projectId,
-  //   name: `Upload ${datestring()}`,
-  //   files: []
-  // };
+  const item: Project = {
+    id: projectId,
+    name: `Upload ${datestring()}`,
+    files: []
+  };
 
-  // const cmd = new PutCommand({
-  //   TableName: "Projects",
-  //   Item: item
-  // });
-
-  // await doc.send(cmd);
+  await doc.put({
+    TableName: "Projects",
+    Item: item
+  });
 
   // 2. create jwt to with project id
   // 3. return jwt to user
