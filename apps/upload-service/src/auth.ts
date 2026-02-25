@@ -20,5 +20,7 @@ export function createToken(projectId: string): string {
 export function verifyToken(token: string, projectId: string): boolean {
   const claims = jwt.verify(token, PRIVATE_KEY, { algorithms: ["HS256"], complete: false });
 
-  return (claims as jwt.JwtPayload).projectId === projectId;
+  console.log(claims);
+
+  return (claims as jwt.JwtPayload)['project_id'] === projectId;
 }
