@@ -1,7 +1,7 @@
 import { Context } from 'aws-lambda';
-import { NotFoundError, Router, UnauthorizedError } from '@aws-lambda-powertools/event-handler/http';
+import { BadRequestError, NotFoundError, Router, UnauthorizedError } from '@aws-lambda-powertools/event-handler/http';
 import { Logger } from '@aws-lambda-powertools/logger';
-import { S3Client } from "@aws-sdk/client-s3";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { PutCommand, DynamoDBDocumentClient, GetCommand, DynamoDBDocument } from "@aws-sdk/lib-dynamodb";
 import { v4 as uuidv4 } from 'uuid';
@@ -15,7 +15,7 @@ const serviceName = 'upload-service';
 const logger = new Logger({ serviceName });
 const app = new Router({ logger });
 
-// const s3client = new S3Client({});
+const s3client = new S3Client({});
 const db = new DynamoDBClient({});
 const doc = DynamoDBDocument.from(db);
 
@@ -52,28 +52,37 @@ app.post(`/${serviceName}/project/:projectId/files`, async ({ req, params: { pro
   // Note: Body should be send in binary
   // Other values have to be send via the headers/params
   const token = req.headers.get('X-Project-Token');
+  const filename = req.headers.get('X-File-Name');
+  const mimetype = req.headers.get('X-Mime-Type') || '';
+
+  if (!filename || !token) { throw new BadRequestError(); }
 
   // 1. validate jwt, or fail
-  console.log(projectId);
-  console.log(token);
-
-  if (!verifyToken(token ?? '', projectId)) { throw new UnauthorizedError(); }
+  if (!verifyToken(token, projectId)) { throw new UnauthorizedError(); }
   
   // 2. fetch project from project id, or fail
   const project = await doc.get({ TableName: "Projects", Key: { id: projectId }});
   if (!project.Item) { throw new NotFoundError(); }
 
   // 3. write file to s3
-  const fileBinary = await req.arrayBuffer();
   const fileId = uuidv4();
+
+  const command = new PutObjectCommand({
+    Bucket: "UploadServiceFiles",
+    Key: fileId,
+    Body: await req.bytes()
+  });
+
+  const s3response = await s3client.send(command);
+  console.log(s3response);
 
   // 4. add file to project
   const item = project.Item as Project;
   item.files.push({
     id: fileId,
-    filename: "foobar",
+    filename, // do we need to clean filename?
     url: "https://example.com",
-    mimetype: ""
+    mimetype
   });
 
   // 5. update project
