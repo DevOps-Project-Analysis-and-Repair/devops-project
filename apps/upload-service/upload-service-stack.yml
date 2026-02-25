@@ -135,10 +135,10 @@ Resources:
         - AttributeName: id
           KeyType: HASH
 
-    UploadServiceFilesBucket:
-      Type: AWS::S3::Bucket
-      Properties:
-        BucketName: uploadservicefiles
+  UploadServiceFilesBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: uploadservicefiles
 
 Outputs:
   HttpApiBaseUrl:
