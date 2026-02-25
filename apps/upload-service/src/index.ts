@@ -22,18 +22,18 @@ app.post(`/${serviceName}/project`, async () => {
   // 1. create new project in db
   const projectId: string = uuidv4();
 
-  const item: Project = {
-    id: projectId,
-    name: `Upload ${datestring()}`,
-    files: []
-  };
+  // const item: Project = {
+  //   id: projectId,
+  //   name: `Upload ${datestring()}`,
+  //   files: []
+  // };
 
-  const cmd = new PutCommand({
-    TableName: "Projects",
-    Item: item
-  });
+  // const cmd = new PutCommand({
+  //   TableName: "Projects",
+  //   Item: item
+  // });
 
-  await doc.send(cmd);
+  // await doc.send(cmd);
 
   // 2. create jwt to with project id
   // 3. return jwt to user
