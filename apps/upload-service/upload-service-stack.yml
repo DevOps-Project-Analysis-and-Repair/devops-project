@@ -34,6 +34,21 @@ Resources:
                   - dynamodb:Scan
                 Resource: !GetAtt ProjectsTable.Arn
 
+        - PolicyName: UploadServiceFilesBucketAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                Resource: !GetAtt UploadServiceFilesBucket.Arn
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:DeleteObject
+                Resource: !Sub '${UploadServiceFilesBucket.Arn}/*'
+
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
 
@@ -47,6 +62,9 @@ Resources:
         ImageUri: !Ref UploadServiceImageUri
       MemorySize: 128
       Timeout: 30
+      Environment:
+        Variables:
+          FILES_BUCKET: !Ref UploadServiceFilesBucket
 
   UploadServiceLogGroup:
     Type: AWS::Logs::LogGroup
@@ -117,6 +135,11 @@ Resources:
         - AttributeName: id
           KeyType: HASH
 
+    UploadServiceFilesBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: uploadservicefiles
+
 Outputs:
   HttpApiBaseUrl:
     Description: Base URL of the HTTP API
@@ -133,3 +156,7 @@ Outputs:
   LambdaFunctionName:
     Description: Lambda function name
     Value: !Ref UploadServiceFunction
+    
+  UploadServiceFilesBucketName:
+      Description: S3 bucket for upload service files
+      Value: !Ref UploadServiceFilesBucket
