@@ -30,10 +30,10 @@ function RouteComponent() {
       </Link>
       <hr />
       <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+        <Table sx={{ minWidth: 650 }} aria-label="Project history">
           <TableHead>
             <TableRow>
-              <TableCell>Project</TableCell>
+              <TableCell>Projects</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -43,7 +43,7 @@ function RouteComponent() {
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
                 <TableCell component="th" scope="row">
-                  <Link to={`/project_/${row}`}>{row}</Link>
+                  <Link to={`/project/$id`} params={{ id: row }}>{row}</Link>
                 </TableCell>
               </TableRow>
             ))}
