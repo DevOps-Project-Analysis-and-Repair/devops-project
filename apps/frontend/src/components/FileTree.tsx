@@ -1,3 +1,4 @@
+import { styled } from "@mui/material";
 import { TreeItem } from "@mui/x-tree-view";
 import { SimpleTreeView } from "@mui/x-tree-view/SimpleTreeView";
 import type { JSX } from "react";
@@ -12,6 +13,11 @@ export interface FileTreeItemProps {
   item: FileSystemDirectory | FileSystemFile;
   onFileClick: (file: FileSystemFile) => void;
 }
+
+const FileTreeContainer = styled("div")({
+  marginRight: "8px",
+  minWidth: "25ch",
+});
 
 export function FileTreeItem({
   item,
@@ -48,8 +54,8 @@ export function FileTree({
   if (!directory.children.length) return <></>;
 
   return (
-    <>
-      <SimpleTreeView defaultExpandedItems={["0"]}>
+    <FileTreeContainer>
+      <SimpleTreeView defaultExpandedItems={[String(directory.id)]}>
         <TreeItem itemId={String(directory.id)} label={directory.name}>
           {directory.children.map((child) => (
             <FileTreeItem
@@ -60,6 +66,6 @@ export function FileTree({
           ))}
         </TreeItem>
       </SimpleTreeView>
-    </>
+    </FileTreeContainer>
   );
 }

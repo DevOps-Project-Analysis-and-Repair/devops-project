@@ -54,5 +54,10 @@ export function filesToFileSystemTree(files: File[]): FileSystemDirectory | null
     cwd.children.push(file(pathFile, id++, entry));
   }
 
+  // Remove the root in case a single directory is uploaded  
+  if (root.children.length == 1 && root.children[0].kind == "directory") {
+    return root.children[0];
+  }
+
   return root;
 }
