@@ -1,5 +1,5 @@
 import { Context } from 'aws-lambda';
-import { Router, UnauthorizedError } from '@aws-lambda-powertools/event-handler/http';
+import { NotFoundError, Router, UnauthorizedError } from '@aws-lambda-powertools/event-handler/http';
 import { Logger } from '@aws-lambda-powertools/logger';
 import { S3Client } from "@aws-sdk/client-s3";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
@@ -36,7 +36,7 @@ app.post(`/${serviceName}/project`, async () => {
 
   // 2. create jwt to with project id
   // 3. return jwt to user
-  return { token: createToken(projectId) };
+  return { projectId, token: createToken(projectId) };
 });
 
 app.get(`/${serviceName}/project/:projectId`, async ({ params: { projectId }}) => {
@@ -56,15 +56,27 @@ app.post(`/${serviceName}/project/:projectId/files`, async ({ req, params: { pro
   // 1. validate jwt, or fail
   if (!verifyToken(token ?? '', projectId)) { throw new UnauthorizedError(); }
   
-  const fileBinary = await req.arrayBuffer();
   // 2. fetch project from project id, or fail
+  const project = await doc.get({ TableName: "Projects", Key: { id: projectId }});
+  if (!project.Item) { throw new NotFoundError(); }
 
   // 3. write file to s3
+  const fileBinary = await req.arrayBuffer();
+  const fileId = uuidv4();
+
   // 4. add file to project
+  const item = project.Item as Project;
+  item.files.push({
+    id: fileId,
+    filename: "foobar",
+    url: "https://example.com",
+    mimetype: ""
+  });
+
   // 5. update project
+  await doc.put({ TableName: "Projects", Item: item});
   
   // things to save (filename, file contents (on s3), file reference to s3, mime-type?)
-
   return { ok: true };
 });
 
