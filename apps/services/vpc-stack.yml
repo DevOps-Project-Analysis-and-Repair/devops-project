@@ -149,20 +149,45 @@ Resources:
         - !Ref PrivateSubnet
       SecurityGroupIds:
         - !Ref NoIngressSecurityGroup
+        
+  S3GatewayEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId: !Ref VPC
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.s3
+      RouteTableIds:
+        - !Ref PrivateRouteTable
+
+  DynamoDBGatewayEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId: !Ref VPC
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.dynamodb
+      RouteTableIds:
+        - !Ref PrivateRouteTable
+
 
 Outputs:
   VPC:
     Description: A reference to the created VPC
     Value: !Ref VPC
+    Export:
+      Name: !Sub "$VPC"
 
   PublicSubnet:
     Description: A reference to the public subnet
     Value: !Ref PublicSubnet
+    Export:
+      Name: !Sub "$PublicSubnset"
 
   PrivateSubnet:
     Description: A reference to the private subnet
     Value: !Ref PrivateSubnet
+    Export:
+      Name: !Sub "$PrivateSubnet"
 
   NoIngressSecurityGroup:
     Description: Security group with no ingress rule
     Value: !Ref NoIngressSecurityGroup
+    Export:
+      Name: !Sub "$NoIngressSecurityGroup"
