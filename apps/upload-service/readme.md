@@ -9,7 +9,7 @@ Build the Docker image with the docker build command. The following example name
 
 ### Creating a new project
 ```sh
-curl --request POST --url https://p336yzymi2.execute-api.eu-west-1.amazonaws.com/upload-service/project
+curl --request POST --url https://p336yzymi2.execute-api.eu-west-1.amazonaws.com/upload-service/projects
 ```
 Will result in a request that looks like the following:
 
@@ -24,7 +24,7 @@ The token is used as a header (X-Project-Token) for uploading a file to the proj
 ### Uploading a file to a project
 ```sh
 curl --request POST \
-  --url https://p336yzymi2.execute-api.eu-west-1.amazonaws.com/upload-service/project/f9521144-b4c3-49a3-bbc3-e2ee6e7008ab/files \
+  --url https://p336yzymi2.execute-api.eu-west-1.amazonaws.com/upload-service/projects/f9521144-b4c3-49a3-bbc3-e2ee6e7008ab/files \
   --header 'Content-Type: application/javascript' \
   --header 'X-File-Name: foobar.tsx' \
   --header 'X-Project-Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiYXJmb28iLCJwcm9qZWN0X2lkIjoiZjk1MjExNDQtYjRjMy00OWEzLWJiYzMtZTJlZTZlNzAwOGFiIiwiZXhwIjoxNzcyOTAxNzc5LCJpYXQiOjE3NzIwMzc3Nzl9.v4AEPmtgSxxKxaKRz8y3_a--RTM1zOPkdEOm1SoLbIU' \
@@ -35,14 +35,20 @@ With the headers:
  - X-File-Name, the filename of the eventual response
  - X-Project-Token, the token received from the new project endpoint. It has a lifetime of 10 days, and is there to prevent malicious mutations to a project.
 
+### Receiving all projects
+```sh
+curl --request GET \
+--url https://p336yzymi2.execute-api.eu-west-1.amazonaws.com/upload-service/projects/
+```
+
 ### Receiving project
 ```sh
 curl --request GET \
---url https://p336yzymi2.execute-api.eu-west-1.amazonaws.com/upload-service/project/f9521144-b4c3-49a3-bbc3-e2ee6e7008ab
+--url https://p336yzymi2.execute-api.eu-west-1.amazonaws.com/upload-service/projects/f9521144-b4c3-49a3-bbc3-e2ee6e7008ab
 ```
 
 ### Downloading a file of a project
 ```sh
 curl --request GET \
---url https://p336yzymi2.execute-api.eu-west-1.amazonaws.com/upload-service/project/f9521144-b4c3-49a3-bbc3-e2ee6e7008ab/files/15a2acc4-cace-41a1-818a-78515039b30d
+--url https://p336yzymi2.execute-api.eu-west-1.amazonaws.com/upload-service/projects/f9521144-b4c3-49a3-bbc3-e2ee6e7008ab/files/15a2acc4-cace-41a1-818a-78515039b30d
 ```

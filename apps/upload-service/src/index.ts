@@ -40,7 +40,7 @@ function findFile(fileId: string, project: Project): ProjectFile | null {
   return null;
 }
 
-app.get(`/${serviceName}/project`, async () => {
+app.get(`/${serviceName}/projects`, async () => {
   const paginationConfig = { client: doc };
   const tableConfig = {
     TableName: TABLE_PROJECTS,
@@ -60,7 +60,7 @@ app.get(`/${serviceName}/project`, async () => {
   return projects;
 });
 
-app.post(`/${serviceName}/project`, async () => {
+app.post(`/${serviceName}/projects`, async () => {
   // 1. create new project in db
   const projectId: string = uuidv4();
 
@@ -81,13 +81,13 @@ app.post(`/${serviceName}/project`, async () => {
   return { projectId, token: createToken(projectId) };
 });
 
-app.get(`/${serviceName}/project/:projectId`, async ({ params: { projectId }}) => {
+app.get(`/${serviceName}/projects/:projectId`, async ({ params: { projectId }}) => {
   // 1. get project from db
   // 2. return project object, including file names
   return await getProjectFromDb(doc, projectId);
 });
 
-app.post(`/${serviceName}/project/:projectId/files`, async ({ req, params: { projectId }}) => {
+app.post(`/${serviceName}/projects/:projectId/files`, async ({ req, params: { projectId }}) => {
   // Note: Body should be send in binary
   // Other values have to be send via the headers/params
   const token = req.headers.get('X-Project-Token');
@@ -133,7 +133,7 @@ app.post(`/${serviceName}/project/:projectId/files`, async ({ req, params: { pro
   return project;
 });
 
-app.get(`/${serviceName}/project/:projectId/files/:fileId`, async ({ res, params: { projectId, fileId }}) => {
+app.get(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ res, params: { projectId, fileId }}) => {
   // 1. get project
   const project = await getProjectFromDb(doc, projectId);
 
