@@ -55,7 +55,9 @@ app.get(`/${serviceName}/projects`, async () => {
     projects = projects.concat(pageItems);
   }
 
-  projects.sort((a, b) => a.createdAt - b.createdAt);
+  // TODO: Just have this done on the clients?
+  // Sort from newest -> oldest
+  projects.sort((a, b) => b.createdAt - a.createdAt);
 
   return projects;
 });
