@@ -40,36 +40,36 @@ jobs:
             --parameter-overrides \
               EnvironmentName=prod
 
-  deploy_lambda_stacks:
-    needs: [deploy_vpc_stack]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+  # deploy_lambda_stacks:
+  #   needs: [deploy_vpc_stack]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
 
-      - name: Set up AWS CLI
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+  #     - name: Set up AWS CLI
+  #       uses: aws-actions/configure-aws-credentials@v4
+  #       with:
+  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         aws-region: ${{ env.AWS_REGION }}
 
-      - name: Validate CloudFormation templates
-        run: |
-          aws cloudformation validate-template \
-            --template-body file://./apps/services/upload/upload-stack.yml
-          aws cloudformation validate-template \
-            --template-body file://./apps/services/upload/analyze-stack.yml
-          aws cloudformation validate-template \
-            --template-body file://./apps/services/upload/fix-stack.yml
+  #     - name: Validate CloudFormation templates
+  #       run: |
+  #         aws cloudformation validate-template \
+  #           --template-body file://./apps/services/upload/upload-stack.yml
+  #         aws cloudformation validate-template \
+  #           --template-body file://./apps/services/upload/analyze-stack.yml
+  #         aws cloudformation validate-template \
+  #           --template-body file://./apps/services/upload/fix-stack.yml
 
-      # TODO: Should deploy Lambdas
-      # - name: Deploy CloudFormation stack
-      #   run: |
-      #     aws cloudformation deploy \
-      #       --template-file ./apps/frontend/frontend-stack.yml \
-      #       --stack-name frontend-stack \
-      #       --capabilities CAPABILITY_IAM
+  #     # TODO: Should deploy Lambdas
+  #     # - name: Deploy CloudFormation stack
+  #     #   run: |
+  #     #     aws cloudformation deploy \
+  #     #       --template-file ./apps/frontend/frontend-stack.yml \
+  #     #       --stack-name frontend-stack \
+  #     #       --capabilities CAPABILITY_IAM
 
   deploy_api_gateway_stack:
     needs: [deploy_lambda_stacks]
@@ -92,16 +92,9 @@ jobs:
 
       - name: Deploy CloudFormation stack
         run: |
-          UPLOAD_LAMBDA_ARN=$(aws lambda get-function --function-name upload-lambda --query 'Configuration.FunctionArn' --output text)
-          ANALYZE_LAMBDA_ARN=$(aws lambda get-function --function-name analyze-lambda --query 'Configuration.FunctionArn' --output text)
-          FIX_LAMBDA_ARN=$(aws lambda get-function --function-name fix-lambda --query 'Configuration.FunctionArn' --output text)
-
           aws cloudformation deploy \
             --template-file ./apps/services/api-gateway-stack.yml \
             --stack-name api-gateway-stack \
             --capabilities CAPABILITY_IAM \
             --parameter-overrides \
-              EnvironmentName=prod \
-              UploadLambdaFunctionArn=${{ env.UPLOAD_LAMBDA_ARN }} \
-              AnalyzeLambdaFunctionArn=${{ env.ANALYZE_LAMBDA_ARN }} \
-              FixLambdaFunctionArn=${{ env.FIX_LAMBDA_ARN }}
+              EnvironmentName=prod
