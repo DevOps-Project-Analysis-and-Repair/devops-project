@@ -1,0 +1,162 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  UploadServiceImageUri:
+    Type: String
+    Default: 379245767025.dkr.ecr.eu-west-1.amazonaws.com/upload-service:latest
+
+Resources:
+  UploadServiceLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-upload-service-lambda-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: ProjectsTableAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                Resource: !GetAtt ProjectsTable.Arn
+
+        - PolicyName: UploadServiceFilesBucketAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                Resource: !GetAtt UploadServiceFilesBucket.Arn
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:DeleteObject
+                Resource: !Sub '${UploadServiceFilesBucket.Arn}/*'
+
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+  UploadServiceFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-upload-service'
+      PackageType: Image
+      Role: !GetAtt UploadServiceLambdaRole.Arn
+      Code:
+        ImageUri: !Ref UploadServiceImageUri
+      MemorySize: 128
+      Timeout: 30
+      Environment:
+        Variables:
+          FILES_BUCKET: !Ref UploadServiceFilesBucket
+
+  UploadServiceLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${UploadServiceFunction}'
+      RetentionInDays: 14
+
+  UploadHttpApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: !Sub '${AWS::StackName}-upload-http-api'
+      ProtocolType: HTTP
+      Description: Open HTTP endpoint for upload-service Lambda proxying
+
+  UploadHttpApiIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref UploadHttpApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt UploadServiceFunction.Arn
+      PayloadFormatVersion: '2.0'
+      TimeoutInMillis: 30000
+
+  UploadRootRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref UploadHttpApi
+      RouteKey: 'ANY /upload-service'
+      Target: !Join
+        - /
+        - - integrations
+          - !Ref UploadHttpApiIntegration
+
+  UploadProxyRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref UploadHttpApi
+      RouteKey: 'ANY /upload-service/{proxy+}'
+      Target: !Join
+        - /
+        - - integrations
+          - !Ref UploadHttpApiIntegration
+
+  UploadDefaultStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref UploadHttpApi
+      StageName: '$default'
+      AutoDeploy: true
+
+  AllowHttpApiInvokeLambda:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref UploadServiceFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${UploadHttpApi}/*/*'
+
+  ProjectsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Projects
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+
+  UploadServiceFilesBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: uploadservicefiles
+
+Outputs:
+  HttpApiBaseUrl:
+    Description: Base URL of the HTTP API
+    Value: !GetAtt UploadHttpApi.ApiEndpoint
+
+  UploadServiceEndpoint:
+    Description: Root endpoint
+    Value: !Sub '${UploadHttpApi.ApiEndpoint}/upload-service'
+
+  UploadServiceProxyEndpointPattern:
+    Description: proxy endpoint pattern
+    Value: !Sub '${UploadHttpApi.ApiEndpoint}/upload-service/{proxy+}'
+
+  LambdaFunctionName:
+    Description: Lambda function name
+    Value: !Ref UploadServiceFunction
+    
+  UploadServiceFilesBucketName:
+      Description: S3 bucket for upload service files
+      Value: !Ref UploadServiceFilesBucket
