@@ -1,0 +1,100 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/deploy-backend.yml'
+      - 'apps/services/**'
+
+env:
+  AWS_REGION: eu-west-1
+
+jobs:
+  deploy_vpc_stack:
+    needs: []
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Validate CloudFormation template
+        run: |
+          aws cloudformation validate-template \
+            --template-body file://./apps/services/vpc-stack.yml
+
+      - name: Deploy CloudFormation stack
+        run: |
+          aws cloudformation deploy \
+            --template-file ./apps/services/vpc-stack.yml \
+            --stack-name vpc-stack \
+            --capabilities CAPABILITY_IAM \
+            --parameter-overrides \
+              EnvironmentName=prod
+
+  # deploy_lambda_stacks:
+  #   needs: [deploy_vpc_stack]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+
+  #     - name: Set up AWS CLI
+  #       uses: aws-actions/configure-aws-credentials@v4
+  #       with:
+  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         aws-region: ${{ env.AWS_REGION }}
+
+  #     - name: Validate CloudFormation templates
+  #       run: |
+  #         aws cloudformation validate-template \
+  #           --template-body file://./apps/services/upload/upload-stack.yml
+  #         aws cloudformation validate-template \
+  #           --template-body file://./apps/services/upload/analyze-stack.yml
+  #         aws cloudformation validate-template \
+  #           --template-body file://./apps/services/upload/fix-stack.yml
+
+  #     # TODO: Should deploy Lambdas
+  #     # - name: Deploy CloudFormation stack
+  #     #   run: |
+  #     #     aws cloudformation deploy \
+  #     #       --template-file ./apps/frontend/frontend-stack.yml \
+  #     #       --stack-name frontend-stack \
+  #     #       --capabilities CAPABILITY_IAM
+
+  deploy_api_gateway_stack:
+    # needs: [deploy_lambda_stacks]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Validate CloudFormation template
+        run: |
+          aws cloudformation validate-template \
+            --template-body file://./apps/services/api-gateway-stack.yml
+
+      - name: Deploy CloudFormation stack
+        run: |
+          aws cloudformation deploy \
+            --template-file ./apps/services/api-gateway-stack.yml \
+            --stack-name api-gateway-stack \
+            --capabilities CAPABILITY_IAM \
+            --parameter-overrides \
+              EnvironmentName=prod
