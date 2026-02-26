@@ -1,5 +1,5 @@
 import { Context } from 'aws-lambda';
-import { BadRequestError, InternalServerError, NotFoundError, Router, streamify, UnauthorizedError } from '@aws-lambda-powertools/event-handler/http';
+import { BadRequestError, InternalServerError, NotFoundError, Router, UnauthorizedError } from '@aws-lambda-powertools/event-handler/http';
 import { Logger } from '@aws-lambda-powertools/logger';
 import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
@@ -19,6 +19,23 @@ const app = new Router({ logger });
 const s3client = new S3Client({});
 const db = new DynamoDBClient({});
 const doc = DynamoDBDocument.from(db);
+
+async function getProjectFromDb(doc: DynamoDBDocument, projectId: string): Promise<Project> {
+  const cmd = new GetCommand({ TableName: "Projects", Key: { id: projectId }});
+  const res = await doc.send(cmd);
+
+  if (!res.Item) { throw new NotFoundError(); }
+
+  return res.Item as Project;
+}
+
+function findFile(fileId: string, project: Project): ProjectFile | null {
+  for (const file of project.files) {
+    if (file.id === fileId) { return file };
+  }
+
+  return null;
+}
 
 app.post(`/${serviceName}/project`, async () => {
   // 1. create new project in db
@@ -42,11 +59,8 @@ app.post(`/${serviceName}/project`, async () => {
 
 app.get(`/${serviceName}/project/:projectId`, async ({ params: { projectId }}) => {
   // 1. get project from db
-  const cmd = new GetCommand({ TableName: "Projects", Key: { id: projectId }});
-  const res = await doc.send(cmd);
-
   // 2. return project object, including file names
-  return res.Item;
+  return await getProjectFromDb(doc, projectId);
 });
 
 app.post(`/${serviceName}/project/:projectId/files`, async ({ req, params: { projectId }}) => {
@@ -62,8 +76,7 @@ app.post(`/${serviceName}/project/:projectId/files`, async ({ req, params: { pro
   if (!verifyToken(token, projectId)) { throw new UnauthorizedError(); }
   
   // 2. fetch project from project id, or fail
-  const project = await doc.get({ TableName: "Projects", Key: { id: projectId }});
-  if (!project.Item) { throw new NotFoundError(); }
+  const project = await getProjectFromDb(doc, projectId);
 
   // 3. write file to s3
   const fileId = uuidv4();
@@ -82,8 +95,7 @@ app.post(`/${serviceName}/project/:projectId/files`, async ({ req, params: { pro
   if (!isUploadCompleted(result)) { throw new InternalServerError(); }
 
   // 4. add file to project
-  const item = project.Item as Project;
-  item.files.push({
+  project.files.push({
     id: fileId,
     filename, // do we need to clean filename?
     url: result.Location ?? "",
@@ -91,28 +103,18 @@ app.post(`/${serviceName}/project/:projectId/files`, async ({ req, params: { pro
   });
 
   // 5. update project
-  await doc.put({ TableName: "Projects", Item: item});
+  await doc.put({ TableName: "Projects", Item: project});
   
   // things to save (filename, file contents (on s3), file reference to s3, mime-type?)
   return { ok: true };
 });
 
-function findFile(fileId: string, project: Project): ProjectFile | null {
-  for (const file of project.files) {
-    if (file.id === fileId) { return file };
-  }
-
-  return null;
-}
-
 app.get(`/${serviceName}/project/:projectId/files/:fileId`, async ({ res, params: { projectId, fileId }}) => {
   // 1. get project
-  const project = await doc.get({ TableName: "Projects", Key: { id: projectId }});
-  if (!project.Item) { throw new NotFoundError(); }
-  const item = project.Item as Project;
+  const project = await getProjectFromDb(doc, projectId);
 
   // 2. get file from project
-  const file = findFile(fileId, item);
+  const file = findFile(fileId, project);
   if (!file) { throw new NotFoundError(); }
 
   // 3. return file contents
