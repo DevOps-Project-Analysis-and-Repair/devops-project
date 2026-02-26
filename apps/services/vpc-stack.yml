@@ -189,4 +189,4 @@ Outputs:
     Description: Security group with no ingress rule
     Value: !Ref NoIngressSecurityGroup
     Export:
-      Name: !Sub "$NoIngressSecurityGroup"
+      Name: !Sub "NoIngressSecurityGroup"
