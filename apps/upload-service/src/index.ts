@@ -128,6 +128,5 @@ app.get(`/${serviceName}/project/:projectId/files/:fileId`, async ({ res, params
 });
 
 export const handler = async (event: unknown, context: Context) => {
-  // return app.resolve(event, context);
-  return streamify(app);
+  return app.resolve(event, context);
 };
