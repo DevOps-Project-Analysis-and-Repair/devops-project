@@ -88,7 +88,7 @@ Resources:
       VpcConfig:
         SubnetIds:
           - !ImportValue PrivateSubnet
-        SecurityGroupsIds:
+        SecurityGroupIds:
           - !ImportValue NoIngressSecurityGroup
       Environment:
         Variables:
