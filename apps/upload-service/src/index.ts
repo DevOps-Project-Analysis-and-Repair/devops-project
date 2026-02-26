@@ -47,13 +47,15 @@ app.get(`/${serviceName}/project`, async () => {
   };
 
   let projects: Project[] = [];
+  logger.debug('pre-scan');
 
   for await (const page of paginateScan(paginationConfig, tableConfig)) {
-    // projects.concat(page.Items as Project[]);
-    console.log(page.Items);
-
-    console.log(Object.entries(page.Items ?? {}));
+    logger.debug('in scan');
+    logger.debug(page.Items?.toString() ?? "");
+    // console.log(Object.entries(page.Items ?? {}));
   }
+
+  logger.debug('post-scan');
 
   // projects.sort((a, b) => a.createdAt - b.createdAt);
 
@@ -142,7 +144,7 @@ app.get(`/${serviceName}/project/:projectId/files/:fileId`, async ({ res, params
   if (!file) { throw new NotFoundError(); }
 
   // 3. return file contents
-  const result = await s3client.send(new GetObjectCommand({ Bucket: "uploadservicefiles", Key: file.id }));
+  const result = await s3client.send(new GetObjectCommand({ Bucket: FILES_BUCKET, Key: file.id }));
   
   res.headers.set('Content-Type', file.mimetype || 'text/plain');
   res.headers.set('Content-Disposition', `inline; filename="${file.filename}"`);
