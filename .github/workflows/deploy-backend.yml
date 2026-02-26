@@ -72,7 +72,7 @@ jobs:
   #     #       --capabilities CAPABILITY_IAM
 
   deploy_api_gateway_stack:
-    needs: [deploy_lambda_stacks]
+    # needs: [deploy_lambda_stacks]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
