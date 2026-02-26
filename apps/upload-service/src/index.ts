@@ -3,7 +3,7 @@ import { BadRequestError, InternalServerError, NotFoundError, Router, Unauthoriz
 import { Logger } from '@aws-lambda-powertools/logger';
 import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { GetCommand, DynamoDBDocument } from "@aws-sdk/lib-dynamodb";
+import { GetCommand, ScanCommand, DynamoDBDocument, paginateScan } from "@aws-sdk/lib-dynamodb";
 import { Upload } from "@aws-sdk/lib-storage";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -19,6 +19,8 @@ const app = new Router({ logger });
 const s3client = new S3Client({});
 const db = new DynamoDBClient({});
 const doc = DynamoDBDocument.from(db);
+
+const FILES_BUCKET = "uploadservicefiles";
 
 async function getProjectFromDb(doc: DynamoDBDocument, projectId: string): Promise<Project> {
   const cmd = new GetCommand({ TableName: "Projects", Key: { id: projectId }});
@@ -37,6 +39,24 @@ function findFile(fileId: string, project: Project): ProjectFile | null {
   return null;
 }
 
+app.get(`/${serviceName}/project`, async () => {
+  const paginationConfig = { client: doc };
+  const tableConfig = {
+    TableName: FILES_BUCKET,
+    Limit: 100
+  };
+
+  let projects: Project[] = [];
+
+  for await (const page of paginateScan(paginationConfig, tableConfig)) {
+    projects.concat(page.Items as Project[]);
+  }
+
+  projects.sort((a, b) => a.createdAt - b.createdAt);
+
+  return projects;
+});
+
 app.post(`/${serviceName}/project`, async () => {
   // 1. create new project in db
   const projectId: string = uuidv4();
@@ -44,7 +64,8 @@ app.post(`/${serviceName}/project`, async () => {
   const item: Project = {
     id: projectId,
     name: `Upload ${datestring()}`,
-    files: []
+    files: [],
+    createdAt: Date.now(),
   };
 
   await doc.put({
@@ -84,7 +105,7 @@ app.post(`/${serviceName}/project/:projectId/files`, async ({ req, params: { pro
   const upload = new Upload({
     client: s3client,
     params: {
-      Bucket: "uploadservicefiles",
+      Bucket: FILES_BUCKET,
       Key: fileId,
       Body: await req.bytes()
     }

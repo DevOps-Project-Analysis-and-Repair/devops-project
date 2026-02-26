@@ -9,4 +9,5 @@ export type Project = {
     id: string,
     name: string,
     files: ProjectFile[];
+    createdAt: number,
 };
