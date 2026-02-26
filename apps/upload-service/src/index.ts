@@ -1,13 +1,13 @@
 import { Context } from 'aws-lambda';
-import { BadRequestError, InternalServerError, NotFoundError, Router, UnauthorizedError } from '@aws-lambda-powertools/event-handler/http';
+import { BadRequestError, InternalServerError, NotFoundError, Router, streamify, UnauthorizedError } from '@aws-lambda-powertools/event-handler/http';
 import { Logger } from '@aws-lambda-powertools/logger';
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { GetCommand, DynamoDBDocument } from "@aws-sdk/lib-dynamodb";
 import { Upload } from "@aws-sdk/lib-storage";
 import { v4 as uuidv4 } from 'uuid';
 
-import { Project } from './types';
+import { Project, ProjectFile } from './types';
 import { createToken, verifyToken } from './auth';
 import { datestring, isUploadCompleted } from './util';
 
@@ -97,14 +97,37 @@ app.post(`/${serviceName}/project/:projectId/files`, async ({ req, params: { pro
   return { ok: true };
 });
 
-app.get(`/${serviceName}/project/:projectId/files/:fileId`, async ({ params: { projectId, fileId }}) => {
+function findFile(fileId: string, project: Project): ProjectFile | null {
+  for (const file of project.files) {
+    if (file.id === fileId) { return file };
+  }
+
+  return null;
+}
+
+app.get(`/${serviceName}/project/:projectId/files/:fileId`, async ({ res, params: { projectId, fileId }}) => {
   // 1. get project
+  const project = await doc.get({ TableName: "Projects", Key: { id: projectId }});
+  if (!project.Item) { throw new NotFoundError(); }
+  const item = project.Item as Project;
+
   // 2. get file from project
+  const file = findFile(fileId, item);
+  if (!file) { throw new NotFoundError(); }
+
   // 3. return file contents
+  const result = await s3client.send(new GetObjectCommand({ Bucket: "uploadservicefiles", Key: file.id }));
   
-  return { ok: true };
+  res.headers.set('Content-Type', file.mimetype || 'text/plain');
+  res.headers.set('Content-Disposition', 'inline');
+  res.headers.set('Filename', file.filename);
+  
+  const stream = result.Body?.transformToWebStream();
+  
+  return stream;
 });
 
 export const handler = async (event: unknown, context: Context) => {
-  return app.resolve(event, context);
+  // return app.resolve(event, context);
+  return streamify(app);
 };
