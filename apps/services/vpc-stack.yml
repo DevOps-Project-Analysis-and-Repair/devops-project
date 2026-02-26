@@ -166,7 +166,6 @@ Resources:
       RouteTableIds:
         - !Ref PrivateRouteTable
 
-
 Outputs:
   VPC:
     Description: A reference to the created VPC
