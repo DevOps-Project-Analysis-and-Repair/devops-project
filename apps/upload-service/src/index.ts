@@ -1,9 +1,9 @@
 import { Context } from 'aws-lambda';
 import { BadRequestError, InternalServerError, NotFoundError, Router, UnauthorizedError } from '@aws-lambda-powertools/event-handler/http';
 import { Logger } from '@aws-lambda-powertools/logger';
-import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { GetCommand, ScanCommand, DynamoDBDocument, paginateScan } from "@aws-sdk/lib-dynamodb";
+import { GetCommand, DynamoDBDocument, paginateScan } from "@aws-sdk/lib-dynamodb";
 import { Upload } from "@aws-sdk/lib-storage";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -20,10 +20,11 @@ const s3client = new S3Client({});
 const db = new DynamoDBClient({});
 const doc = DynamoDBDocument.from(db);
 
+const TABLE_PROJECTS = "Projects";
 const FILES_BUCKET = "uploadservicefiles";
 
 async function getProjectFromDb(doc: DynamoDBDocument, projectId: string): Promise<Project> {
-  const cmd = new GetCommand({ TableName: "Projects", Key: { id: projectId }});
+  const cmd = new GetCommand({ TableName: TABLE_PROJECTS, Key: { id: projectId }});
   const res = await doc.send(cmd);
 
   if (!res.Item) { throw new NotFoundError(); }
@@ -42,20 +43,15 @@ function findFile(fileId: string, project: Project): ProjectFile | null {
 app.get(`/${serviceName}/project`, async () => {
   const paginationConfig = { client: doc };
   const tableConfig = {
-    TableName: FILES_BUCKET,
+    TableName: TABLE_PROJECTS,
     Limit: 100
   };
 
   let projects: Project[] = [];
-  logger.debug('pre-scan');
 
   for await (const page of paginateScan(paginationConfig, tableConfig)) {
-    logger.debug('in scan');
-    logger.debug(page.Items?.toString() ?? "");
-    // console.log(Object.entries(page.Items ?? {}));
+    console.log(Object.entries(page.Items ?? {}));
   }
-
-  logger.debug('post-scan');
 
   // projects.sort((a, b) => a.createdAt - b.createdAt);
 
@@ -74,7 +70,7 @@ app.post(`/${serviceName}/project`, async () => {
   };
 
   await doc.put({
-    TableName: "Projects",
+    TableName: TABLE_PROJECTS,
     Item: item
   });
 
@@ -129,7 +125,7 @@ app.post(`/${serviceName}/project/:projectId/files`, async ({ req, params: { pro
   });
 
   // 5. update project
-  await doc.put({ TableName: "Projects", Item: project});
+  await doc.put({ TableName: TABLE_PROJECTS, Item: project});
   
   // things to save (filename, file contents (on s3), file reference to s3, mime-type?)
   return project;
