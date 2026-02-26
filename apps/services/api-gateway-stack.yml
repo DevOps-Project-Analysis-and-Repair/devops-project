@@ -7,18 +7,6 @@ Parameters:
     Description: An environment name that is prefixed to resource names
     Type: String
 
-  # UploadLambdaFunctionArn:
-  #   Description: The ARN of the Lambda function for the /upload endpoint
-  #   Type: String
-
-  # AnalyzeLambdaFunctionArn:
-  #   Description: The ARN of the Lambda function for the /analyze endpoint
-  #   Type: String
-
-  # FixLambdaFunctionArn:
-  #   Description: The ARN of the Lambda function for the /fix endpoint
-  #   Type: String
-
 Resources:
   # HTTP API Gateway
   HttpApi:
@@ -28,13 +16,13 @@ Resources:
       ProtocolType: HTTP
 
   # Integrations for each Lambda
-  # UploadIntegration:
-  #   Type: AWS::ApiGatewayV2::Integration
-  #   Properties:
-  #     ApiId: !Ref HttpApi
-  #     IntegrationType: AWS_PROXY
-  #     IntegrationUri: !Ref UploadLambdaFunctionArn
-  #     PayloadFormatVersion: "2.0"
+  UploadIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref HttpApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !ImportValue Upload-FunctionArn
+      PayloadFormatVersion: "2.0"
 
   # AnalyzeIntegration:
   #   Type: AWS::ApiGatewayV2::Integration
@@ -53,19 +41,19 @@ Resources:
   #     PayloadFormatVersion: "2.0"
 
   # Routes for each endpoint
-  # UploadRootRoute:
-  #   Type: AWS::ApiGatewayV2::Route
-  #   Properties:
-  #     ApiId: !Ref HttpApi
-  #     RouteKey: "ANY /upload"
-  #     Target: !Sub integrations/${UploadIntegration}
+  UploadRootRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: "ANY /upload"
+      Target: !Sub integrations/${UploadIntegration}
 
-  # UploadProxyRoute:
-  #   Type: AWS::ApiGatewayV2::Route
-  #   Properties:
-  #     ApiId: !Ref HttpApi
-  #     RouteKey: "ANY /upload/{proxy+}"
-  #     Target: !Sub integrations/${UploadIntegration}
+  UploadProxyRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: "ANY /upload/{proxy+}"
+      Target: !Sub integrations/${UploadIntegration}
 
   # AnalyzeRootRoute:
   #   Type: AWS::ApiGatewayV2::Route
@@ -104,13 +92,13 @@ Resources:
       AutoDeploy: true
 
   # Permissions for API Gateway to invoke each Lambda
-  # UploadLambdaInvokePermission:
-  #   Type: AWS::Lambda::Permission
-  #   Properties:
-  #     FunctionName: !Ref UploadLambdaFunctionArn
-  #     Action: lambda:InvokeFunction
-  #     Principal: apigateway.amazonaws.com
-  #     SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*/upload
+  UploadLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Import Upload-FunctionArn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*/upload
 
   # AnalyzeLambdaInvokePermission:
   #   Type: AWS::Lambda::Permission
@@ -132,9 +120,9 @@ Outputs:
   ApiEndpoint:
     Description: The HTTP API Gateway base URL
     Value: !Sub https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/api
-  # UploadEndpoint:
-  #   Description: The /upload endpoint URL
-  #   Value: !Sub https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/api/upload
+  UploadEndpoint:
+    Description: The /upload endpoint URL
+    Value: !Sub https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/api/upload
   # AnalyzeEndpoint:
   #   Description: The /analyze endpoint URL
   #   Value: !Sub https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/api/analyze
