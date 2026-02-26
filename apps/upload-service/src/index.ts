@@ -119,8 +119,7 @@ app.get(`/${serviceName}/project/:projectId/files/:fileId`, async ({ res, params
   const result = await s3client.send(new GetObjectCommand({ Bucket: "uploadservicefiles", Key: file.id }));
   
   res.headers.set('Content-Type', file.mimetype || 'text/plain');
-  res.headers.set('Content-Disposition', 'inline');
-  res.headers.set('Filename', file.filename);
+  res.headers.set('Content-Disposition', `inline; filename="${file.filename}"`);
   
   const stream = result.Body?.transformToWebStream();
   
