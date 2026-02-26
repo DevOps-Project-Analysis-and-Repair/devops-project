@@ -106,7 +106,7 @@ app.post(`/${serviceName}/project/:projectId/files`, async ({ req, params: { pro
   await doc.put({ TableName: "Projects", Item: project});
   
   // things to save (filename, file contents (on s3), file reference to s3, mime-type?)
-  return { ok: true };
+  return project;
 });
 
 app.get(`/${serviceName}/project/:projectId/files/:fileId`, async ({ res, params: { projectId, fileId }}) => {
