@@ -48,9 +48,12 @@ app.get(`/${serviceName}/project`, async () => {
 
   let projects: Project[] = [];
 
-  // for await (const page of paginateScan(paginationConfig, tableConfig)) {
-  //   projects.concat(page.Items as Project[]);
-  // }
+  for await (const page of paginateScan(paginationConfig, tableConfig)) {
+    // projects.concat(page.Items as Project[]);
+    console.log(page.Items);
+
+    console.log(Object.entries(page.Items ?? {}));
+  }
 
   // projects.sort((a, b) => a.createdAt - b.createdAt);
 
