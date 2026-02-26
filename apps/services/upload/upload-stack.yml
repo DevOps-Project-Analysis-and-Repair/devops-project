@@ -37,6 +37,8 @@ Resources:
             Principal:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
       Policies:
         - PolicyName: LambdaBasicExecution
           PolicyDocument:
@@ -86,10 +88,10 @@ Resources:
       Timeout: 30
       MemorySize: 128
       VpcConfig:
-        SubnetIds:
-          - !ImportValue PrivateSubnet
         SecurityGroupIds:
           - !ImportValue NoIngressSecurityGroup
+        SubnetIds:
+          - !ImportValue PrivateSubnet
       Environment:
         Variables:
           S3_BUCKET_NAME: !Ref S3Bucket
