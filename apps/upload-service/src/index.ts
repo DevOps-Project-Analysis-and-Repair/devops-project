@@ -1,14 +1,15 @@
 import { Context } from 'aws-lambda';
-import { BadRequestError, NotFoundError, Router, UnauthorizedError } from '@aws-lambda-powertools/event-handler/http';
+import { BadRequestError, InternalServerError, NotFoundError, Router, UnauthorizedError } from '@aws-lambda-powertools/event-handler/http';
 import { Logger } from '@aws-lambda-powertools/logger';
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { PutCommand, DynamoDBDocumentClient, GetCommand, DynamoDBDocument } from "@aws-sdk/lib-dynamodb";
+import { GetCommand, DynamoDBDocument } from "@aws-sdk/lib-dynamodb";
+import { Upload } from "@aws-sdk/lib-storage";
 import { v4 as uuidv4 } from 'uuid';
 
 import { Project } from './types';
 import { createToken, verifyToken } from './auth';
-import { datestring } from './util';
+import { datestring, isUploadCompleted } from './util';
 
 const serviceName = 'upload-service';
 
@@ -67,21 +68,25 @@ app.post(`/${serviceName}/project/:projectId/files`, async ({ req, params: { pro
   // 3. write file to s3
   const fileId = uuidv4();
 
-  const command = new PutObjectCommand({
-    Bucket: "uploadservicefiles",
-    Key: fileId,
-    Body: await req.bytes()
-  });
+  const upload = new Upload({
+    client: s3client,
+    params: {
+      Bucket: "uploadservicefiles",
+      Key: fileId,
+      Body: await req.bytes()
+    }
+  })
 
-  const s3response = await s3client.send(command);
-  console.log(s3response);
+  const result = await upload.done();
+
+  if (!isUploadCompleted(result)) { throw new InternalServerError(); }
 
   // 4. add file to project
   const item = project.Item as Project;
   item.files.push({
     id: fileId,
     filename, // do we need to clean filename?
-    url: "https://example.com",
+    url: result.Location ?? "",
     mimetype
   });
 

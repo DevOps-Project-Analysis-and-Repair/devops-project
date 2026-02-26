@@ -1,3 +1,5 @@
+import { CompleteMultipartUploadCommandOutput, AbortMultipartUploadCommandOutput } from "@aws-sdk/client-s3";
+
 export function datestring() {
   const d = new Date();
 
@@ -9,4 +11,8 @@ export function datestring() {
   const ss = String(d.getSeconds()).padStart(2, '0');
 
   return `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
+}
+
+export function isUploadCompleted(output: CompleteMultipartUploadCommandOutput | AbortMultipartUploadCommandOutput): output is CompleteMultipartUploadCommandOutput {
+  return (output as CompleteMultipartUploadCommandOutput).ETag !== undefined;
 }
