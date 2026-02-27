@@ -65,47 +65,33 @@ Resources:
   #     CredentialsArn: !GetAtt ApiGatewayExecutionRole.Arn
 
   # Routes for each endpoint
-  UploadRootRoute:
+  UploadProjectsRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
       ApiId: !Ref HttpApi
-      RouteKey: "ANY /upload"
+      RouteKey: "GET /upload/projects"
       Target: !Sub integrations/${UploadIntegration}
 
-  UploadProxyRoute:
+  UploadProjectIdRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
       ApiId: !Ref HttpApi
-      RouteKey: "ANY /upload/{proxy+}"
+      RouteKey: "GET /upload/projects/{projectId}"
       Target: !Sub integrations/${UploadIntegration}
 
-  # AnalyzeRootRoute:
-  #   Type: AWS::ApiGatewayV2::Route
-  #   Properties:
-  #     ApiId: !Ref HttpApi
-  #     RouteKey: "ANY /analyze"
-  #     Target: !Sub integrations/${AnalyzeIntegration}
+  UploadProjectFilesRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: "POST /upload/projects/{projectId}/files"
+      Target: !Sub integrations/${UploadIntegration}
 
-  # AnalyzeProxyRoute:
-  #   Type: AWS::ApiGatewayV2::Route
-  #   Properties:
-  #     ApiId: !Ref HttpApi
-  #     RouteKey: "ANY /analyze/{proxy+}"
-  #     Target: !Sub integrations/${AnalyzeIntegration}
-
-  # FixRootRoute:
-  #   Type: AWS::ApiGatewayV2::Route
-  #   Properties:
-  #     ApiId: !Ref HttpApi
-  #     RouteKey: "ANY /fix"
-  #     Target: !Sub integrations/${FixIntegration}
-
-  # FixProxyRoute:
-  #   Type: AWS::ApiGatewayV2::Route
-  #   Properties:
-  #     ApiId: !Ref HttpApi
-  #     RouteKey: "ANY /fix/{proxy+}"
-  #     Target: !Sub integrations/${FixIntegration}
+  UploadProjectFileIdRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: "GET /upload/projects/{projectId}/files/{fileId}"
+      Target: !Sub integrations/${UploadIntegration}
 
   # Stage
   Stage:
