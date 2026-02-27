@@ -122,7 +122,7 @@ Resources:
       FunctionName: !ImportValue Upload-FunctionArn
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*/upload
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*/upload*
 
   # AnalyzeLambdaInvokePermission:
   #   Type: AWS::Lambda::Permission
@@ -130,7 +130,7 @@ Resources:
   #     FunctionName: !Ref AnalyzeLambdaFunctionArn
   #     Action: lambda:InvokeFunction
   #     Principal: apigateway.amazonaws.com
-  #     SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*/analyze
+  #     SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*/analyze*
 
   # FixLambdaInvokePermission:
   #   Type: AWS::Lambda::Permission
@@ -138,7 +138,7 @@ Resources:
   #     FunctionName: !Ref FixLambdaFunctionArn
   #     Action: lambda:InvokeFunction
   #     Principal: apigateway.amazonaws.com
-  #     SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*/fix
+  #     SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*/fix*
 
 Outputs:
   ApiEndpoint:
