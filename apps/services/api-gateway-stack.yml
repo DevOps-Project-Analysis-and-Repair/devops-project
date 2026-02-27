@@ -92,21 +92,13 @@ Resources:
       AutoDeploy: true
 
   # Permissions for API Gateway to invoke each Lambda
-  UploadRootLambdaInvokePermission:
+  UploadLambdaInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !ImportValue Upload-FunctionArn
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*/upload
-
-  UploadProxyLambdaInvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !ImportValue Upload-FunctionArn
-      Action: lambda:InvokeFunction
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*/upload/{proxy+}
 
   # AnalyzeLambdaInvokePermission:
   #   Type: AWS::Lambda::Permission
