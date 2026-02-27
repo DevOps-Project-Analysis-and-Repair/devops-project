@@ -15,6 +15,27 @@ Resources:
       Name: !Sub ${EnvironmentName}-http-api
       ProtocolType: HTTP
 
+  # Execution Role
+  ApiGatewayExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: InvokeLambda
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource:
+                  - !ImportValue Upload-FunctionArn
+
   # Integrations for each Lambda
   UploadIntegration:
     Type: AWS::ApiGatewayV2::Integration
