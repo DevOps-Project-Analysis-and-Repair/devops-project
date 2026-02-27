@@ -92,14 +92,21 @@ Resources:
       AutoDeploy: true
 
   # Permissions for API Gateway to invoke each Lambda
-  UploadLambdaInvokePermission:
+  UploadRootLambdaInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !ImportValue Upload-FunctionArn
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/api/ANY/upload
 
+  UploadProxyLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !ImportValue Upload-FunctionArn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/api/ANY/upload/{proxy+}
 
   # AnalyzeLambdaInvokePermission:
   #   Type: AWS::Lambda::Permission
@@ -107,7 +114,7 @@ Resources:
   #     FunctionName: !Ref AnalyzeLambdaFunctionArn
   #     Action: lambda:InvokeFunction
   #     Principal: apigateway.amazonaws.com
-  #     SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*
+  #     SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*/analyze
 
   # FixLambdaInvokePermission:
   #   Type: AWS::Lambda::Permission
@@ -115,7 +122,7 @@ Resources:
   #     FunctionName: !Ref FixLambdaFunctionArn
   #     Action: lambda:InvokeFunction
   #     Principal: apigateway.amazonaws.com
-  #     SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*
+  #     SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*/fix
 
 Outputs:
   ApiEndpoint:
