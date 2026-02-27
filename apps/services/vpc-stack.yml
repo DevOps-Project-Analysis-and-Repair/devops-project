@@ -134,7 +134,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Allow outbound traffic
-      VpcId: !Ref MyVPC
+      VpcId: !Ref VPC
       SecurityGroupEgress:
         - IpProtocol: -1
           CidrIp: 0.0.0.0/0
