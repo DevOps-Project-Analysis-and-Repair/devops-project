@@ -98,7 +98,7 @@ Resources:
       FunctionName: !ImportValue Upload-FunctionArn
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/api/ANY/upload
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/api/*/upload
 
   UploadProxyLambdaInvokePermission:
     Type: AWS::Lambda::Permission
@@ -106,7 +106,7 @@ Resources:
       FunctionName: !ImportValue Upload-FunctionArn
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/api/ANY/upload/{proxy+}
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/api/*/upload/{proxy+}
 
   # AnalyzeLambdaInvokePermission:
   #   Type: AWS::Lambda::Permission
