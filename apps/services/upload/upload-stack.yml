@@ -89,7 +89,7 @@ Resources:
       MemorySize: 128
       VpcConfig:
         SecurityGroupIds:
-          - !ImportValue NoIngressSecurityGroup
+          - !ImportValue LambdaSecurityGroup
         SubnetIds:
           - !ImportValue PrivateSubnet
       Environment:

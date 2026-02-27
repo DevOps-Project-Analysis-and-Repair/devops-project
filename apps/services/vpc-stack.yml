@@ -130,17 +130,14 @@ Resources:
       SubnetId: !Ref PrivateSubnet
 
   # Security Groups
-  NoIngressSecurityGroup:
+  LambdaSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName: "no-ingress-sg"
-      GroupDescription: "Security group with minimal ingress for VPC endpoint"
-      VpcId: !Ref VPC
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
-          CidrIp: !Ref VpcCIDR
+      GroupDescription: Allow outbound traffic
+      VpcId: !Ref MyVPC
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
 
   # VPC Endpoints
   LambdaVpcEndpoint:
@@ -153,7 +150,7 @@ Resources:
       SubnetIds:
         - !Ref PrivateSubnet
       SecurityGroupIds:
-        - !Ref NoIngressSecurityGroup
+        - !Ref LambdaSecurityGroup
         
   S3GatewayEndpoint:
     Type: AWS::EC2::VPCEndpoint
@@ -190,8 +187,8 @@ Outputs:
     Export:
       Name: !Sub "PrivateSubnet"
 
-  NoIngressSecurityGroup:
-    Description: Security group with no ingress rule
-    Value: !Ref NoIngressSecurityGroup
+  LambdaSecurityGroup:
+    Description: Security group
+    Value: !Ref LambdaSecurityGroup
     Export:
-      Name: !Sub "NoIngressSecurityGroup"
+      Name: !Sub "LambdaSecurityGroup"
