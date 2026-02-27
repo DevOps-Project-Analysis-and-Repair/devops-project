@@ -44,6 +44,7 @@ Resources:
       IntegrationType: AWS_PROXY
       IntegrationUri: !ImportValue Upload-FunctionArn
       PayloadFormatVersion: "2.0"
+      CredentialsArn: !GetAtt ApiGatewayExecutionRole.Arn
 
   # AnalyzeIntegration:
   #   Type: AWS::ApiGatewayV2::Integration
@@ -52,6 +53,7 @@ Resources:
   #     IntegrationType: AWS_PROXY
   #     IntegrationUri: !Ref AnalyzeLambdaFunctionArn
   #     PayloadFormatVersion: "2.0"
+  #     CredentialsArn: !GetAtt ApiGatewayExecutionRole.Arn
 
   # FixIntegration:
   #   Type: AWS::ApiGatewayV2::Integration
@@ -60,6 +62,7 @@ Resources:
   #     IntegrationType: AWS_PROXY
   #     IntegrationUri: !Ref FixLambdaFunctionArn
   #     PayloadFormatVersion: "2.0"
+  #     CredentialsArn: !GetAtt ApiGatewayExecutionRole.Arn
 
   # Routes for each endpoint
   UploadRootRoute:
