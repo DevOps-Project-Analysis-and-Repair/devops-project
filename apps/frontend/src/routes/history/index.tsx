@@ -8,6 +8,7 @@ import {
   TableRow,
 } from "@mui/material";
 import Paper from "@mui/material/Paper";
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Container } from "../../components/ui/Container";
 export const Route = createFileRoute("/history/")({
@@ -15,6 +16,15 @@ export const Route = createFileRoute("/history/")({
 });
 
 function RouteComponent() {
+  const UPLOAD_API_URL =
+    "https://dhfokg9wbk.execute-api.eu-west-1.amazonaws.com/api/upload";
+
+  const { data, isPending, error } = useQuery({
+    queryKey: ["projects"],
+    queryFn: () => fetch(`${UPLOAD_API_URL}/projects`).then((r) => r.json()),
+  });
+
+  console.log(data);
   const rows: string[] = ["123"];
   return (
     <Container>
@@ -43,7 +53,9 @@ function RouteComponent() {
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
                 <TableCell component="th" scope="row">
-                  <Link to={`/project/$id`} params={{ id: row }}>{row}</Link>
+                  <Link to={`/project/$id`} params={{ id: row }}>
+                    {row}
+                  </Link>
                 </TableCell>
               </TableRow>
             ))}
