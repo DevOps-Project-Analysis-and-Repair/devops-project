@@ -130,12 +130,14 @@ Resources:
       SubnetId: !Ref PrivateSubnet
 
   # Security Groups
-  NoIngressSecurityGroup:
+  LambdaSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName: "no-ingress-sg"
-      GroupDescription: "Security group with no ingress rule"
+      GroupDescription: Allow outbound traffic
       VpcId: !Ref VPC
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
 
   # VPC Endpoints
   LambdaVpcEndpoint:
@@ -148,21 +150,45 @@ Resources:
       SubnetIds:
         - !Ref PrivateSubnet
       SecurityGroupIds:
-        - !Ref NoIngressSecurityGroup
+        - !Ref LambdaSecurityGroup
+        
+  S3GatewayEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId: !Ref VPC
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.s3
+      RouteTableIds:
+        - !Ref PrivateRouteTable
+
+  DynamoDBGatewayEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId: !Ref VPC
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.dynamodb
+      RouteTableIds:
+        - !Ref PrivateRouteTable
 
 Outputs:
   VPC:
     Description: A reference to the created VPC
     Value: !Ref VPC
+    Export:
+      Name: !Sub "VPC"
 
   PublicSubnet:
     Description: A reference to the public subnet
     Value: !Ref PublicSubnet
+    Export:
+      Name: !Sub "PublicSubnset"
 
   PrivateSubnet:
     Description: A reference to the private subnet
     Value: !Ref PrivateSubnet
+    Export:
+      Name: !Sub "PrivateSubnet"
 
-  NoIngressSecurityGroup:
-    Description: Security group with no ingress rule
-    Value: !Ref NoIngressSecurityGroup
+  LambdaSecurityGroup:
+    Description: Security group
+    Value: !Ref LambdaSecurityGroup
+    Export:
+      Name: !Sub "LambdaSecurityGroup"

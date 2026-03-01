@@ -11,7 +11,7 @@ import { Project, ProjectFile } from './types';
 import { createToken, verifyToken } from './auth';
 import { datestring, isUploadCompleted } from './util';
 
-const serviceName = 'upload-service';
+const serviceName = 'upload';
 
 const logger = new Logger({ serviceName });
 const app = new Router({ logger });
@@ -20,8 +20,8 @@ const s3client = new S3Client({});
 const db = new DynamoDBClient({});
 const doc = DynamoDBDocument.from(db);
 
-const TABLE_PROJECTS = "Projects";
-const FILES_BUCKET = "uploadservicefiles";
+const TABLE_PROJECTS = "Projects-upload-stack";
+const FILES_BUCKET = "files-upload-stack";
 
 async function getProjectFromDb(doc: DynamoDBDocument, projectId: string): Promise<Project> {
   const cmd = new GetCommand({ TableName: TABLE_PROJECTS, Key: { id: projectId }});
