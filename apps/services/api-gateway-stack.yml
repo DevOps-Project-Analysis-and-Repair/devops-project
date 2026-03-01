@@ -20,7 +20,7 @@ Resources:
         AllowHeaders:
           - "*"
         MaxAge: 86400
-      
+
   # Execution Role
   ApiGatewayExecutionRole:
     Type: AWS::IAM::Role
@@ -43,16 +43,6 @@ Resources:
                   - !ImportValue Upload-FunctionArn
 
   # Integrations
-  OptionsIntegration:
-    Type: AWS::ApiGatewayV2::Integration
-    Properties:
-      ApiId: !Ref HttpApi
-      IntegrationType: MOCK
-      RequestTemplates:
-        "$default": '{"statusCode": 200}'
-      IntegrationMethod: OPTIONS
-      PassthroughBehavior: WHEN_NO_MATCH
-
   UploadIntegration:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
@@ -69,27 +59,13 @@ Resources:
       ApiId: !Ref HttpApi
       RouteKey: 'ANY /upload'
       Target: !Join ["/", ["integrations", !Ref UploadIntegration]]
-      
+
   UploadProxyRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
       ApiId: !Ref HttpApi
       RouteKey: 'ANY /upload/{proxy+}'
       Target: !Join ["/", ["integrations", !Ref UploadIntegration]]
-
-  UploadRootOptionsRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref HttpApi
-      RouteKey: 'OPTIONS /upload'
-      Target: !Join ["/", ["integrations", !Ref OptionsIntegration]]
-
-  UploadProxyOptionsRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref HttpApi
-      RouteKey: 'OPTIONS /upload/{proxy+}'
-      Target: !Join ["/", ["integrations", !Ref OptionsIntegration]]
 
   # Stage
   Stage:
