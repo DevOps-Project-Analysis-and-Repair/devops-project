@@ -15,12 +15,10 @@ Resources:
       Name: !Sub ${EnvironmentName}-http-api
       ProtocolType: HTTP
       CorsConfiguration:
-        AllowOrigins:
-          - "'*'"
         AllowMethods:
-          - "'*'"
+          - "*"
         AllowHeaders:
-          - "'*'"
+          - "*"
         MaxAge: 86400
       
   # Execution Role
