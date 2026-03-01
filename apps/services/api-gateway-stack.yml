@@ -15,7 +15,8 @@ Resources:
       Name: !Sub ${EnvironmentName}-http-api
       ProtocolType: HTTP
       CorsConfiguration:
-        AllowOrigins: [] 
+        AllowOrigins:
+          - "*"
         AllowMethods:
           - "*"
         AllowHeaders:
