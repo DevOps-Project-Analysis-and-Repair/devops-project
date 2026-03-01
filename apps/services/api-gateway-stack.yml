@@ -121,13 +121,13 @@ Resources:
 Outputs:
   ApiEndpoint:
     Description: The HTTP API Gateway base URL
-    Value: !Sub https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/api
+    Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com"
   UploadEndpoint:
     Description: The /upload endpoint URL
-    Value: !Sub https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/api/upload
+    Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/upload"
   # AnalyzeEndpoint:
   #   Description: The /analyze endpoint URL
-  #   Value: !Sub https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/api/analyze
+  #   Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/analyze"
   # FixEndpoint:
   #   Description: The /fix endpoint URL
-  #   Value: !Sub https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/api/fix
+  #   Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazons.com/fix"
