@@ -68,7 +68,7 @@ Resources:
   UploadRootRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
-      ApiId: !Ref UploadHttpApi
+      ApiId: !Ref HttpApi
       RouteKey: 'ANY /upload'
       Target: !Join
         - /
@@ -78,7 +78,7 @@ Resources:
   UploadProxyRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
-      ApiId: !Ref UploadHttpApi
+      ApiId: !Ref HttpApi
       RouteKey: 'ANY /upload/{proxy+}'
       Target: !Join
         - /
