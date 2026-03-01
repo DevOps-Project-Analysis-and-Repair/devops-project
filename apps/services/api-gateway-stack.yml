@@ -65,40 +65,32 @@ Resources:
   #     CredentialsArn: !GetAtt ApiGatewayExecutionRole.Arn
 
   # Routes for each endpoint
-  UploadProjectsRoute:
+  UploadRootRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
-      ApiId: !Ref HttpApi
-      RouteKey: "GET /upload/projects"
-      Target: !Sub integrations/${UploadIntegration}
+      ApiId: !Ref UploadHttpApi
+      RouteKey: 'ANY /upload'
+      Target: !Join
+        - /
+        - - integrations
+          - !Ref UploadIntegration
 
-  UploadProjectIdRoute:
+  UploadProxyRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
-      ApiId: !Ref HttpApi
-      RouteKey: "GET /upload/projects/{projectId}"
-      Target: !Sub integrations/${UploadIntegration}
-
-  UploadProjectFilesRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref HttpApi
-      RouteKey: "POST /upload/projects/{projectId}/files"
-      Target: !Sub integrations/${UploadIntegration}
-
-  UploadProjectFileIdRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref HttpApi
-      RouteKey: "GET /upload/projects/{projectId}/files/{fileId}"
-      Target: !Sub integrations/${UploadIntegration}
+      ApiId: !Ref UploadHttpApi
+      RouteKey: 'ANY /upload/{proxy+}'
+      Target: !Join
+        - /
+        - - integrations
+          - !Ref UploadIntegration
 
   # Stage
   Stage:
     Type: AWS::ApiGatewayV2::Stage
     Properties:
       ApiId: !Ref HttpApi
-      StageName: api
+      StageName: '$default'
       AutoDeploy: true
 
   # Permissions for API Gateway to invoke each Lambda
@@ -108,7 +100,7 @@ Resources:
       FunctionName: !ImportValue Upload-FunctionArn
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*/upload*
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*'
 
   # AnalyzeLambdaInvokePermission:
   #   Type: AWS::Lambda::Permission
@@ -116,7 +108,7 @@ Resources:
   #     FunctionName: !Ref AnalyzeLambdaFunctionArn
   #     Action: lambda:InvokeFunction
   #     Principal: apigateway.amazonaws.com
-  #     SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*/analyze*
+  #     SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*'
 
   # FixLambdaInvokePermission:
   #   Type: AWS::Lambda::Permission
@@ -124,7 +116,7 @@ Resources:
   #     FunctionName: !Ref FixLambdaFunctionArn
   #     Action: lambda:InvokeFunction
   #     Principal: apigateway.amazonaws.com
-  #     SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*/fix*
+  #     SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*'
 
 Outputs:
   ApiEndpoint:
