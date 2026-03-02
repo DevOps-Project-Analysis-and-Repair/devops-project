@@ -9,23 +9,23 @@ import {
 } from "@mui/material";
 import Paper from "@mui/material/Paper";
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { Container } from "../../components/ui/Container";
+import type { Project } from "../../types";
 export const Route = createFileRoute("/history/")({
   component: RouteComponent,
 });
 
+
 function RouteComponent() {
   const UPLOAD_API_URL =
-    "https://dhfokg9wbk.execute-api.eu-west-1.amazonaws.com/api/upload";
+    "https://jjz7wxr827.execute-api.eu-west-1.amazonaws.com/upload";
 
-  const { data, isPending, error } = useQuery({
+  const { data: projects, isPending, error } = useQuery<Project[]>({
     queryKey: ["projects"],
     queryFn: () => fetch(`${UPLOAD_API_URL}/projects`).then((r) => r.json()),
   });
 
-  console.log(data);
-  const rows: string[] = ["123"];
   return (
     <Container>
       <Link to="/">
@@ -40,27 +40,30 @@ function RouteComponent() {
       </Link>
       <hr />
       <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="Project history">
-          <TableHead>
-            <TableRow>
-              <TableCell>Projects</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {rows.map((row) => (
-              <TableRow
-                key={row}
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-              >
-                <TableCell component="th" scope="row">
-                  <Link to={`/project/$id`} params={{ id: row }}>
-                    {row}
-                  </Link>
-                </TableCell>
+        {!isPending && !error &&  (
+          <Table sx={{ minWidth: 650 }} aria-label="Project history">
+            <TableHead>
+              <TableRow>
+                <TableCell>Projects</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHead>
+            <TableBody>
+              {projects.map((project) => (
+                <TableRow
+                  key={project.id}
+                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                >
+                  <TableCell component="th" scope="row">
+                    <Link to={`/project/$id`} params={{ id: project.id }}>
+                      {project.name}
+                    </Link>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+     
       </TableContainer>
     </Container>
   );
