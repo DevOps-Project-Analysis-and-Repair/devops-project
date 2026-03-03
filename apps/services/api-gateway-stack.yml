@@ -55,18 +55,60 @@ Resources:
       CredentialsArn: !GetAtt ApiGatewayExecutionRole.Arn
 
   # Routes for each endpoint
-  UploadRootRoute:
+  UploadGetRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
       ApiId: !Ref HttpApi
-      RouteKey: 'ANY /upload'
+      RouteKey: 'GET /upload'
       Target: !Join ["/", ["integrations", !Ref UploadIntegration]]
 
-  UploadProxyRoute:
+  UploadPutRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
       ApiId: !Ref HttpApi
-      RouteKey: 'ANY /upload/{proxy+}'
+      RouteKey: 'PUT /upload'
+      Target: !Join ["/", ["integrations", !Ref UploadIntegration]]
+
+  UploadPatchRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: 'PATCH /upload'
+      Target: !Join ["/", ["integrations", !Ref UploadIntegration]]
+
+  UploadPostRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: 'POST /upload'
+      Target: !Join ["/", ["integrations", !Ref UploadIntegration]]
+
+  UploadProxyGetRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: 'GET /upload/{proxy+}'
+      Target: !Join ["/", ["integrations", !Ref UploadIntegration]]
+
+  UploadProxyPutRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: 'PUT /upload/{proxy+}'
+      Target: !Join ["/", ["integrations", !Ref UploadIntegration]]
+
+  UploadProxyPatchRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: 'PATCH /upload/{proxy+}'
+      Target: !Join ["/", ["integrations", !Ref UploadIntegration]]
+
+  UploadProxyPostRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: 'POST /upload/{proxy+}'
       Target: !Join ["/", ["integrations", !Ref UploadIntegration]]
 
   # Stage
