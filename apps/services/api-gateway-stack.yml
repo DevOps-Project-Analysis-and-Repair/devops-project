@@ -43,6 +43,7 @@ Resources:
                 Action: lambda:InvokeFunction
                 Resource:
                   - !ImportValue Upload-FunctionArn
+                  - !ImportValue Fix-FunctionArn
 
   # Integrations
   UploadIntegration:
@@ -51,6 +52,15 @@ Resources:
       ApiId: !Ref HttpApi
       IntegrationType: AWS_PROXY
       IntegrationUri: !ImportValue Upload-FunctionArn
+      PayloadFormatVersion: '2.0'
+      CredentialsArn: !GetAtt ApiGatewayExecutionRole.Arn
+
+  FixIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref HttpApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !ImportValue Fix-FunctionArn
       PayloadFormatVersion: '2.0'
       CredentialsArn: !GetAtt ApiGatewayExecutionRole.Arn
 
@@ -110,6 +120,62 @@ Resources:
       ApiId: !Ref HttpApi
       RouteKey: 'POST /upload/{proxy+}'
       Target: !Join ["/", ["integrations", !Ref UploadIntegration]]
+
+  FixGetRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: 'GET /fix'
+      Target: !Join ["/", ["integrations", !Ref FixIntegration]]
+
+  FixPutRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: 'PUT /fix'
+      Target: !Join ["/", ["integrations", !Ref FixIntegration]]
+
+  FixPatchRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: 'PATCH /fix'
+      Target: !Join ["/", ["integrations", !Ref FixIntegration]]
+
+  FixPostRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: 'POST /fix'
+      Target: !Join ["/", ["integrations", !Ref FixIntegration]]
+
+  FixProxyGetRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: 'GET /fix/{proxy+}'
+      Target: !Join ["/", ["integrations", !Ref FixIntegration]]
+
+  FixProxyPutRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: 'PUT /fix/{proxy+}'
+      Target: !Join ["/", ["integrations", !Ref FixIntegration]]
+
+  FixProxyPatchRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: 'PATCH /fix/{proxy+}'
+      Target: !Join ["/", ["integrations", !Ref FixIntegration]]
+
+  FixProxyPostRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: 'POST /fix/{proxy+}'
+      Target: !Join ["/", ["integrations", !Ref FixIntegration]]
 
   # Stage
   Stage:
