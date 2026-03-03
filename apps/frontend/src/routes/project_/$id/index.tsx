@@ -1,12 +1,12 @@
 import TroubleshootIcon from "@mui/icons-material/Troubleshoot";
 import { Button, CircularProgress, Stack, Typography } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { API_BASE_URL, type UploadProject } from "../../../api";
+import { API_BASE_URL, BASE_URL, type UploadProject } from "../../../api";
 import {
   CodeViewer,
-  type CodeViewerParams,
+  type CodeViewerProps
 } from "../../../components/CodeViewer";
 import { FileTree } from "../../../components/FileTree";
 import { Container } from "../../../components/ui/Container";
@@ -17,7 +17,8 @@ export const Route = createFileRoute("/project_/$id/")({
 });
 
 function Project() {
-  const [fileContent, setFileContent] = useState<CodeViewerParams | null>(null);
+  const [fileContent, setFileContent] = useState<CodeViewerProps | null>(null);
+  const navigate = useNavigate();
   const { id } = Route.useParams();
 
   const { data: project, isPending, error } = useQuery<UploadProject>({
@@ -37,17 +38,19 @@ function Project() {
       throw "Invalid file name";
     }
 
-    setFileContent({ content, language: fileExtension });
+    setFileContent({ content, language: fileExtension, id: file.downloadId });
   }
 
   async function analyzeFile() {
-    fetch("http://127.0.0.1:4000/llm-service/analyze", {
+    const result = await fetch(`${BASE_URL}/fix/projects/${id}/files/${fileContent?.id}`, {
       method: "POST",
-      body: fileContent?.content || "",
     })
       .then((res) => res.text())
-      .then((data) => console.log(data))
       .catch((err) => console.error(err));
+
+    localStorage.setItem('TMP_RESULT',JSON.stringify(result));
+    console.log(result);
+
   }
 
   return (

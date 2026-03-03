@@ -7,7 +7,7 @@ import {
   Stack,
 } from "@mui/material";
 import { useState, type Dispatch, type SetStateAction } from "react";
-import { CodeViewer, type CodeViewerParams } from "../components/CodeViewer";
+import { CodeViewer, type CodeViewerProps } from "../components/CodeViewer";
 import { FileTree } from "../components/FileTree";
 import {
   getFileExtension,
@@ -28,7 +28,7 @@ export function SelectedFilesDialog({
   onClickAction,
   files,
 }: SelectedFilesDialogProps) {
-  const [fileContent, setFileContent] = useState<CodeViewerParams | null>(null);
+  const [fileContent, setFileContent] = useState<CodeViewerProps | null>(null);
 
   const handleClose = () => {
     setOpen(false);
