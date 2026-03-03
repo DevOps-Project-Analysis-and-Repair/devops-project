@@ -34,7 +34,7 @@ export function SelectedFilesDialog({
   };
 
   async function onFileClick(file: FileSystemFile) {
-    const content = await file.handle.text(); // great naming once again
+    const content = await file.handle.text();
     const fileExtension = getFileExtension(file.name);
 
     if (!fileExtension) {

@@ -1,3 +1,5 @@
+import type { UploadedFile } from "./api";
+
 export type FileSystemNode = FileSystemDirectory | FileSystemFile;
 export type FileSystemDirectory = { kind: 'directory', id: number, name: string, children: FileSystemNode[] };
 export type FileSystemFile = { kind: 'file', id: number, name: string, path: string, handle: File, downloadId?: string };
@@ -57,6 +59,57 @@ export function filesToFileSystemTree(files: File[]): FileSystemDirectory | null
   return root;
 }
 
+export function uploadFilesToFileSystemTree(files: UploadedFile[]): FileSystemDirectory {
+  let id = 0;
+
+  const root: FileSystemDirectory = {
+    id: id++,
+    name: "root",
+    kind: "directory",
+    children: [],
+  };
+
+  for (const file of files) {
+    const parts = file.filename.split("/");
+    let current = root;
+
+    parts.forEach((part, index) => {
+      const isFile = index === parts.length - 1;
+
+      if (isFile) {
+        const filesystemFile: FileSystemFile = {
+          id: id++,
+          kind: "file",
+          name: part,
+          path: file.filename,
+          downloadId: file.id,
+          handle: new File([], file.filename),
+        }
+        current.children.push(filesystemFile);
+      } else {
+        let dir = current.children.find(
+          (c) => c.kind === "directory" && c.name === part
+        ) as FileSystemDirectory | undefined;
+
+        if (!dir) {
+          dir = {
+            id: id++,
+            kind: "directory",
+            name: part,
+            children: [],
+          };
+
+          current.children.push(dir);
+        }
+
+        current = dir;
+      }
+    });
+  }
+
+  return root;
+}
+
 export function flattenFileSystem(root: FileSystemDirectory): FileSystemFile[] {
   return root.children.flatMap(node => node.kind === 'file' ? [node] : flattenFileSystem(node));
 }
@@ -67,9 +120,8 @@ export function getFileExtension(filepath: string): string | undefined {
   return res?.[1];
 }
 
-export async function urlToFile(url: string, filename: string): Promise<File> {
+export async function downloadFile(url: string): Promise<string> {
   const response = await fetch(url);
-  const blob = await response.blob();
 
-  return new File([blob], filename, { type: blob.type });
+  return await response.text();
 }

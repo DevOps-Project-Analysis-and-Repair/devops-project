@@ -1,9 +1,10 @@
+import { API_BASE_URL } from "../api";
 import { flattenFileSystem, type FileSystemDirectory, type FileSystemFile } from "../filesystem";
 import { chunk } from "../util";
 
 type ProjectUploadResponse = { projectId: string, token: string };
 
-const UPLOAD_SERVICE_URL = "https://jjz7wxr827.execute-api.eu-west-1.amazonaws.com/upload";
+const UPLOAD_SERVICE_URL = `${API_BASE_URL}/upload`;
 
 export async function listAllProjects(): Promise<Response> {
   const resp = await fetch(`${UPLOAD_SERVICE_URL}/projects`, { method: 'GET' });

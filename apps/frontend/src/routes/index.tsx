@@ -70,16 +70,12 @@ function Index() {
 
     const progressHandler = (progress: number) => {
       console.log(progress);
+      // TODO: Show upload spinner
     };
-
-    console.log("upload");
-
-    console.log(files);
 
     const projectId = await createProject(files, progressHandler);
 
-    console.log(projectId);
-    // navigate({ to: `/project/$id`, params: { id: projectId } });
+    navigate({ to: `/project/$id`, params: { id: projectId } });
   }
 
   return (

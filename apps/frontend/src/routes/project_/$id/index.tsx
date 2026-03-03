@@ -10,8 +10,7 @@ import {
 } from "../../../components/CodeViewer";
 import { FileTree } from "../../../components/FileTree";
 import { Container } from "../../../components/ui/Container";
-import { convertFilesToFileDirectory } from "../../../convert-to-filesystem";
-import { getFileExtension, urlToFile, type FileSystemFile } from "../../../filesystem";
+import { getFileExtension, downloadFile, type FileSystemFile, uploadFilesToFileSystemTree } from "../../../filesystem";
 
 export const Route = createFileRoute("/project_/$id/")({
   component: Project,
@@ -31,8 +30,7 @@ function Project() {
   if(error) return <div> An error occured {error.message} </div>;
 
   async function onFileClick(file: FileSystemFile) {
-    const fileHandle = await urlToFile(`${API_BASE_URL}/upload/projects/${id}/files/${file.downloadId!}`, file.name);     
-    const content = await fileHandle.text(); // great naming once again
+    const content = await downloadFile(`${API_BASE_URL}/upload/projects/${id}/files/${file.downloadId!}`);
     const fileExtension = getFileExtension(file.name);
 
     if (!fileExtension) {
@@ -52,7 +50,7 @@ function Project() {
           Project {project.name} ({project.files.length})
       </Typography>
       <Stack direction="row" overflow="auto" margin={2}> 
-        {project.files && <FileTree directory={convertFilesToFileDirectory(project.files)} onFileClick={onFileClick} />} 
+        {project.files && <FileTree directory={uploadFilesToFileSystemTree(project.files)} onFileClick={onFileClick} />}
         <div>
           {fileContent && (
             <>
