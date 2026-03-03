@@ -45,12 +45,8 @@ async function uploadFileToUploadServiceProject(upload: ProjectUploadResponse, f
 export async function createProject(fileTree: FileSystemDirectory, progress: ((x: number) => void) | null = null): Promise<string> {
   const files = flattenFileSystem(fileTree);
 
-  // const project = await createUploadServiceProject();
-
-  const project = {"projectId":"d0a15263-9f56-493f-9284-c2a907e24b3b","token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiYXJmb28iLCJwcm9qZWN0X2lkIjoiZDBhMTUyNjMtOWY1Ni00OTNmLTkyODQtYzJhOTA3ZTI0YjNiIiwiZXhwIjoxNzczMzUwMjQ1LCJpYXQiOjE3NzI0ODYyNDV9.zuwrqxeL_e0cUrf73iFPTmOXnx6hXMrLiOyyenldvRs"};
+  const project = await createUploadServiceProject();
   const chunks = chunk(files, 5);
-
-  console.log(chunks);
 
   let uploaded = 0;
   let total = files.length;
