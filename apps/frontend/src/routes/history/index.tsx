@@ -8,14 +8,24 @@ import {
   TableRow,
 } from "@mui/material";
 import Paper from "@mui/material/Paper";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { Link, createFileRoute } from "@tanstack/react-router";
+import { API_BASE_URL, type UploadProject } from "../../api";
 import { Container } from "../../components/ui/Container";
 export const Route = createFileRoute("/history/")({
   component: RouteComponent,
 });
 
+
 function RouteComponent() {
-  const rows: string[] = ["123"];
+
+  const { data: projects, isPending, error } = useQuery<UploadProject[]>({
+    queryKey: ["projects"],
+    queryFn: () => fetch(`${API_BASE_URL}/upload/projects`).then((r) => r.json()),
+  });
+
+  console.log(projects);
+
   return (
     <Container>
       <Link to="/">
@@ -30,25 +40,30 @@ function RouteComponent() {
       </Link>
       <hr />
       <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="Project history">
-          <TableHead>
-            <TableRow>
-              <TableCell>Projects</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {rows.map((row) => (
-              <TableRow
-                key={row}
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-              >
-                <TableCell component="th" scope="row">
-                  <Link to={`/project/$id`} params={{ id: row }}>{row}</Link>
-                </TableCell>
+        {!isPending && !error &&  (
+          <Table sx={{ minWidth: 650 }} aria-label="Project history">
+            <TableHead>
+              <TableRow>
+                <TableCell>Projects</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHead>
+            <TableBody>
+              {projects.map((project) => (
+                <TableRow
+                  key={project.id}
+                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                >
+                  <TableCell component="th" scope="row">
+                    <Link to={`/project/$id`} params={{ id: project.id }}>
+                      {project.name}
+                    </Link>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+     
       </TableContainer>
     </Container>
   );

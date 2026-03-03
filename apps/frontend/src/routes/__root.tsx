@@ -1,18 +1,20 @@
-import { createRootRoute, Outlet } from '@tanstack/react-router'
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { createRootRoute, Outlet } from "@tanstack/react-router";
 
-const RootLayout = () => (
-  <>
-    <Outlet />
-  </>
-);
-
-const NotFoundComponent = () => (
+const RootLayout = () => {
+  const queryClient = new QueryClient();
+  return (
     <>
-        Page not found!
+      <QueryClientProvider client={queryClient}>
+        <Outlet />
+      </QueryClientProvider>
     </>
-);
+  );
+};
+
+const NotFoundComponent = () => <>Page not found!</>;
 
 export const Route = createRootRoute({
-    component: RootLayout, 
-    notFoundComponent: NotFoundComponent
+  component: RootLayout,
+  notFoundComponent: NotFoundComponent,
 });

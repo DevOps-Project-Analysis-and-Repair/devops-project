@@ -4,6 +4,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Stack,
 } from "@mui/material";
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { CodeViewer, type CodeViewerParams } from "../components/CodeViewer";
@@ -34,7 +35,7 @@ export function SelectedFilesDialog({
   };
 
   async function onFileClick(file: FileSystemFile) {
-    const content = await file.handle.text(); // great naming once again
+    const content = await file.handle.text();
     const fileExtension = getFileExtension(file.name);
 
     if (!fileExtension) {
@@ -46,16 +47,18 @@ export function SelectedFilesDialog({
 
   return (
     <>
-      <Dialog open={open} onClose={handleClose}>
+      <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
         <DialogTitle>Selected files</DialogTitle>
         <DialogContent>
-          <FileTree directory={files} onFileClick={onFileClick} />
-          {fileContent && (
-            <CodeViewer
-              content={fileContent.content}
-              language={fileContent.language}
-            />
-          )}
+          <Stack direction="row">
+            <FileTree directory={files} onFileClick={onFileClick} />
+            {fileContent && (
+              <CodeViewer
+                content={fileContent.content}
+                language={fileContent.language}
+              />
+            )}
+          </Stack>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
