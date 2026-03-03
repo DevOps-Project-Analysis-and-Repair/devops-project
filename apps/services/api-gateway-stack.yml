@@ -201,3 +201,6 @@ Outputs:
   UploadEndpoint:
     Description: The /upload endpoint URL
     Value: !Sub 'https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/upload'
+  FixEndpoint:
+    Description: The /upload endpoint URL
+    Value: !Sub 'https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/fix'
