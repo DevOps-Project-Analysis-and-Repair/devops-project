@@ -69,6 +69,7 @@ function Project() {
                 role={undefined}
                 variant="contained"
                 tabIndex={-1}
+                onClick={analyzeFile}
                 startIcon={<TroubleshootIcon />}
               >
                 Analyze & Repair
