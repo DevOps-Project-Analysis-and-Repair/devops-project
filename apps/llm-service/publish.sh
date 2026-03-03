@@ -2,7 +2,7 @@
 
 AWS_REGION=eu-west-1
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-REPO=upload-service
+REPO=fix-service
 
 aws ecr create-repository --repository-name $REPO --region $AWS_REGION 2>/dev/null || true
 

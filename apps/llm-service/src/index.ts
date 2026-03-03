@@ -3,7 +3,7 @@ import { Logger } from '@aws-lambda-powertools/logger';
 import { Context } from 'aws-lambda';
 import { analyzeCode } from './client';
 
-const serviceName = 'llm-service';
+const serviceName = 'fix';
 
 const logger = new Logger({ serviceName });
 const app = new Router({ logger });
