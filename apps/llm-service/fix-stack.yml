@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >
-  This template deploys a Lambda function using a Docker image, with S3 and DynamoDB access.
+  This template deploys a Lambda function using a Docker image.
 
 Parameters:
   OpenAIApiKey:
