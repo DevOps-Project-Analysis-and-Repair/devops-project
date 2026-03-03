@@ -92,6 +92,8 @@ jobs:
 
       - name: Deploy CloudFormation
         working-directory: ./apps/llm-service
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: sh ./deploy.sh
 
   deploy_api_gateway_stack:
