@@ -73,7 +73,6 @@ function Index() {
     };
 
     console.log("upload");
-    // setStoredFiles(files);
 
     console.log(files);
 

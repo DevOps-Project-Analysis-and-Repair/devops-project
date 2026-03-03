@@ -12,11 +12,10 @@ import { FileTree } from "../../../components/FileTree";
 import { Container } from "../../../components/ui/Container";
 import { convertFilesToFileDirectory } from "../../../convert-to-filesystem";
 import { getFileExtension, urlToFile, type FileSystemFile } from "../../../filesystem";
+
 export const Route = createFileRoute("/project_/$id/")({
   component: Project,
 });
-
-
 
 function Project() {
   const [fileContent, setFileContent] = useState<CodeViewerParams | null>(null);
@@ -45,37 +44,35 @@ function Project() {
 
   return (
     <Container direction="column" overflow="auto">
-       <Typography
+      <Typography
           component="h1"
           variant="h4"
           sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
         >
           Project {project.name} ({project.files.length})
-        </Typography>
-       <Stack direction="row" overflow="auto" margin={2}>
-        
-      {project.files && <FileTree directory={convertFilesToFileDirectory(project.files)} onFileClick={onFileClick} />} 
-      <div>
-        {fileContent && (
-          <>
-            <Button
-              component="label"
-              role={undefined}
-              variant="contained"
-              tabIndex={-1}
-              startIcon={<TroubleshootIcon />}
-            >
-              Analyze & Repair
-            </Button>
-            <CodeViewer
-              content={fileContent.content}
-              language={fileContent.language}
-            />
-          </>
-        )}
-      </div>
-    </Stack>
-    </Container>
-   
+      </Typography>
+      <Stack direction="row" overflow="auto" margin={2}> 
+        {project.files && <FileTree directory={convertFilesToFileDirectory(project.files)} onFileClick={onFileClick} />} 
+        <div>
+          {fileContent && (
+            <>
+              <Button
+                component="label"
+                role={undefined}
+                variant="contained"
+                tabIndex={-1}
+                startIcon={<TroubleshootIcon />}
+              >
+                Analyze & Repair
+              </Button>
+              <CodeViewer
+                content={fileContent.content}
+                language={fileContent.language}
+              />
+            </>
+          )}
+        </div>
+      </Stack>
+    </Container> 
   );
 }
