@@ -1,6 +1,6 @@
 export type FileSystemNode = FileSystemDirectory | FileSystemFile;
 export type FileSystemDirectory = { kind: 'directory', id: number, name: string, children: FileSystemNode[] };
-export type FileSystemFile = { kind: 'file', id: number, name: string, path: string, handle: File };
+export type FileSystemFile = { kind: 'file', id: number, name: string, path: string, handle: File, downloadId?: string };
 
 function dir(name: string, id: number): FileSystemDirectory {
   return { kind: 'directory', id, name, children: [] };
@@ -65,4 +65,11 @@ export function getFileExtension(filepath: string): string | undefined {
   const extensionRegExp = new RegExp("\.([^.]+)$");
   const res = extensionRegExp.exec(filepath);
   return res?.[1];
+}
+
+export async function urlToFile(url: string, filename: string): Promise<File> {
+  const response = await fetch(url);
+  const blob = await response.blob();
+
+  return new File([blob], filename, { type: blob.type });
 }

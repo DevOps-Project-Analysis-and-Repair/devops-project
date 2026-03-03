@@ -7,4 +7,11 @@ export interface UploadProject {
     files: any[];
     id: string;
     name: string;
-} 
+}
+
+export interface UploadedFile {
+    id: string;
+    url: string;
+    mimetype: string;
+    filename: string
+}

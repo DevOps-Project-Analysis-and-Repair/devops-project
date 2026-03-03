@@ -1,6 +1,7 @@
+import type { UploadedFile } from "./api";
 import type { FileSystemDirectory, FileSystemFile } from "./filesystem";
 
-export function convertFilesToFileDirectory(files: { filename: string }[]): FileSystemDirectory {
+export function convertFilesToFileDirectory(files: UploadedFile[]): FileSystemDirectory {
     let id = 0;
 
     const root: FileSystemDirectory = {
@@ -23,6 +24,7 @@ export function convertFilesToFileDirectory(files: { filename: string }[]): File
                     kind: "file",
                     name: part,
                     path: file.filename,
+                    downloadId: file.id,
                     handle: new File([], file.filename),
                 }
                 current.children.push(filesystemFile);

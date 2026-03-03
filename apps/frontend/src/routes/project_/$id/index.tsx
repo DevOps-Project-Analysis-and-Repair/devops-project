@@ -11,7 +11,7 @@ import {
 import { FileTree } from "../../../components/FileTree";
 import { Container } from "../../../components/ui/Container";
 import { convertFilesToFileDirectory } from "../../../convert-to-filesystem";
-import { getFileExtension, type FileSystemFile } from "../../../filesystem";
+import { getFileExtension, urlToFile, type FileSystemFile } from "../../../filesystem";
 export const Route = createFileRoute("/project_/$id/")({
   component: Project,
 });
@@ -31,15 +31,9 @@ function Project() {
 
   if(error) return <div> An error occured {error.message} </div>;
 
-  console.log(project);
-  // if (id !== "123") {
-  //   throw notFound();
-  // }
-
-  // const files = getStoredFiles();
-
   async function onFileClick(file: FileSystemFile) {
-    const content = await file.handle.text(); // great naming once again
+    const fileHandle = await urlToFile(`${API_BASE_URL}/upload/projects/${id}/files/${file.downloadId!}`, file.name);     
+    const content = await fileHandle.text(); // great naming once again
     const fileExtension = getFileExtension(file.name);
 
     if (!fileExtension) {
