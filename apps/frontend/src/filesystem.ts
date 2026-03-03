@@ -1,13 +1,13 @@
 export type FileSystemNode = FileSystemDirectory | FileSystemFile;
 export type FileSystemDirectory = { kind: 'directory', id: number, name: string, children: FileSystemNode[] };
-export type FileSystemFile = { kind: 'file', id: number, name: string, handle: File };
+export type FileSystemFile = { kind: 'file', id: number, name: string, path: string, handle: File };
 
 function dir(name: string, id: number): FileSystemDirectory {
   return { kind: 'directory', id, name, children: [] };
 }
 
-function file(name: string, id: number, handle: File): FileSystemFile {
-  return { kind: 'file', id, name, handle };
+function file(name: string, path: string, id: number, handle: File): FileSystemFile {
+  return { kind: 'file', id, path, name, handle };
 }
 
 export function findInDirectory(name: string, dir: FileSystemDirectory): FileSystemNode | null {
@@ -51,10 +51,14 @@ export function filesToFileSystemTree(files: File[]): FileSystemDirectory | null
       }
     }
 
-    cwd.children.push(file(pathFile, id++, entry));
+    cwd.children.push(file(pathFile, path, id++, entry));
   }
 
   return root;
+}
+
+export function flattenFileSystem(root: FileSystemDirectory): FileSystemFile[] {
+  return root.children.flatMap(node => node.kind === 'file' ? [node] : flattenFileSystem(node));
 }
 
 export function getFileExtension(filepath: string): string | undefined {
