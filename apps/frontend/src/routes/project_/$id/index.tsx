@@ -1,5 +1,5 @@
 import TroubleshootIcon from "@mui/icons-material/Troubleshoot";
-import { Button, CircularProgress, Typography } from "@mui/material";
+import { Button, CircularProgress, Stack, Typography } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
@@ -9,12 +9,14 @@ import {
   type CodeViewerParams,
 } from "../../../components/CodeViewer";
 import { FileTree } from "../../../components/FileTree";
-import { getStoredFiles } from "../../../components/store";
 import { Container } from "../../../components/ui/Container";
+import { convertFilesToFileDirectory } from "../../../convert-to-filesystem";
 import { getFileExtension, type FileSystemFile } from "../../../filesystem";
 export const Route = createFileRoute("/project_/$id/")({
   component: Project,
 });
+
+
 
 function Project() {
   const [fileContent, setFileContent] = useState<CodeViewerParams | null>(null);
@@ -34,7 +36,7 @@ function Project() {
   //   throw notFound();
   // }
 
-  const files = getStoredFiles();
+  // const files = getStoredFiles();
 
   async function onFileClick(file: FileSystemFile) {
     const content = await file.handle.text(); // great naming once again
@@ -48,7 +50,7 @@ function Project() {
   }
 
   return (
-    <Container direction="row" overflow="auto">
+    <Container direction="column" overflow="auto">
        <Typography
           component="h1"
           variant="h4"
@@ -56,9 +58,9 @@ function Project() {
         >
           Project {project.name} ({project.files.length})
         </Typography>
-
+       <Stack direction="row" overflow="auto" margin={2}>
         
-      {files && <FileTree directory={files!} onFileClick={onFileClick} />} 
+      {project.files && <FileTree directory={convertFilesToFileDirectory(project.files)} onFileClick={onFileClick} />} 
       <div>
         {fileContent && (
           <>
@@ -78,6 +80,8 @@ function Project() {
           </>
         )}
       </div>
+    </Stack>
     </Container>
+   
   );
 }
