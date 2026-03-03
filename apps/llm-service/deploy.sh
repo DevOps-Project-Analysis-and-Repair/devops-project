@@ -1,17 +1,17 @@
 #!/bin/sh
 AWS_REGION=eu-west-1
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-REPO=upload-service
+REPO=fix-service
 
 if [ -n "${GIT_HASH:-}" ]; then
   aws cloudformation deploy \
-    --stack-name upload-service-stack \
-    --template-file upload-service-stack.yml \
+    --stack-name fix-stack \
+    --template-file fix-stack.yml \
     --capabilities CAPABILITY_NAMED_IAM \
-    --parameter-overrides UploadServiceImageUri=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO:$GIT_HASH
+    --parameter-overrides FixServiceImageUri=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO:$GIT_HASH
 else
   aws cloudformation deploy \
-    --stack-name upload-service-stack \
-    --template-file upload-service-stack.yml \
+    --stack-name fix-stack \
+    --template-file fix-stack.yml \
     --capabilities CAPABILITY_NAMED_IAM
 fi
