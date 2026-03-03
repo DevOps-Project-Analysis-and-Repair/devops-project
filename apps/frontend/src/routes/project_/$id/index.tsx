@@ -10,7 +10,7 @@ import {
 } from "../../../components/CodeViewer";
 import { FileTree } from "../../../components/FileTree";
 import { Container } from "../../../components/ui/Container";
-import { getFileExtension, downloadFile, type FileSystemFile, uploadFilesToFileSystemTree } from "../../../filesystem";
+import { downloadFile, getFileExtension, uploadFilesToFileSystemTree, type FileSystemFile } from "../../../filesystem";
 
 export const Route = createFileRoute("/project_/$id/")({
   component: Project,
@@ -38,6 +38,16 @@ function Project() {
     }
 
     setFileContent({ content, language: fileExtension });
+  }
+
+  async function analyzeFile() {
+    fetch("http://127.0.0.1:4000/llm-service/analyze", {
+      method: "POST",
+      body: fileContent?.content || "",
+    })
+      .then((res) => res.text())
+      .then((data) => console.log(data))
+      .catch((err) => console.error(err));
   }
 
   return (
