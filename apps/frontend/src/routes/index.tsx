@@ -6,10 +6,10 @@ import { styled } from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type ChangeEvent } from "react";
-import { setStoredFiles } from "../components/store";
 import { Container } from "../components/ui/Container";
 import { SelectedFilesDialog } from "../dialogs/SelectedFilesDialog";
 import { filesToFileSystemTree, type FileSystemDirectory } from "../filesystem";
+import { createProject } from "../services/uploadService";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -66,10 +66,16 @@ function Index() {
   }
 
   async function upload() {
-    console.log("upload");
-    const projectId = 123;
-    setStoredFiles(files);
-    navigate({ to: `/project/${projectId}` });
+    if (files === null) { return }
+
+    const progressHandler = (progress: number) => {
+      console.log(progress);
+      // TODO: Show upload spinner
+    };
+
+    const projectId = await createProject(files, progressHandler);
+
+    navigate({ to: `/project/$id`, params: { id: projectId } });
   }
 
   return (
