@@ -1,7 +1,17 @@
 import { Box, Card, Chip, Divider, Typography } from "@mui/material";
 import { CodeViewer } from "./CodeViewer";
 
-const CodeDiffViewer = ({ beforeCode, afterCode, language }) => {
+interface CodeDiffViewerProps {
+  beforeCode: string;
+  afterCode: string;
+  language: string;
+}
+
+const CodeDiffViewer = ({
+  beforeCode,
+  afterCode,
+  language,
+}: CodeDiffViewerProps) => {
   return (
     <Card
       elevation={0}
