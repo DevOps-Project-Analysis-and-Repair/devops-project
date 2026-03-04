@@ -10,6 +10,10 @@ const app = new Router({ logger });
 
 const API_SERVICE_URL = "https://jjz7wxr827.execute-api.eu-west-1.amazonaws.com";
 
+app.get(`/${serviceName}/health`, async () => {
+  return true;
+});
+
 app.post(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ params: { projectId, fileId } }) => {
   let text: string;
   console.log('start xt');
@@ -35,9 +39,6 @@ app.post(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ params: {
     console.log(error);
     throw new BadRequestError("Fixing failed");
   }
-
-
-
 
   // Step 3: return the last outputCode
   return outputCode;
