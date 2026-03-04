@@ -88,7 +88,7 @@ jobs:
       - name: Validate CloudFormation template
         run: |
           aws cloudformation validate-template \
-            --template-body file://./apps//apps/analysis-service/analysis-stack.yml
+            --template-body file://./apps/analysis-service/analysis-stack.yml
 
       - name: Deploy CloudFormation
         working-directory: ./apps/analysis-service
