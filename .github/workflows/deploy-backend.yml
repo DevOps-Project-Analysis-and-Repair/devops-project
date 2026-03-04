@@ -2,8 +2,8 @@ name: Deploy Backend
 
 on:
   push:
-    branches:
-      - main
+    # branches:
+      # - main
     paths:
       - '.github/workflows/deploy-backend.yml'
       - 'apps/services/**'
@@ -65,6 +65,33 @@ jobs:
 
       - name: Deploy CloudFormation
         working-directory: ./apps/services/upload
+        run: sh ./deploy.sh
+
+  deploy_analysis_stack:
+    needs: [deploy_vpc_stack]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Publish Dockerfile
+        working-directory: ./apps/analysis-service
+        run: sh ./publish.sh
+
+      - name: Validate CloudFormation template
+        run: |
+          aws cloudformation validate-template \
+            --template-body file://./apps/analysis-service/analysis-stack.yml
+
+      - name: Deploy CloudFormation
+        working-directory: ./apps/analysis-service
         run: sh ./deploy.sh
 
   deploy_fix_stack:
