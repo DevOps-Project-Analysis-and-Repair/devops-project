@@ -12,6 +12,7 @@ on:
 
 env:
   AWS_REGION: eu-west-1
+  GIT_HASH: ${{ github.sha }}
 
 jobs:
   deploy_vpc_stack:
