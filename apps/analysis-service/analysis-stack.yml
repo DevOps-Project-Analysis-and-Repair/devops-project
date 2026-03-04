@@ -3,6 +3,9 @@ Description: >
   This template deploys a Lambda function using a Docker image, with S3 and DynamoDB access.
 
 Parameters:
+  FixServiceImageUri:
+    Description: Uri to the image
+    Type: String
   Repo:
     Description: The ECR repository name for the Lambda Docker image
     Type: String
@@ -58,7 +61,7 @@ Resources:
       Role: !GetAtt LambdaExecutionRole.Arn
       PackageType: Image
       Code:
-        ImageUri: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${Repo}:latest'
+        ImageUri: !Ref FixServiceImageUri
       Timeout: 30
       MemorySize: 128
       VpcConfig:
