@@ -29,15 +29,15 @@ const FILES_BUCKET = "files-upload-stack";
 
 // Fetch project from project ID, or fail.
 export async function getProjectFromDb(projectId: string): Promise<Project> {
-  const cmd = new GetCommand({ TableName: TABLE_PROJECTS, Key: { id: projectId }});
-  const res = await doc.send(cmd);
+    const cmd = new GetCommand({ TableName: TABLE_PROJECTS, Key: { id: projectId }});
+    const res = await doc.send(cmd);
 
-  if (!res.Item) { throw new NotFoundError(); }
+    if (!res.Item) { throw new NotFoundError(); }
 
-  return res.Item as Project;
+    return res.Item as Project;
 }
 
-// Store a project locally.
+// Download a project from the S3 bucket into a local directory.
 export async function downloadProjectFiles(projectId: string, targetProjectLocation: string): Promise<void> {
 
     const project = await getProjectFromDb(projectId);

@@ -13,21 +13,21 @@ const app = new Router({ logger });
 // Scan a project with Sonar.
 app.post(`/${serviceName}/scan/:projectId`, async ({ req, params: { projectId } }) => {
 
-  // Authorize request.
-  const token = req.headers.get('X-Project-Token');
-  if (!token) { throw new BadRequestError(); }
-  if (!verifyToken(token, projectId)) { throw new UnauthorizedError(); }
+    // Authorize request.
+    const token = req.headers.get('X-Project-Token');
+    if (!token) { throw new BadRequestError(); }
+    if (!verifyToken(token, projectId)) { throw new UnauthorizedError(); }
 
-  // Download project from S3 bucket.
-  await downloadProjectFiles(projectId, '/tmp');
-  
-  // Run the Sonar scanner.
-  const exitCode = await runSonarScanner();
+    // Download project from S3 bucket.
+    await downloadProjectFiles(projectId, '/tmp');
 
-  // Upload the scanner logs to the S3 bucket.
-  // TODO: In the same way as we did for the project files in the upload handler.
+    // Run the Sonar scanner.
+    const exitCode = await runSonarScanner();
 
-  return exitCode;
+    // Upload the scanner logs to the S3 bucket.
+    // TODO: In the same way as we did for the project files in the upload handler.
+
+    return exitCode;
 });
 
 export const handler = async (event: unknown, context: Context) => app.resolve(event, context);
