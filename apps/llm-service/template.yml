@@ -1,0 +1,46 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: LLM Service
+
+Globals:
+  Function:
+    Runtime: nodejs20.x
+    Timeout: 30
+    MemorySize: 512
+    Architectures:
+      - arm64
+    Environment:
+      Variables:
+        NODE_OPTIONS: "--enable-source-maps"
+
+Resources:
+
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: llm-service
+      Handler: index.handler
+      CodeUri: ./dist
+      Policies:
+        - AWSLambdaBasicExecutionRole
+      Environment:
+        Variables:
+          OPENAI_API_KEY: !Ref OPENAI_API_KEY
+
+      Events:
+        ApiGateway:
+          Type: Api
+          Properties:
+            RestApiId: !Ref LlmApi
+            Path: /{proxy+}
+            Method: ANY
+
+  LlmApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: llm-api
+      StageName: dev
+      Cors:
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowOrigin: "'*'"

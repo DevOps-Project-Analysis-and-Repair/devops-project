@@ -24,8 +24,6 @@ function RouteComponent() {
     queryFn: () => fetch(`${API_BASE_URL}/upload/projects`).then((r) => r.json()),
   });
 
-  console.log(projects);
-
   return (
     <Container>
       <Link to="/">
