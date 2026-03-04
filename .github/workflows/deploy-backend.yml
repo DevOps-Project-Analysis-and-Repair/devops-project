@@ -2,8 +2,8 @@ name: Deploy Backend
 
 on:
   push:
-    # branches:
-      # - main
+    branches:
+      - main
     paths:
       - '.github/workflows/deploy-backend.yml'
       - 'apps/services/**'
@@ -124,7 +124,7 @@ jobs:
         run: sh ./deploy.sh
 
   deploy_api_gateway_stack:
-    needs: [deploy_upload_stack, deploy_fix_stack]
+    needs: [deploy_upload_stack, deploy_fix_stack, deploy_analysis_stack]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
