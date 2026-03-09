@@ -69,10 +69,10 @@ Resources:
           - !ImportValue LambdaSecurityGroup
         SubnetIds:
           - !ImportValue PrivateSubnet
-      # Environment:
-      #   Variables:
-      #     S3_BUCKET_NAME: !Ref S3Bucket
-      #     DYNAMODB_TABLE_NAME: !Ref DynamoDBTable
+      Environment:
+        Variables:
+          S3_BUCKET_NAME: !ImportValue Upload-BucketName
+          DYNAMODB_TABLE_NAME: !ImportValue Upload-TableName
 
 Outputs:
   AnalysisArn:
