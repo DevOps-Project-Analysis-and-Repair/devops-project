@@ -110,10 +110,10 @@ Resources:
       AlarmDescription: "Alarm when API Gateway returns 5XX errors"
       TreatMissingData: notBreaching
 
-  LambdaErrorsAlarm:
+  UploadLambdaErrorsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmName: "LambdaErrorsAlarm"
+      AlarmName: "UploadLambdaErrorsAlarm"
       ComparisonOperator: GreaterThanThreshold
       EvaluationPeriods: 1
       MetricName: "Errors"
@@ -124,11 +124,41 @@ Resources:
       Dimensions:
         - Name: FunctionName
           Value: "Upload-upload-stack"
+      AlarmDescription: "Alarm when Upload Lambda function errors occur"
+      TreatMissingData: notBreaching
+
+  AnalysisLambdaErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: "AnalysisLambdaErrorsAlarm"
+      ComparisonOperator: GreaterThanThreshold
+      EvaluationPeriods: 1
+      MetricName: "Errors"
+      Namespace: "AWS/Lambda"
+      Period: 300
+      Statistic: Sum
+      Threshold: 1
+      Dimensions:
         - Name: FunctionName
           Value: "Analysis-analysis-stack"
+      AlarmDescription: "Alarm when Analysis Lambda function errors occur"
+      TreatMissingData: notBreaching
+
+  FixLambdaErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: "FixLambdaErrorsAlarm"
+      ComparisonOperator: GreaterThanThreshold
+      EvaluationPeriods: 1
+      MetricName: "Errors"
+      Namespace: "AWS/Lambda"
+      Period: 300
+      Statistic: Sum
+      Threshold: 1
+      Dimensions:
         - Name: FunctionName
           Value: "Fix-fix-stack"
-      AlarmDescription: "Alarm when Lambda function errors occur"
+      AlarmDescription: "Alarm when Fix Lambda function errors occur"
       TreatMissingData: notBreaching
 
   DynamoDBThrottledRequestsAlarm:
