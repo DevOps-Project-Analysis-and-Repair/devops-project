@@ -4,7 +4,7 @@ import { Context } from 'aws-lambda';
 
 import { downloadProjectFiles } from './project';
 import { verifyToken } from './auth';
-import { runSonarScanner } from './scanner';
+import { runSonarScanner } from './sonar';
 
 const serviceName = 'sonar';
 const logger = new Logger({ serviceName });
@@ -13,19 +13,24 @@ const app = new Router({ logger });
 // Scan a project with Sonar.
 app.post(`/${serviceName}/scan/:projectId`, async ({ req, params: { projectId } }) => {
 
+    // const id = uuidv4();
+
     // Authorize request.
     const token = req.headers.get('X-Project-Token');
     if (!token) { throw new BadRequestError(); }
     if (!verifyToken(token, projectId)) { throw new UnauthorizedError(); }
 
     // Download project from S3 bucket.
-    await downloadProjectFiles(projectId, '/tmp');
+    const projectPath = '/tmp/project';
+    await downloadProjectFiles(projectId, projectPath);
 
     // Run the Sonar scanner.
-    const exitCode = await runSonarScanner();
+    const exitCode = await runSonarScanner(projectPath);
 
     // Upload the scanner logs to the S3 bucket.
     // TODO: In the same way as we did for the project files in the upload handler.
+
+    // Clean
 
     return exitCode;
 });
