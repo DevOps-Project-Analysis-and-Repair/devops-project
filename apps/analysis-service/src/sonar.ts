@@ -35,8 +35,6 @@ export function runSonarScanner(projectPath: string, projectId: string): Promise
 }
 
 export const createSonarProject = async (projectId: string): Promise<boolean> => {
-    const auth = createBasicAuthHeader();
-
     const result = await fetch("https://sonarcloud.io/api/projects/create", {
         method: "POST",
         headers: {
@@ -65,10 +63,6 @@ export const createSonarProject = async (projectId: string): Promise<boolean> =>
 
 //     return true;
 // };
-
-function createBasicAuthHeader(): string {
-    return "Basic " + Buffer.from(`${SONAR_TOKEN}:`).toString("base64");
-}
 
 // export const runSonarScanner = async () => {
 //     await execFileAsync("sonar-scanner", { cwd: "/tmp/project" });
