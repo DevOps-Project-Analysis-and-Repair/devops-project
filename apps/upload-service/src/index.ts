@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Project, ProjectFile } from './types';
 import { createToken, verifyToken } from './auth';
 import { datestring, isUploadCompleted, latest } from './util';
+import { appendAnalyzedFile, appendFile, getProjectFromDb } from './dynamo';
 
 const serviceName = 'upload';
 
@@ -20,29 +21,8 @@ const s3client = new S3Client({});
 const db = new DynamoDBClient({});
 const doc = DynamoDBDocument.from(db);
 
-const TABLE_PROJECTS = "Projects-upload-stack";
-const FILES_BUCKET = "files-upload-stack";
-
-async function getProjectFromDb(doc: DynamoDBDocument, projectId: string): Promise<Project> {
-  const cmd = new GetCommand({ TableName: TABLE_PROJECTS, Key: { id: projectId }});
-  const res = await doc.send(cmd);
-
-  if (!res.Item) { throw new NotFoundError(); }
-
-  return res.Item as Project;
-}
-
-async function appendFile(projectId: string, newFile: ProjectFile): Promise<void> {
-  await db.send(new UpdateCommand({
-    TableName: TABLE_PROJECTS,
-    Key: { id: projectId },
-    UpdateExpression: "SET files = list_append(files, :newFile)",
-    ExpressionAttributeValues: {
-      ":newFile": [newFile],
-    },
-    ConditionExpression: "attribute_exists(id)",
-  }));
-}
+export const TABLE_PROJECTS = "Projects-upload-stack";
+export const FILES_BUCKET = "files-upload-stack";
 
 function findFile(fileId: string, project: Project): ProjectFile | null {
   // Find file searches in both the original project files as the analyzed files
@@ -157,31 +137,13 @@ app.post(`/${serviceName}/projects/:projectId/files`, async ({ req, params: { pr
   if (!isUploadCompleted(result)) { throw new InternalServerError(); }
 
   // 4. add file to project
-  // project.files.push({
-  //   id: fileId,
-  //   filename, // do we need to clean filename?
-  //   url: result.Location ?? "",
-  //   mimetype
-  // });
-
-  console.log('writing file to dynamo');
-
-  await appendFile(project.id, {
+  await appendFile(db, project.id, {
     id: fileId,
     filename, // do we need to clean filename?
     url: result.Location ?? "",
     mimetype
   });
 
-  console.log('written file to dynamo');
-
-  // await doc.update({
-  //   Key: 
-  // });
-
-  // 5. update project
-  // await doc.put({ TableName: TABLE_PROJECTS, Item: project });
-  
   return project;
 });
 
@@ -212,17 +174,12 @@ app.post(`/${serviceName}/projects/:projectId/files/:fileId/repaired`, async ({ 
   if (!isUploadCompleted(result)) { throw new InternalServerError(); }
 
   // 4. add file to analyzed files
-  project.analyzedFiles[file.id] ??= [];
-
-  project.analyzedFiles[file.id].push({
+  await appendAnalyzedFile(db, project.id, {
     ...file,
     id: repairedFileId,
     iteration: project.analyzedFiles[file.id].length + 1,
     createdAt: Date.now()
   });
-  
-  // 5. update project
-  await doc.put({ TableName: TABLE_PROJECTS, Item: project });
 
   return project;
 });
