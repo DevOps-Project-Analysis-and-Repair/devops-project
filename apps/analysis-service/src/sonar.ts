@@ -16,8 +16,11 @@ export function runSonarScanner(projectPath: string): Promise<number> {
       "-Dsonar.host.url=" + SONAR_HOST,
       "-Dsonar.token=" + SONAR_TOKEN,
       "-Dsonar.scanner.skipJreProvisioning=true",
+      "-Dsonar.scanner.skipNodeProvisioning=true",
+      "-Dsonar.nodejs.executable=/var/lang/bin/node",
+      "-Dsonar.scanner.skipSystemTruststore=true",
       "-Dsonar.scm.disabled=true",
-      "-Dsonar.scanner.skipSystemTruststore=true"
+      "-Dsonar.javascript.node.maxspace=256"
     ], {
       cwd: projectPath,
       env: process.env
