@@ -1,7 +1,8 @@
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import TroubleshootIcon from "@mui/icons-material/Troubleshoot";
 import { Button, CircularProgress, Stack, Typography } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { API_BASE_URL, BASE_URL, type UploadProject } from "../../../api";
 import {
@@ -42,7 +43,7 @@ function Project() {
 
   async function onFileClick(file: FileSystemFile) {
     const content = await downloadFile(
-      `${API_BASE_URL}/upload/projects/${id}/files/${file.downloadId!}`,
+      `${API_BASE_URL}/upload/projects/${id}/files/${file.downloadId}`,
     );
     const fileExtension = getFileExtension(file.name);
 
@@ -54,6 +55,12 @@ function Project() {
   }
 
   async function analyzeFile() {
+    if (!fileContent?.id) {
+      console.error("Could not analyze file");
+      alert("Could not analyze file, no file ID provided");
+      return;
+    }
+
     const result = await fetch(
       `${BASE_URL}/fix/projects/${id}/files/${fileContent?.id}`,
       {
@@ -65,14 +72,29 @@ function Project() {
 
     localStorage.setItem("TMP_RESULT", JSON.stringify(result));
     console.log(result);
+
     navigate({
       to: `/project/$id/results/$file`,
-      params: { id, file: fileContent?.id! },
+      params: { id, file: fileContent?.id },
     });
   }
 
   return (
     <Container direction="column" overflow="auto">
+      <Button
+        component={Link}
+        to={`/`}
+        startIcon={<ArrowBackIcon />}
+        variant="outlined"
+        sx={{
+          mb: 3,
+          borderRadius: 2,
+          textTransform: "none",
+          fontWeight: 500,
+        }}
+      >
+        Back to home screen
+      </Button>
       <Typography
         component="h1"
         variant="h4"

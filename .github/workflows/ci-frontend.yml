@@ -1,0 +1,50 @@
+name: CI Frontend Checks
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/ci-frontend.yml"
+      - "apps/frontend/**"
+
+  push:
+    branches: [main]
+    paths:
+      - "apps/frontend/**"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup frontend
+        uses: ./.github/actions/setup-frontend
+
+      - run: npm run lint
+        working-directory: apps/frontend
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup frontend
+        uses: ./.github/actions/setup-frontend
+
+      - run: npm run test
+        working-directory: apps/frontend
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup frontend
+        uses: ./.github/actions/setup-frontend
+
+      - run: npm run build
+        working-directory: apps/frontend
