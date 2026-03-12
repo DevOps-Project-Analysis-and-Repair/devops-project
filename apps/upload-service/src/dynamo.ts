@@ -29,7 +29,7 @@ export async function appendAnalyzedFile(db: DynamoDBClient, projectId: string, 
   const key = analyzedFile.id;
 
   await db.send(new UpdateCommand({
-    TableName: "Projects",
+    TableName: TABLE_PROJECTS,
     Key: { id: projectId },
     UpdateExpression: "SET analyzedFiles.#key = list_append(if_not_exists(analyzedFiles.#key, :empty), :newFile)",
     ExpressionAttributeNames: {
