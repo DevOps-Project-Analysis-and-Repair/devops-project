@@ -5,7 +5,7 @@ import { Context } from 'aws-lambda';
 import { downloadProjectFiles } from './project';
 import { runSonarScanner } from './sonar';
 
-const serviceName = 'scan';
+const serviceName = 'analysis';
 const logger = new Logger({ serviceName });
 const app = new Router({ logger });
 
