@@ -1,0 +1,36 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/ci-backend.yml"
+      - "apps/upload-service/**"
+      - "apps/llm-service/**"
+      - "apps/analysis-service/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        service:
+          - upload-service
+          - llm-service
+          - analysis-service
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - run: npm ci
+        working-directory: apps/${{ matrix.service }}
+
+      - run: npm run build
+        working-directory: apps/${{ matrix.service }}
