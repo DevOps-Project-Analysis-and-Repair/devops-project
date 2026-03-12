@@ -10,15 +10,14 @@ const SONAR_HOST = "https://sonarcloud.io";
 export function runSonarScanner(projectPath: string): Promise<number> {
   return new Promise((resolve, reject) => {
     const proc = spawn("sonar-scanner", [
-      "-X",
-      "-Dsonar.verbose=true",
       "-Dsonar.organization=" + SONAR_ORG,
       "-Dsonar.projectKey=" + SONAR_PROJECT_KEY,
       "-Dsonar.sources=.",
       "-Dsonar.host.url=" + SONAR_HOST,
       "-Dsonar.token=" + SONAR_TOKEN,
       "-Dsonar.scanner.skipJreProvisioning=true",
-      "-Dsonar.scm.disabled=true"
+      "-Dsonar.scm.disabled=true",
+      "-Dsonar.scanner.skipSystemTruststore=true"
     ], {
       cwd: projectPath,
       env: process.env
