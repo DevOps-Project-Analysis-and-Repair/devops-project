@@ -2,9 +2,9 @@ import type { JSX } from "react";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import cb from 'react-syntax-highlighter/dist/esm/styles/prism/cb';
 
-export type CodeViewerParams = { content: string, language: string };
+export type CodeViewerProps = { content: string, language: string, id?: string };
 
-export function CodeViewer(params: CodeViewerParams): JSX.Element {
+export function CodeViewer(params: CodeViewerProps): JSX.Element {
   return (
     <>  
       <SyntaxHighlighter

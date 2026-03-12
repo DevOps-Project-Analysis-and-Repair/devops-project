@@ -1,66 +1,92 @@
 import TroubleshootIcon from "@mui/icons-material/Troubleshoot";
 import { Button, CircularProgress, Stack, Typography } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { API_BASE_URL, type UploadProject } from "../../../api";
+import { API_BASE_URL, BASE_URL, type UploadProject } from "../../../api";
 import {
   CodeViewer,
-  type CodeViewerParams,
+  type CodeViewerProps,
 } from "../../../components/CodeViewer";
 import { FileTree } from "../../../components/FileTree";
 import { Container } from "../../../components/ui/Container";
-import { downloadFile, getFileExtension, uploadFilesToFileSystemTree, type FileSystemFile } from "../../../filesystem";
+import {
+  downloadFile,
+  getFileExtension,
+  uploadFilesToFileSystemTree,
+  type FileSystemFile,
+} from "../../../filesystem";
 
 export const Route = createFileRoute("/project_/$id/")({
   component: Project,
 });
 
 function Project() {
-  const [fileContent, setFileContent] = useState<CodeViewerParams | null>(null);
+  const [fileContent, setFileContent] = useState<CodeViewerProps | null>(null);
+  const navigate = useNavigate();
   const { id } = Route.useParams();
 
-  const { data: project, isPending, error } = useQuery<UploadProject>({
+  const {
+    data: project,
+    isPending,
+    error,
+  } = useQuery<UploadProject>({
     queryKey: ["projects", id],
-    queryFn: () => fetch(`${API_BASE_URL}/upload/projects/${id}`).then((r) => r.json()),
+    queryFn: () =>
+      fetch(`${API_BASE_URL}/upload/projects/${id}`).then((r) => r.json()),
   });
 
-  if(isPending) return <CircularProgress />;
+  if (isPending) return <CircularProgress />;
 
-  if(error) return <div> An error occured {error.message} </div>;
+  if (error) return <div> An error occured {error.message} </div>;
 
   async function onFileClick(file: FileSystemFile) {
-    const content = await downloadFile(`${API_BASE_URL}/upload/projects/${id}/files/${file.downloadId!}`);
+    const content = await downloadFile(
+      `${API_BASE_URL}/upload/projects/${id}/files/${file.downloadId!}`,
+    );
     const fileExtension = getFileExtension(file.name);
 
     if (!fileExtension) {
       throw "Invalid file name";
     }
 
-    setFileContent({ content, language: fileExtension });
+    setFileContent({ content, language: fileExtension, id: file.downloadId });
   }
 
   async function analyzeFile() {
-    fetch("http://127.0.0.1:4000/llm-service/analyze", {
-      method: "POST",
-      body: fileContent?.content || "",
-    })
+    const result = await fetch(
+      `${BASE_URL}/fix/projects/${id}/files/${fileContent?.id}`,
+      {
+        method: "POST",
+      },
+    )
       .then((res) => res.text())
-      .then((data) => console.log(data))
       .catch((err) => console.error(err));
+
+    localStorage.setItem("TMP_RESULT", JSON.stringify(result));
+    console.log(result);
+    navigate({
+      to: `/project/$id/results/$file`,
+      params: { id, file: fileContent?.id! },
+    });
   }
 
   return (
     <Container direction="column" overflow="auto">
       <Typography
-          component="h1"
-          variant="h4"
-          sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
-        >
-          Project {project.name} ({project.files.length})
+        component="h1"
+        variant="h4"
+        sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
+      >
+        Project {project.name} ({project.files.length})
       </Typography>
-      <Stack direction="row" overflow="auto" margin={2}> 
-        {project.files && <FileTree directory={uploadFilesToFileSystemTree(project.files)} onFileClick={onFileClick} />}
+      <Stack direction="row" overflow="auto" margin={2}>
+        {project.files && (
+          <FileTree
+            directory={uploadFilesToFileSystemTree(project.files)}
+            onFileClick={onFileClick}
+          />
+        )}
         <div>
           {fileContent && (
             <>
@@ -82,6 +108,6 @@ function Project() {
           )}
         </div>
       </Stack>
-    </Container> 
+    </Container>
   );
 }
