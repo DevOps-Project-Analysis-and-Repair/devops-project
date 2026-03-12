@@ -258,8 +258,18 @@ Resources:
       StageName: '$default'
       AutoDeploy: true
       AccessLogSettings:
-        DestinationArn: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/${HttpApi}'
-        Format: '{"requestId":"$context.requestId","ip":"$context.identity.sourceIp","caller":"$context.identity.caller","user":"$context.identity.user","requestTime":"$context.requestTime","httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath","status":"$context.status","protocol":"$context.protocol","responseLength":"$context.responseLength"}'
+        Format: >-
+          {"requestId":"$context.requestId",
+          "ip":"$context.identity.sourceIp",
+          "httpMethod":"$context.httpMethod",
+          "resourcePath":"$context.resourcePath",
+          "status":"$context.status",
+          "responseLatency":"$context.responseLatency",
+          "integrationLatency":"$context.integrationLatency",
+          "responseLength":"$context.responseLength",
+          "requestTime":"$context.requestTime",
+          "userAgent":"$context.identity.userAgent",
+          "errorMessage":"$context.error.message"}
 
   # Permissions for API Gateway to invoke each Lambda
   UploadLambdaInvokePermission:
