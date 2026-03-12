@@ -16,3 +16,11 @@ export function datestring() {
 export function isUploadCompleted(output: CompleteMultipartUploadCommandOutput | AbortMultipartUploadCommandOutput): output is CompleteMultipartUploadCommandOutput {
   return (output as CompleteMultipartUploadCommandOutput).ETag !== undefined;
 }
+
+export function latest<T>(array: T[]): T | undefined {
+  const len = array.length;
+
+  if (len === 0) { return undefined; }
+
+  return array[len - 1];
+}

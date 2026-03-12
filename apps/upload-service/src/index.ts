@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { Project, ProjectFile } from './types';
 import { createToken, verifyToken } from './auth';
-import { datestring, isUploadCompleted } from './util';
+import { datestring, isUploadCompleted, latest } from './util';
 
 const serviceName = 'upload';
 
@@ -71,6 +71,7 @@ app.post(`/${serviceName}/projects`, async () => {
     name: `Upload ${datestring()}`,
     files: [],
     createdAt: Date.now(),
+    analyzedFiles: {},
   };
 
   await doc.put({
@@ -87,6 +88,17 @@ app.get(`/${serviceName}/projects/:projectId`, async ({ params: { projectId }}) 
   // 1. get project from db
   // 2. return project object, including file names
   return await getProjectFromDb(doc, projectId);
+});
+
+app.get(`/${serviceName}/projects/:projectId/latest`, async ({ params: { projectId }}) => {
+  // 1. get project from db
+  // 2. return project object, including file names
+  // 3. replace all the file references with the latest entry of the analyzed file
+  let project = await getProjectFromDb(doc, projectId);
+
+  project.files = project.files.map(x => latest(project.analyzedFiles[x.id]) ?? x);
+
+  return project;
 });
 
 app.post(`/${serviceName}/projects/:projectId/files`, async ({ req, params: { projectId }}) => {
@@ -114,7 +126,7 @@ app.post(`/${serviceName}/projects/:projectId/files`, async ({ req, params: { pr
       Key: fileId,
       Body: await req.bytes()
     }
-  })
+  });
 
   const result = await upload.done();
 
@@ -131,7 +143,48 @@ app.post(`/${serviceName}/projects/:projectId/files`, async ({ req, params: { pr
   // 5. update project
   await doc.put({ TableName: TABLE_PROJECTS, Item: project});
   
-  // things to save (filename, file contents (on s3), file reference to s3, mime-type?)
+  return project;
+});
+
+app.post(`/${serviceName}/projects/:projectId/files/:fileId/repaired`, async ({ req, params: { projectId, fileId }}) => {
+  // Note: Body should be send in binary
+
+  // 1. fetch project from project id, or fail
+  const project = await getProjectFromDb(doc, projectId);
+
+  // 2. get file from project
+  const file = findFile(fileId, project);
+  if (!file) { throw new NotFoundError(); }
+
+  const repairedFileId = uuidv4();
+
+  // 3. write file to s3
+  const upload = new Upload({
+    client: s3client,
+    params: {
+      Bucket: FILES_BUCKET,
+      Key: repairedFileId,
+      Body: await req.bytes()
+    }
+  });
+
+  const result = await upload.done();
+
+  if (!isUploadCompleted(result)) { throw new InternalServerError(); }
+
+  // 4. add file to analyzed files
+  project.analyzedFiles[file.id] ??= [];
+
+  project.analyzedFiles[file.id].push({
+    ...file,
+    id: repairedFileId,
+    iteration: project.analyzedFiles[file.id].length,
+    createdAt: Date.now()
+  });
+  
+  // 5. update project
+  await doc.put({ TableName: TABLE_PROJECTS, Item: project});
+
   return project;
 });
 
@@ -153,6 +206,7 @@ app.get(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ res, param
   
   return stream;
 });
+
 
 export const handler = async (event: unknown, context: Context) => {
   return app.resolve(event, context);
