@@ -53,23 +53,23 @@ function Project() {
     setFileContent({ content, language: fileExtension, id: file.downloadId });
   }
 
-  async function repairFile() {
-    const result = await fetch(
-      `${BASE_URL}/fix/projects/${id}/files/${fileContent?.id}`,
-      {
-        method: "POST",
-      },
-    )
-      .then((res) => res.text())
-      .catch((err) => console.error(err));
+  // async function repairFile() {
+  //   const result = await fetch(
+  //     `${BASE_URL}/fix/projects/${id}/files/${fileContent?.id}`,
+  //     {
+  //       method: "POST",
+  //     },
+  //   )
+  //     .then((res) => res.text())
+  //     .catch((err) => console.error(err));
 
-    localStorage.setItem("TMP_RESULT", JSON.stringify(result));
-    console.log(result);
-    navigate({
-      to: `/project/$id/results/$file`,
-      params: { id, file: fileContent?.id! },
-    });
-  }
+  //   localStorage.setItem("TMP_RESULT", JSON.stringify(result));
+  //   console.log(result);
+  //   navigate({
+  //     to: `/project/$id/results/$file`,
+  //     params: { id, file: fileContent?.id! },
+  //   });
+  // }
 
   async function analyzeFile() {
     const result = await fetch(
