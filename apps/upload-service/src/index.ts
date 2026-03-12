@@ -201,29 +201,22 @@ app.post(`/${serviceName}/projects/:projectId/files/:fileId/repaired`, async ({ 
 
 app.post(`/${serviceName}/projects/:projectId/analysis/sonar`, async ({ req, params: { projectId }}) => {
   // 1. get project
-  console.log('started sonar func');
-
-  const project = await getProjectFromDb(doc, projectId);
-
-  console.log('got db from project');
+  // const project = await getProjectFromDb(doc, projectId);
 
   // 2. add sonar id to list
-  // project.analysis ??= { sonarIds: [] };
-
   const body = await req.json();
 
   console.log(body);
+  // if (!('token' in body)) { throw new BadRequestError(); }
 
-  if (!('token' in body)) { throw new BadRequestError(); }
+  // // 3. add token to analysis results
+  // const token = body.token;
+  // console.log(token);
 
-  // 3. add token to analysis results
-  const token = body.token;
-  console.log(token);
+  // project.analysis.sonarIds.push(token);
 
-  project.analysis.sonarIds.push(token);
-
-  // 4. store complete document (this introduces a race-condition but w.e.)
-  await doc.put({ TableName: TABLE_PROJECTS, Item: project});
+  // // 4. store complete document (this introduces a race-condition but w.e.)
+  // await doc.put({ TableName: TABLE_PROJECTS, Item: project});
 
   return { ok: true };
 });
