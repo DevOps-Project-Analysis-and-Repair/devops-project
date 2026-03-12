@@ -157,19 +157,23 @@ app.post(`/${serviceName}/projects/:projectId/files`, async ({ req, params: { pr
   if (!isUploadCompleted(result)) { throw new InternalServerError(); }
 
   // 4. add file to project
-  project.files.push({
+  // project.files.push({
+  //   id: fileId,
+  //   filename, // do we need to clean filename?
+  //   url: result.Location ?? "",
+  //   mimetype
+  // });
+
+  console.log('writing file to dynamo');
+
+  await appendFile(project.id, {
     id: fileId,
     filename, // do we need to clean filename?
     url: result.Location ?? "",
     mimetype
   });
 
-  // await appendFile(project.id, {
-  //   id: fileId,
-  //   filename, // do we need to clean filename?
-  //   url: result.Location ?? "",
-  //   mimetype
-  // });
+  console.log('written file to dynamo');
 
   // await doc.update({
   //   Key: 
