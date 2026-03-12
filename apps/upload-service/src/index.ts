@@ -204,27 +204,14 @@ app.post(`/${serviceName}/projects/:projectId/analysis/sonar`, async ({ req, par
   const project = await getProjectFromDb(doc, projectId);
 
   // 2. add sonar id to list
-  // try {
-  //   const text = await req.text();
-  //   console.log(text);
-
-  //   // const { token } = await req.json(); 
-
-  //   const json = JSON.parse(text);
-  //   console.log(json);
-  // } catch (e) {
-  //   console.log(e);
-  // }
-
   const body = await req.json();
-  
-  if (!('token' in body)) { throw new BadRequestError(); }
 
-  // 3. add token to analysis results
-  const token = body.token;
-  console.log(token);
+  if (!('analysisId' in body)) { throw new BadRequestError(); }
 
-  project.analysis.sonarIds.push(token);
+  // 3. add analysisId to analysis results
+  const analysisId = body.analysisId;
+
+  project.analysis.sonarIds.push(analysisId);
 
   // 4. store complete document (this introduces a race-condition but w.e.)
   await doc.put({ TableName: TABLE_PROJECTS, Item: project});
