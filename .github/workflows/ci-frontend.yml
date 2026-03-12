@@ -13,30 +13,23 @@ on:
       - "apps/frontend/**"
 
 jobs:
-  test:
+  lint:
     runs-on: ubuntu-latest
-
-    defaults:
-      run:
+    steps:
+      - uses: ./.github/actions/setup-frontend
+      - run: npm run lint
         working-directory: apps/frontend
 
+  test:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-frontend
+      - run: npm run test
+        working-directory: apps/frontend
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: lint
-        run: npm run lint
-
-      - name: test
-        run: npm run test
-
-      - name: build
-        run: npm run build
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/actions/setup-frontend
+      - run: npm run build
+        working-directory: apps/frontend
