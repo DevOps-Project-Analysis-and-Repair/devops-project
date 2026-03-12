@@ -71,11 +71,11 @@ function Project() {
   //   });
   // }
 
-  async function analyzeFile() {
+  async function analyzeProject() {
     const result = await fetch(
       `${BASE_URL}/scan/${id}`,
       {
-        method: "POST",
+        method: "POST"
       },
     )
       .then((res) => res.text())
@@ -113,7 +113,7 @@ function Project() {
                 role={undefined}
                 variant="contained"
                 tabIndex={-1}
-                onClick={analyzeFile}
+                onClick={analyzeProject}
                 startIcon={<TroubleshootIcon />}
               >
                 Analyze & Repair

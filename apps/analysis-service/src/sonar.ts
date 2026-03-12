@@ -3,15 +3,19 @@ import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
 
+const SONAR_ORG = "devops-software-engineering";
+const SONAR_PROJECT_KEY = "devops-software-engineering_just-testing";
+const SONAR_PROJECT_NAME = "just-testing";
 const SONAR_TOKEN = "bcd02910cbccb25134ac49d377a55bea5c0ebaa8";
+const SONAR_HOST = "https://sonarcloud.io";
 
 // Run the scanner and send the results to the Sonar server.
 export const runSonarScanner = async (projectPath: string) => {
     await execFileAsync("sonar-scanner", [
-        "-Dsonar.organization=" + "devops-software-engineering", //process.env.SONAR_ORG_KEY,
-        "-Dsonar.projectKey=" + "devops-software-engineering_just-testing", //process.env.SONAR_PROJECT_KEY,
+        "-Dsonar.organization=" + SONAR_ORG, //process.env.SONAR_ORG_KEY,
+        "-Dsonar.projectKey=" + SONAR_PROJECT_KEY, //process.env.SONAR_PROJECT_KEY,
         "-Dsonar.sources=.",
-        "-Dsonar.host.url=" + "https://sonarcloud.io", //process.env.SONAR_HOST_URL,
+        "-Dsonar.host.url=" + SONAR_HOST, //process.env.SONAR_HOST_URL,
         "-Dsonar.token=" + SONAR_TOKEN, //process.env.SONAR_TOKEN,
     ], {
         cwd: projectPath,
@@ -21,22 +25,36 @@ export const runSonarScanner = async (projectPath: string) => {
     return { ok: true };
 };
 
-// export const pollSonarCloud(projectId: string): boolean {
-//     const auth = "Basic " + Buffer.from(`${SONAR_TOKEN}:`).toString("base64");
+export const createSonarProject = async (projectId: string): Promise<boolean> => {
+    const auth = createBasicAuthHeader();
 
-//     await fetch("https://sonarcloud.io/api/projects/create", {
-//     method: "POST",
-//     headers: {
-//         Authorization: auth,
-//         "Content-Type": "application/x-www-form-urlencoded"
-//     },
-//     body: new URLSearchParams({
-//         organization: "my-org",
-//         project: "my-org_repo",
-//         name: "repo"
-//     })
-//     });
-// }
+    await fetch("https://sonarcloud.io/api/projects/create", {
+        method: "POST",
+        headers: {
+            Authorization: auth,
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: new URLSearchParams({
+            organization: SONAR_ORG,
+            project: SONAR_PROJECT_KEY,
+            name: SONAR_PROJECT_NAME
+        })
+    });
+
+    return true;
+};
+
+// export const pollSonarCloud = async (projectId: string): Promise<boolean> => {
+//     const auth = createBasicAuthHeader();
+
+//     await ;
+
+//     return true;
+// };
+
+function createBasicAuthHeader(): string {
+    return "Basic " + Buffer.from(`${SONAR_TOKEN}:`).toString("base64");
+}
 
 // export const runSonarScanner = async () => {
 //     await execFileAsync("sonar-scanner", { cwd: "/tmp/project" });

@@ -11,14 +11,9 @@ const logger = new Logger({ serviceName });
 const app = new Router({ logger });
 
 // Scan a project with Sonar.
-app.post(`/${serviceName}/scan/:projectId`, async ({ req, params: { projectId } }) => {
+app.post(`/${serviceName}/scan/:projectId`, async ({ params: { projectId } }) => {
 
     // const id = uuidv4();
-
-    // Authorize request.
-    const token = req.headers.get('X-Project-Token');
-    if (!token) { throw new BadRequestError(); }
-    if (!verifyToken(token, projectId)) { throw new UnauthorizedError(); }
 
     // Download project from S3 bucket.
     const projectPath = '/tmp/project';
