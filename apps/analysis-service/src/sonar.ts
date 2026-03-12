@@ -17,6 +17,9 @@ export const runSonarScanner = async (projectPath: string) => {
         "-Dsonar.sources=.",
         "-Dsonar.host.url=" + SONAR_HOST, //process.env.SONAR_HOST_URL,
         "-Dsonar.token=" + SONAR_TOKEN, //process.env.SONAR_TOKEN,
+        "-Dsonar.scanner.skipJreProvisioning=true",
+        "-Dsonar.scm.provider=git",
+        "-Dsonar.scm.disabled=true"
     ], {
         cwd: projectPath,
         env: process.env,

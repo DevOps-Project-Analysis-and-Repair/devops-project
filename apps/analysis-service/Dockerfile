@@ -28,7 +28,7 @@ FROM public.ecr.aws/lambda/nodejs:24
 RUN dnf -y install java-21-amazon-corretto-headless && dnf clean all
 
 # Copy sonar-scanner into the Lambda image.
-COPY --from=scanner /opt/sonar-scanner /opt/sonar-scanner
+COPY --from=scanner /opt/sonar-scanner/bin /opt/sonar-scanner/bin
 ENV PATH="/opt/sonar-scanner/bin:${PATH}"
 
 # Let sonar-scanner store cache in writable location (/tmp).
