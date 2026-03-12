@@ -1,7 +1,4 @@
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
-
-const execFileAsync = promisify(execFile);
+import { spawn } from "child_process";
 
 const SONAR_ORG = "devops-software-engineering";
 const SONAR_PROJECT_KEY = "devops-software-engineering_just-testing";
@@ -10,28 +7,30 @@ const SONAR_TOKEN = "bcd02910cbccb25134ac49d377a55bea5c0ebaa8";
 const SONAR_HOST = "https://sonarcloud.io";
 
 // Run the scanner and send the results to the Sonar server.
-export const runSonarScanner = async (projectPath: string) => {
-    const result = await execFileAsync("sonar-scanner", [
-        "-X",
-        "-Dsonar.verbose=true",
-        "-Dsonar.organization=" + SONAR_ORG, //process.env.SONAR_ORG_KEY,
-        "-Dsonar.projectKey=" + SONAR_PROJECT_KEY, //process.env.SONAR_PROJECT_KEY,
-        "-Dsonar.sources=.",
-        "-Dsonar.host.url=" + SONAR_HOST, //process.env.SONAR_HOST_URL,
-        "-Dsonar.token=" + SONAR_TOKEN, //process.env.SONAR_TOKEN,
-        "-Dsonar.scanner.skipJreProvisioning=true",
-        "-Dsonar.scm.provider=git",
-        "-Dsonar.scm.disabled=true"
+export function runSonarScanner(projectPath: string): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const proc = spawn("sonar-scanner", [
+      "-X",
+      "-Dsonar.verbose=true",
+      "-Dsonar.organization=" + SONAR_ORG,
+      "-Dsonar.projectKey=" + SONAR_PROJECT_KEY,
+      "-Dsonar.sources=.",
+      "-Dsonar.host.url=" + SONAR_HOST,
+      "-Dsonar.token=" + SONAR_TOKEN,
+      "-Dsonar.scanner.skipJreProvisioning=true",
+      "-Dsonar.scm.disabled=true"
     ], {
-        cwd: projectPath,
-        env: process.env,
+      cwd: projectPath,
+      env: process.env
     });
 
-    console.log("sonar stdout:", result.stdout);
-    console.log("sonar stderr:", result.stderr);
+    proc.stdout.on("data", (d) => console.log(d.toString()));
+    proc.stderr.on("data", (d) => console.error(d.toString()));
 
-    return { ok: true };
-};
+    proc.on("close", (code) => resolve(code ?? 0));
+    proc.on("error", reject);
+  });
+}
 
 export const createSonarProject = async (projectId: string): Promise<boolean> => {
     const auth = createBasicAuthHeader();
