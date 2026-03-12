@@ -265,7 +265,7 @@ Resources:
       StageName: '$default'
       AutoDeploy: true
       AccessLogSettings:
-        DestinationArn: !GetAtt ApiGatewayLogs.Arn
+        DestinationArn: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/http-api'
         Format: '{"requestId":"$context.requestId","ip":"$context.identity.sourceIp","caller":"$context.identity.caller","user":"$context.identity.user","requestTime":"$context.requestTime","httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath","status":"$context.status","protocol":"$context.protocol","responseLength":"$context.responseLength"}'
 
   # Permissions for API Gateway to invoke each Lambda
