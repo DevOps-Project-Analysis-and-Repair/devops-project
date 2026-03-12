@@ -22,6 +22,8 @@ app.post(`/${serviceName}/:projectId`, async ({ params: { projectId } }) => {
     const projectPath = '/tmp/project';
     await downloadProjectFiles(projectId, projectPath);
 
+    console.log("Hello");
+
     // Run the Sonar scanner.
     const exitCode = await runSonarScanner(projectPath);
 
