@@ -1,6 +1,6 @@
 
 export const API_BASE_URL =
-    "https://jjz7wxr827.execute-api.eu-west-1.amazonaws.com";
+    "https://1wk9q92xx1.execute-api.eu-west-1.amazonaws.com";
 
 export const BASE_URL = import.meta.env.PROD ? API_BASE_URL : "http://127.0.0.1:4000";
 
