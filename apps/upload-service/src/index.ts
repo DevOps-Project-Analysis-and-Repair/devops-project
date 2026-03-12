@@ -34,7 +34,7 @@ async function getProjectFromDb(doc: DynamoDBDocument, projectId: string): Promi
 
 async function appendFile(projectId: string, newFile: ProjectFile): Promise<void> {
   await db.send(new UpdateCommand({
-    TableName: "Projects",
+    TableName: TABLE_PROJECTS,
     Key: { id: projectId },
     UpdateExpression: "SET files = list_append(files, :newFile)",
     ExpressionAttributeValues: {
