@@ -3,7 +3,7 @@ import { Logger } from '@aws-lambda-powertools/logger';
 import { Context } from 'aws-lambda';
 
 import { downloadProjectFiles } from './project';
-import { createSonarProject, runSonarScanner } from './sonar';
+import { createSonarProject, pollSonarCloud, runSonarScanner } from './sonar';
 
 const serviceName = 'analysis';
 const logger = new Logger({ serviceName });
@@ -22,20 +22,22 @@ app.post(`/${serviceName}/:projectId`, async ({ params: { projectId } }) => {
     const projectPath = '/tmp/project';
     await downloadProjectFiles(projectId, projectPath);
 
-    console.log("Hello");
-
     // Create a new Sonar project to store the analysis report.
     await createSonarProject(projectId);
 
     // Run the Sonar scanner.
-    const exitCode = await runSonarScanner(projectPath, projectId);
+    const ceTaskUrl = await runSonarScanner(projectPath, projectId);
+    console.log(ceTaskUrl);
+
+    // Poll for the Sonar report.
+    const analysisId = await pollSonarCloud(ceTaskUrl);
 
     // Upload the scanner logs to the S3 bucket.
     // TODO: In the same way as we did for the project files in the upload handler.
 
     // Clean
 
-    return exitCode;
+    return analysisId;
 });
 
 export const handler = async (event: unknown, context: Context) => app.resolve(event, context);
