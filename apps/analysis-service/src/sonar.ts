@@ -12,6 +12,8 @@ const SONAR_HOST = "https://sonarcloud.io";
 // Run the scanner and send the results to the Sonar server.
 export const runSonarScanner = async (projectPath: string) => {
     const result = await execFileAsync("sonar-scanner", [
+        "-X",
+        "-Dsonar.verbose=true",
         "-Dsonar.organization=" + SONAR_ORG, //process.env.SONAR_ORG_KEY,
         "-Dsonar.projectKey=" + SONAR_PROJECT_KEY, //process.env.SONAR_PROJECT_KEY,
         "-Dsonar.sources=.",
