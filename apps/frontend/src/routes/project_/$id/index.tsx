@@ -53,7 +53,7 @@ function Project() {
     setFileContent({ content, language: fileExtension, id: file.downloadId });
   }
 
-  async function analyzeFile() {
+  async function repairFile() {
     const result = await fetch(
       `${BASE_URL}/fix/projects/${id}/files/${fileContent?.id}`,
       {
@@ -69,6 +69,24 @@ function Project() {
       to: `/project/$id/results/$file`,
       params: { id, file: fileContent?.id! },
     });
+  }
+
+  async function analyzeFile() {
+    const result = await fetch(
+      `${BASE_URL}/scan/${id}`,
+      {
+        method: "POST",
+      },
+    )
+      .then((res) => res.text())
+      .catch((err) => console.error(err));
+
+    localStorage.setItem("TMP_RESULT", JSON.stringify(result));
+    console.log(result);
+    // navigate({
+    //   to: `/project/$id/results/$file`,
+    //   params: { id, file: fileContent?.id! },
+    // });
   }
 
   return (
