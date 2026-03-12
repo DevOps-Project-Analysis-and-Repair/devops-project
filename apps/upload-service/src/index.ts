@@ -204,9 +204,13 @@ app.post(`/${serviceName}/projects/:projectId/analysis/sonar`, async ({ req, par
   // const project = await getProjectFromDb(doc, projectId);
 
   // 2. add sonar id to list
-  const body = await req.json();
-
-  console.log(body);
+  try {
+    const body = await req.json();
+    console.log(body);
+  } catch (e) {
+    console.log(e);
+  }
+  
   // if (!('token' in body)) { throw new BadRequestError(); }
 
   // // 3. add token to analysis results
