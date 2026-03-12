@@ -100,7 +100,13 @@ app.get(`/${serviceName}/projects/:projectId/latest`, async ({ params: { project
   // 3. replace all the file references with the latest entry of the analyzed file
   let project = await getProjectFromDb(doc, projectId);
 
-  project.files = project.files.map(x => x ?? x);
+  project.files = project.files.map(x => {
+    if (x.id in project.analyzedFiles) {
+      return latest(project.analyzedFiles[x.id]) ?? x;
+    }
+
+    return x;
+  });
 
   return project;
 });
