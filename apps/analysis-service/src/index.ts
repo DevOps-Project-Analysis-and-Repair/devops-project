@@ -2,7 +2,7 @@ import { BadRequestError, UnauthorizedError, Router } from '@aws-lambda-powertoo
 import { Logger } from '@aws-lambda-powertools/logger';
 import { Context } from 'aws-lambda';
 
-import { downloadProjectFiles } from './project';
+import { downloadProjectFiles, uploadAnalysisId } from './project';
 import { createSonarProject, pollSonarCloud, runSonarScanner } from './sonar';
 
 const serviceName = 'analysis';
@@ -27,13 +27,12 @@ app.post(`/${serviceName}/:projectId`, async ({ params: { projectId } }) => {
 
     // Run the Sonar scanner.
     const ceTaskUrl = await runSonarScanner(projectPath, projectId);
-    console.log(ceTaskUrl);
 
     // Poll for the Sonar report.
     const analysisId = await pollSonarCloud(ceTaskUrl);
 
-    // Upload the scanner logs to the S3 bucket.
-    // TODO: In the same way as we did for the project files in the upload handler.
+    // Upload the analysis ID to the S3 bucket so that metrics and issues can be retrieved.
+    await uploadAnalysisId(projectId, analysisId);
 
     // Clean
 
