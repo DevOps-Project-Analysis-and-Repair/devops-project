@@ -23,7 +23,7 @@ app.post(`/${serviceName}/:projectId`, async ({ params: { projectId } }) => {
     await downloadProjectFiles(projectId, projectPath);
 
     // Run the Sonar scanner.
-    const exitCode = projectPath; //await runSonarScanner(projectPath);
+    const exitCode = await runSonarScanner(projectPath);
 
     // Upload the scanner logs to the S3 bucket.
     // TODO: In the same way as we did for the project files in the upload handler.
