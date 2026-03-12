@@ -40,10 +40,9 @@ export const runSonarScanner = async (projectPath: string, projectId: string): P
     }
 
     const reportPath = path.join(projectPath, ".scannerwork", "report-task.txt");
-
-    console.log(reportPath);
-
     const ceTaskUrl = (await fs.readFile(reportPath, "utf8")).match(/^ceTaskUrl=(.*)$/m)?.[1]!;
+    
+    console.log(`ceTaskUrl=${ceTaskUrl}`);
 
     return ceTaskUrl;
 }
@@ -85,7 +84,9 @@ export const pollSonarCloud = async (ceTaskUrl: string, intervalMs: number = 200
         const status = data?.task?.status;
 
         if (status === "SUCCESS") {
-            return data.task.analysisId;
+            const analysisId = data.task.analysisId;
+            console.log(`analysisId=${analysisId}`);
+            return analysisId;
         }
 
         if (status === "FAILED" || status === "CANCELED") {
