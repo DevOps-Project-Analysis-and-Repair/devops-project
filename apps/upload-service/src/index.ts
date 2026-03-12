@@ -3,13 +3,14 @@ import { BadRequestError, InternalServerError, NotFoundError, Router, Unauthoriz
 import { Logger } from '@aws-lambda-powertools/logger';
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { GetCommand, DynamoDBDocument, paginateScan } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocument, paginateScan } from "@aws-sdk/lib-dynamodb";
 import { Upload } from "@aws-sdk/lib-storage";
 import { v4 as uuidv4 } from 'uuid';
 
 import { Project, ProjectFile } from './types';
 import { createToken, verifyToken } from './auth';
-import { datestring, isUploadCompleted } from './util';
+import { datestring, isUploadCompleted, latest } from './util';
+import { appendAnalyzedFile, appendFile, getProjectFromDb } from './dynamo';
 
 const serviceName = 'upload';
 
@@ -20,25 +21,28 @@ const s3client = new S3Client({});
 const db = new DynamoDBClient({});
 const doc = DynamoDBDocument.from(db);
 
-const TABLE_PROJECTS = "Projects-upload-stack";
-const FILES_BUCKET = "files-upload-stack";
-
-async function getProjectFromDb(doc: DynamoDBDocument, projectId: string): Promise<Project> {
-  const cmd = new GetCommand({ TableName: TABLE_PROJECTS, Key: { id: projectId }});
-  const res = await doc.send(cmd);
-
-  if (!res.Item) { throw new NotFoundError(); }
-
-  return res.Item as Project;
-}
+export const TABLE_PROJECTS = "Projects-upload-stack";
+export const FILES_BUCKET = "files-upload-stack";
 
 function findFile(fileId: string, project: Project): ProjectFile | null {
+  // Find file searches in both the original project files as the analyzed files
   for (const file of project.files) {
+    if (file.id === fileId) { return file };
+  }
+
+  // Flatmap all the analyzedFiles for easy searching
+  const analyzedFiles = Object.values(project.analyzedFiles).flatMap(x => x);
+
+  for (const file of analyzedFiles) {
     if (file.id === fileId) { return file };
   }
 
   return null;
 }
+
+app.get(`/${serviceName}/health`, () => {
+  return { ok: true };
+});
 
 app.get(`/${serviceName}/projects`, async () => {
   const paginationConfig = { client: doc };
@@ -71,6 +75,7 @@ app.post(`/${serviceName}/projects`, async () => {
     name: `Upload ${datestring()}`,
     files: [],
     createdAt: Date.now(),
+    analyzedFiles: {},
   };
 
   await doc.put({
@@ -87,6 +92,23 @@ app.get(`/${serviceName}/projects/:projectId`, async ({ params: { projectId }}) 
   // 1. get project from db
   // 2. return project object, including file names
   return await getProjectFromDb(doc, projectId);
+});
+
+app.get(`/${serviceName}/projects/:projectId/latest`, async ({ params: { projectId }}) => {
+  // 1. get project from db
+  // 2. return project object, including file names
+  // 3. replace all the file references with the latest entry of the analyzed file
+  let project = await getProjectFromDb(doc, projectId);
+
+  project.files = project.files.map(x => {
+    if (x.id in project.analyzedFiles) {
+      return latest(project.analyzedFiles[x.id]) ?? x;
+    }
+
+    return x;
+  });
+
+  return project;
 });
 
 app.post(`/${serviceName}/projects/:projectId/files`, async ({ req, params: { projectId }}) => {
@@ -114,25 +136,66 @@ app.post(`/${serviceName}/projects/:projectId/files`, async ({ req, params: { pr
       Key: fileId,
       Body: await req.bytes()
     }
-  })
+  });
 
   const result = await upload.done();
 
   if (!isUploadCompleted(result)) { throw new InternalServerError(); }
 
   // 4. add file to project
-  project.files.push({
+  await appendFile(db, project.id, {
     id: fileId,
     filename, // do we need to clean filename?
     url: result.Location ?? "",
     mimetype
   });
 
-  // 5. update project
-  await doc.put({ TableName: TABLE_PROJECTS, Item: project});
-  
-  // things to save (filename, file contents (on s3), file reference to s3, mime-type?)
-  return project;
+  return { ok: true };
+});
+
+app.post(`/${serviceName}/projects/:projectId/files/:fileId/repaired`, async ({ req, params: { projectId, fileId }}) => {
+  // Note: Body should be send in binary
+
+  // 1. fetch project from project id, or fail
+  const project = await getProjectFromDb(doc, projectId);
+
+  // 2. get file from project
+  const file = findFile(fileId, project);
+  if (!file) { throw new NotFoundError(); }
+
+  const repairedFileId = uuidv4();
+
+  // 3. write file to s3
+  const upload = new Upload({
+    client: s3client,
+    params: {
+      Bucket: FILES_BUCKET,
+      Key: repairedFileId,
+      Body: await req.bytes()
+    }
+  });
+
+  const result = await upload.done();
+
+  if (!isUploadCompleted(result)) { throw new InternalServerError(); }
+
+  const getCurrentIteration = (fileId: string): number => {
+    if (fileId in project.analyzedFiles) {
+      return project.analyzedFiles[file.id].length + 1;
+    }
+
+    return 1;
+  }
+
+  // 4. add file to analyzed files
+  await appendAnalyzedFile(db, project.id, file.id, {
+    ...file,
+    id: repairedFileId,
+    iteration: getCurrentIteration(file.id),
+    createdAt: Date.now()
+  });
+
+  return { ok: true };
 });
 
 app.get(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ res, params: { projectId, fileId }}) => {
