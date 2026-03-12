@@ -1,8 +1,8 @@
-name: "Setup Frontend"
-description: "Checkout repo, setup node, and install dependencies"
+name: Setup Frontend
+description: Checkout repo, setup node, and install dependencies
 
 runs:
-using: "composite"
+using: composite
 steps:
   - uses: actions/checkout@v4
 
