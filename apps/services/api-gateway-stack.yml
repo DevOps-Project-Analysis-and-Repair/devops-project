@@ -23,7 +23,7 @@ Resources:
           - "*"
         MaxAge: 86400
 
-  # Execution Role
+  # Roles
   ApiGatewayExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -43,7 +43,22 @@ Resources:
                 Action: lambda:InvokeFunction
                 Resource:
                   - !ImportValue Upload-FunctionArn
+                  - !ImportValue Analysis-FunctionArn
                   - !ImportValue Fix-FunctionArn
+        - PolicyName: ApiGatewayLogsPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:DescribeLogGroups
+                  - logs:DescribeLogStreams
+                  - logs:PutLogEvents
+                  - logs:GetLogEvents
+                  - logs:FilterLogEvents
+                Resource: "*"
 
   # Integrations
   UploadIntegration:
@@ -52,6 +67,15 @@ Resources:
       ApiId: !Ref HttpApi
       IntegrationType: AWS_PROXY
       IntegrationUri: !ImportValue Upload-FunctionArn
+      PayloadFormatVersion: '2.0'
+      CredentialsArn: !GetAtt ApiGatewayExecutionRole.Arn
+
+  AnalysisIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref HttpApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !ImportValue Analysis-FunctionArn
       PayloadFormatVersion: '2.0'
       CredentialsArn: !GetAtt ApiGatewayExecutionRole.Arn
 
@@ -65,13 +89,6 @@ Resources:
       CredentialsArn: !GetAtt ApiGatewayExecutionRole.Arn
 
   # Routes for each endpoint
-  UploadGetRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref HttpApi
-      RouteKey: 'GET /upload'
-      Target: !Join ["/", ["integrations", !Ref UploadIntegration]]
-
   UploadPutRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
@@ -120,6 +137,62 @@ Resources:
       ApiId: !Ref HttpApi
       RouteKey: 'POST /upload/{proxy+}'
       Target: !Join ["/", ["integrations", !Ref UploadIntegration]]
+
+  AnalysisGetRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: 'GET /analysis'
+      Target: !Join ["/", ["integrations", !Ref AnalysisIntegration]]
+
+  AnalysisPutRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: 'PUT /analysis'
+      Target: !Join ["/", ["integrations", !Ref AnalysisIntegration]]
+
+  AnalysisPatchRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: 'PATCH /analysis'
+      Target: !Join ["/", ["integrations", !Ref AnalysisIntegration]]
+
+  AnalysisPostRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: 'POST /analysis'
+      Target: !Join ["/", ["integrations", !Ref AnalysisIntegration]]
+
+  AnalysisProxyGetRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: 'GET /analysis/{proxy+}'
+      Target: !Join ["/", ["integrations", !Ref AnalysisIntegration]]
+
+  AnalysisProxyPutRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: 'PUT /analysis/{proxy+}'
+      Target: !Join ["/", ["integrations", !Ref AnalysisIntegration]]
+
+  AnalysisProxyPatchRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: 'PATCH /analysis/{proxy+}'
+      Target: !Join ["/", ["integrations", !Ref AnalysisIntegration]]
+
+  AnalysisProxyPostRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: 'POST /analysis/{proxy+}'
+      Target: !Join ["/", ["integrations", !Ref AnalysisIntegration]]
 
   FixGetRoute:
     Type: AWS::ApiGatewayV2::Route
@@ -184,12 +257,23 @@ Resources:
       ApiId: !Ref HttpApi
       StageName: '$default'
       AutoDeploy: true
+      AccessLogSettings:
+        DestinationArn: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/${HttpApi}'
+        Format: '{"requestId":"$context.requestId","ip":"$context.identity.sourceIp","caller":"$context.identity.caller","user":"$context.identity.user","requestTime":"$context.requestTime","httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath","status":"$context.status","protocol":"$context.protocol","responseLength":"$context.responseLength"}'
 
   # Permissions for API Gateway to invoke each Lambda
   UploadLambdaInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !ImportValue Upload-FunctionArn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*'
+
+  AnalysisLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !ImportValue Analysis-FunctionArn
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*'
@@ -209,6 +293,9 @@ Outputs:
   UploadEndpoint:
     Description: The /upload endpoint URL
     Value: !Sub 'https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/upload'
+  AnalysisEndpoint:
+    Description: The /upload endpoint URL
+    Value: !Sub 'https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/analysis'
   FixEndpoint:
     Description: The /fix endpoint URL
     Value: !Sub 'https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/fix'

@@ -3,6 +3,9 @@ Description: >
   This template deploys a Lambda function using a Docker image, with S3 and DynamoDB access.
 
 Parameters:
+  AnalysisServiceImageUri:
+    Description: Uri to the image
+    Type: String
   Repo:
     Description: The ECR repository name for the Lambda Docker image
     Type: String
@@ -58,7 +61,7 @@ Resources:
       Role: !GetAtt LambdaExecutionRole.Arn
       PackageType: Image
       Code:
-        ImageUri: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${Repo}:latest'
+        ImageUri: !Ref AnalysisServiceImageUri
       Timeout: 30
       MemorySize: 128
       VpcConfig:
@@ -66,14 +69,14 @@ Resources:
           - !ImportValue LambdaSecurityGroup
         SubnetIds:
           - !ImportValue PrivateSubnet
-      # Environment:
-      #   Variables:
-      #     S3_BUCKET_NAME: !Ref S3Bucket
-      #     DYNAMODB_TABLE_NAME: !Ref DynamoDBTable
+      Environment:
+        Variables:
+          S3_BUCKET_NAME: !ImportValue Upload-BucketName
+          DYNAMODB_TABLE_NAME: !ImportValue Upload-TableName
 
 Outputs:
   AnalysisArn:
     Description: ARN of the Lambda function
     Value: !GetAtt LambdaFunction.Arn
     Export:
-      Name: !Sub "Analysis-AnalysisArn"
+      Name: !Sub "Analysis-FunctionArn"

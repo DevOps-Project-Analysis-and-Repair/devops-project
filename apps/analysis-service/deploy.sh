@@ -8,7 +8,7 @@ if [ -n "${GIT_HASH:-}" ]; then
     --stack-name analysis-stack \
     --template-file analysis-stack.yml \
     --capabilities CAPABILITY_NAMED_IAM \
-    --parameter-overrides UploadServiceImageUri=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO:$GIT_HASH
+    --parameter-overrides AnalysisServiceImageUri=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO:$GIT_HASH
 else
   aws cloudformation deploy \
     --stack-name analysis-stack \
