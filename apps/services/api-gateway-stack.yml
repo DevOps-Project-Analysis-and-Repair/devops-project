@@ -250,13 +250,6 @@ Resources:
       RouteKey: 'POST /fix/{proxy+}'
       Target: !Join ["/", ["integrations", !Ref FixIntegration]]
 
-  # LogGroup
-  ApiGatewayLogs:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub '/aws/apigateway/http-api'
-      RetentionInDays: 10
-
   # Stage
   Stage:
     Type: AWS::ApiGatewayV2::Stage
@@ -265,7 +258,7 @@ Resources:
       StageName: '$default'
       AutoDeploy: true
       AccessLogSettings:
-        DestinationArn: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/http-api'
+        DestinationArn: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/${HttpApi}'
         Format: '{"requestId":"$context.requestId","ip":"$context.identity.sourceIp","caller":"$context.identity.caller","user":"$context.identity.user","requestTime":"$context.requestTime","httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath","status":"$context.status","protocol":"$context.protocol","responseLength":"$context.responseLength"}'
 
   # Permissions for API Gateway to invoke each Lambda
