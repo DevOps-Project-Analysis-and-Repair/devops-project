@@ -43,7 +43,7 @@ function Project() {
 
   async function onFileClick(file: FileSystemFile) {
     const content = await downloadFile(
-      `${API_BASE_URL}/upload/projects/${id}/files/${file.downloadId!}`,
+      `${API_BASE_URL}/upload/projects/${id}/files/${file.downloadId}`,
     );
     const fileExtension = getFileExtension(file.name);
 

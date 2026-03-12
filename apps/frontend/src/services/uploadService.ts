@@ -50,7 +50,7 @@ export async function createProject(fileTree: FileSystemDirectory, progress: ((x
   const chunks = chunk(files, 5);
 
   let uploaded = 0;
-  let total = files.length;
+  const total = files.length;
 
   for (const chunk of chunks) {
     const uploadHandlers = chunk.map(file => {
