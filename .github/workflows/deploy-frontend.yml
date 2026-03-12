@@ -19,8 +19,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup frontend
-        uses: ./.github/actions/setup-frontend
+      - name: Setup dependencies
+        uses: ./.github/actions/setup-dependencies
+        with:
+          working-directory: apps/frontend
 
       - name: Build frontend
         run: npm run build

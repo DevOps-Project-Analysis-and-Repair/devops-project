@@ -19,8 +19,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup frontend
-        uses: ./.github/actions/setup-frontend
+      - name: Setup dependencies
+        uses: ./.github/actions/setup-dependencies
+        with:
+          working-directory: apps/frontend
 
       - run: npm run lint
         working-directory: apps/frontend
@@ -31,8 +33,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup frontend
-        uses: ./.github/actions/setup-frontend
+      - name: Setup dependencies
+        uses: ./.github/actions/setup-dependencies
+        with:
+          working-directory: apps/frontend
 
       - run: npm run test
         working-directory: apps/frontend
@@ -43,8 +47,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup frontend
-        uses: ./.github/actions/setup-frontend
+      - name: Setup dependencies
+        uses: ./.github/actions/setup-dependencies
+        with:
+          working-directory: apps/frontend
 
       - run: npm run build
         working-directory: apps/frontend
