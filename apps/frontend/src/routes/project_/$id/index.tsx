@@ -1,7 +1,7 @@
 import TroubleshootIcon from "@mui/icons-material/Troubleshoot";
 import { Button, CircularProgress, Stack, Typography } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { API_BASE_URL, BASE_URL, type UploadProject } from "../../../api";
 import {
