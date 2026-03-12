@@ -13,4 +13,5 @@ runs:
         cache-dependency-path: apps/frontend/package-lock.json
 
     - run: npm ci
+      shell: bash
       working-directory: apps/frontend
