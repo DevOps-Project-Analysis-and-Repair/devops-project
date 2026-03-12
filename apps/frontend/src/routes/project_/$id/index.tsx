@@ -83,10 +83,10 @@ function Project() {
 
     localStorage.setItem("TMP_RESULT", JSON.stringify(result));
     console.log(result);
-    // navigate({
-    //   to: `/project/$id/results/$file`,
-    //   params: { id, file: fileContent?.id! },
-    // });
+    navigate({
+      to: `/project/$id/results/$file`,
+      params: { id, file: fileContent?.id! },
+    });
   }
 
   return (
