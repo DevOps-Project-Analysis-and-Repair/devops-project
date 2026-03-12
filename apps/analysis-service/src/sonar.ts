@@ -1,6 +1,7 @@
 import { spawn } from "child_process";
 import { once } from "events";
-import fs from "fs";
+import path from "path";
+import fs from "fs/promises";
 
 const SONAR_ORG = "devops-software-engineering";
 // const SONAR_PROJECT_KEY = "devops-software-engineering_just-testing";
@@ -38,8 +39,12 @@ export const runSonarScanner = async (projectPath: string, projectId: string): P
         throw new Error();
     }
 
-    const ceTaskUrl = (await fs.promises.readFile(".sonar/report-task.txt", "utf8")).match(/^ceTaskUrl=(.*)$/m)?.[1]!;
-    
+    const reportPath = path.join(projectPath, ".scannerwork", "report-task.txt");
+
+    console.log(reportPath);
+
+    const ceTaskUrl = (await fs.readFile(reportPath, "utf8")).match(/^ceTaskUrl=(.*)$/m)?.[1]!;
+
     return ceTaskUrl;
 }
 
