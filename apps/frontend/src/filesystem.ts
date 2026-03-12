@@ -120,7 +120,7 @@ export function flattenFileSystem(root: FileSystemDirectory): FileSystemFile[] {
 }
 
 export function getFileExtension(filepath: string): string | undefined {
-  const extensionRegExp = new RegExp("\.([^.]+)$");
+  const extensionRegExp = new RegExp(".([^.]+)$");
   const res = extensionRegExp.exec(filepath);
   return res?.[1];
 }

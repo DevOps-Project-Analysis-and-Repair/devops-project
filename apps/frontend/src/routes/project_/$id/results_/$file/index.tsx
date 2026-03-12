@@ -63,8 +63,8 @@ function RouteComponent() {
 
       <CodeDiffViewer
         beforeCode={fileContent}
-        afterCode={afterCode?.code!}
-        language={afterCode?.language!}
+        afterCode={afterCode?.code || ""}
+        language={afterCode?.language || "unknown"}
       ></CodeDiffViewer>
     </Container>
   );

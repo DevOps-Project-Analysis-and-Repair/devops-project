@@ -42,7 +42,7 @@ function Project() {
 
   async function onFileClick(file: FileSystemFile) {
     const content = await downloadFile(
-      `${API_BASE_URL}/upload/projects/${id}/files/${file.downloadId!}`,
+      `${API_BASE_URL}/upload/projects/${id}/files/${file.downloadId}`,
     );
     const fileExtension = getFileExtension(file.name);
 
@@ -54,6 +54,12 @@ function Project() {
   }
 
   async function analyzeFile() {
+    if (!fileContent?.id) {
+      console.error("Could not analyze file");
+      alert("Could not analyze file, no file ID provided");
+      return;
+    }
+
     const result = await fetch(
       `${BASE_URL}/fix/projects/${id}/files/${fileContent?.id}`,
       {
@@ -65,9 +71,10 @@ function Project() {
 
     localStorage.setItem("TMP_RESULT", JSON.stringify(result));
     console.log(result);
+
     navigate({
       to: `/project/$id/results/$file`,
-      params: { id, file: fileContent?.id! },
+      params: { id, file: fileContent?.id },
     });
   }
 

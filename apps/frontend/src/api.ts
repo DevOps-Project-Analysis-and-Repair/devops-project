@@ -1,12 +1,12 @@
 
-export const API_BASE_URL =
+export const API_BASE_URL: string =
     "https://jjz7wxr827.execute-api.eu-west-1.amazonaws.com";
 
-export const BASE_URL = import.meta.env.PROD ? API_BASE_URL : "http://127.0.0.1:4000";
+export const BASE_URL: string = import.meta.env.PROD ? API_BASE_URL : "http://127.0.0.1:4000";
 
 
 export interface UploadProject {
-    files: any[];
+    files: unknown[];
     id: string;
     name: string;
 }
