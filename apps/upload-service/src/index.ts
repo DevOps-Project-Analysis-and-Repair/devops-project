@@ -150,7 +150,7 @@ app.post(`/${serviceName}/projects/:projectId/files`, async ({ req, params: { pr
     mimetype
   });
 
-  return project;
+  return { ok: true };
 });
 
 app.post(`/${serviceName}/projects/:projectId/files/:fileId/repaired`, async ({ req, params: { projectId, fileId }}) => {
@@ -195,7 +195,7 @@ app.post(`/${serviceName}/projects/:projectId/files/:fileId/repaired`, async ({ 
     createdAt: Date.now()
   });
 
-  return project;
+  return { ok: true };
 });
 
 app.get(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ res, params: { projectId, fileId }}) => {

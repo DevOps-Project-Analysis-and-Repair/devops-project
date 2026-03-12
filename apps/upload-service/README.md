@@ -9,7 +9,7 @@ Build the Docker image with the docker build command. The following example name
 
 ### Creating a new project
 ```sh
-curl --request POST --url https://p336yzymi2.execute-api.eu-west-1.amazonaws.com/upload-service/projects
+curl --request POST --url https://1wk9q92xx1.execute-api.eu-west-1.amazonaws.com/upload-service/projects
 ```
 Will result in a request that looks like the following:
 
@@ -24,7 +24,7 @@ The token is used as a header (X-Project-Token) for uploading a file to the proj
 ### Uploading a file to a project
 ```sh
 curl --request POST \
-  --url https://p336yzymi2.execute-api.eu-west-1.amazonaws.com/upload-service/projects/f9521144-b4c3-49a3-bbc3-e2ee6e7008ab/files \
+  --url https://1wk9q92xx1.execute-api.eu-west-1.amazonaws.com/upload-service/projects/f9521144-b4c3-49a3-bbc3-e2ee6e7008ab/files \
   --header 'Content-Type: application/javascript' \
   --header 'X-File-Name: foobar.tsx' \
   --header 'X-Project-Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiYXJmb28iLCJwcm9qZWN0X2lkIjoiZjk1MjExNDQtYjRjMy00OWEzLWJiYzMtZTJlZTZlNzAwOGFiIiwiZXhwIjoxNzcyOTAxNzc5LCJpYXQiOjE3NzIwMzc3Nzl9.v4AEPmtgSxxKxaKRz8y3_a--RTM1zOPkdEOm1SoLbIU' \
@@ -38,17 +38,31 @@ With the headers:
 ### Receiving all projects
 ```sh
 curl --request GET \
---url https://p336yzymi2.execute-api.eu-west-1.amazonaws.com/upload-service/projects/
+--url https://1wk9q92xx1.execute-api.eu-west-1.amazonaws.com/upload-service/projects/
 ```
 
 ### Receiving project
 ```sh
 curl --request GET \
---url https://p336yzymi2.execute-api.eu-west-1.amazonaws.com/upload-service/projects/f9521144-b4c3-49a3-bbc3-e2ee6e7008ab
+--url https://1wk9q92xx1.execute-api.eu-west-1.amazonaws.com/upload-service/projects/e30f1c28-b38d-42d3-9d10-da9a9e2506c6
+```
+
+### Receiving project for analysis
+```sh
+curl --request GET \
+--url https://1wk9q92xx1.execute-api.eu-west-1.amazonaws.com/upload-service/projects/e30f1c28-b38d-42d3-9d10-da9a9e2506c6/latest
 ```
 
 ### Downloading a file of a project
 ```sh
 curl --request GET \
---url https://p336yzymi2.execute-api.eu-west-1.amazonaws.com/upload-service/projects/f9521144-b4c3-49a3-bbc3-e2ee6e7008ab/files/15a2acc4-cace-41a1-818a-78515039b30d
+--url https://1wk9q92xx1.execute-api.eu-west-1.amazonaws.com/upload-service/projects/e30f1c28-b38d-42d3-9d10-da9a9e2506c6/files/15a2acc4-cace-41a1-818a-78515039b30d
+```
+
+### Update a file after analysis
+```sh
+curl --request POST \
+  --url https://1wk9q92xx1.execute-api.eu-west-1.amazonaws.com/upload/projects/e30f1c28-b38d-42d3-9d10-da9a9e2506c6/files/cdd8470d-c7a8-4655-b866-bb60a98fa6fa/repaired \
+  --header 'Content-Type: text/plain' \
+  --data 'foobar();'
 ```
