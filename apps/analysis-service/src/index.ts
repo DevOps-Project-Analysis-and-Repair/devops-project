@@ -3,7 +3,7 @@ import { Logger } from '@aws-lambda-powertools/logger';
 import { Context } from 'aws-lambda';
 
 import { downloadProjectFiles } from './project';
-import { runSonarScanner } from './sonar';
+import { createSonarProject, runSonarScanner } from './sonar';
 
 const serviceName = 'analysis';
 const logger = new Logger({ serviceName });
@@ -24,8 +24,11 @@ app.post(`/${serviceName}/:projectId`, async ({ params: { projectId } }) => {
 
     console.log("Hello");
 
+    // Create a new Sonar project to store the analysis report.
+    await createSonarProject(projectId);
+
     // Run the Sonar scanner.
-    const exitCode = await runSonarScanner(projectPath);
+    const exitCode = await runSonarScanner(projectPath, projectId);
 
     // Upload the scanner logs to the S3 bucket.
     // TODO: In the same way as we did for the project files in the upload handler.

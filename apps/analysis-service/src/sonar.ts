@@ -1,17 +1,17 @@
 import { spawn } from "child_process";
 
 const SONAR_ORG = "devops-software-engineering";
-const SONAR_PROJECT_KEY = "devops-software-engineering_just-testing";
-const SONAR_PROJECT_NAME = "just-testing";
+// const SONAR_PROJECT_KEY = "devops-software-engineering_just-testing";
+// const SONAR_PROJECT_NAME = "just-testing";
 const SONAR_TOKEN = "bcd02910cbccb25134ac49d377a55bea5c0ebaa8";
 const SONAR_HOST = "https://sonarcloud.io";
 
 // Run the scanner and send the results to the Sonar server.
-export function runSonarScanner(projectPath: string): Promise<number> {
+export function runSonarScanner(projectPath: string, projectId: string): Promise<number> {
   return new Promise((resolve, reject) => {
     const proc = spawn("sonar-scanner", [
       "-Dsonar.organization=" + SONAR_ORG,
-      "-Dsonar.projectKey=" + SONAR_PROJECT_KEY,
+      "-Dsonar.projectKey=" + `${SONAR_ORG}_${projectId}`,
       "-Dsonar.sources=.",
       "-Dsonar.host.url=" + SONAR_HOST,
       "-Dsonar.token=" + SONAR_TOKEN,
@@ -37,18 +37,23 @@ export function runSonarScanner(projectPath: string): Promise<number> {
 export const createSonarProject = async (projectId: string): Promise<boolean> => {
     const auth = createBasicAuthHeader();
 
-    await fetch("https://sonarcloud.io/api/projects/create", {
+    const result = await fetch("https://sonarcloud.io/api/projects/create", {
         method: "POST",
         headers: {
-            Authorization: auth,
+            Authorization: `Bearer ${SONAR_TOKEN}`,
             "Content-Type": "application/x-www-form-urlencoded"
         },
         body: new URLSearchParams({
             organization: SONAR_ORG,
-            project: SONAR_PROJECT_KEY,
-            name: SONAR_PROJECT_NAME
+            project: `${SONAR_ORG}_${projectId}`,
+            name: projectId
         })
     });
+
+    if (!result.ok) {
+        const text = await result.text();
+        throw new Error(`Sonar project creation failed: ${result.status} ${text}`);
+    }
 
     return true;
 };
