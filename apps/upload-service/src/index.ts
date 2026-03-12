@@ -157,19 +157,19 @@ app.post(`/${serviceName}/projects/:projectId/files`, async ({ req, params: { pr
   if (!isUploadCompleted(result)) { throw new InternalServerError(); }
 
   // 4. add file to project
-  // project.files.push({
-  //   id: fileId,
-  //   filename, // do we need to clean filename?
-  //   url: result.Location ?? "",
-  //   mimetype
-  // });
-
-  await appendFile(project.id, {
+  project.files.push({
     id: fileId,
     filename, // do we need to clean filename?
     url: result.Location ?? "",
     mimetype
   });
+
+  // await appendFile(project.id, {
+  //   id: fileId,
+  //   filename, // do we need to clean filename?
+  //   url: result.Location ?? "",
+  //   mimetype
+  // });
 
   // await doc.update({
   //   Key: 
