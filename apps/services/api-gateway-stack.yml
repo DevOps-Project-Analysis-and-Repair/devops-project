@@ -43,6 +43,7 @@ Resources:
                 Action: lambda:InvokeFunction
                 Resource:
                   - !ImportValue Upload-FunctionArn
+                  - !ImportValue Analysis-FunctionArn
                   - !ImportValue Fix-FunctionArn
 
   ApiGatewayLoggingRole:
