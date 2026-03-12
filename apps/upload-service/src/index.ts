@@ -199,6 +199,27 @@ app.post(`/${serviceName}/projects/:projectId/files/:fileId/repaired`, async ({ 
   return { ok: true };
 });
 
+app.post(`/${serviceName}/projects/:projectId/analysis/sonar`, async ({ req, params: { projectId }}) => {
+  // 1. get project
+  const project = await getProjectFromDb(doc, projectId);
+
+  // 2. add sonar id to list
+  project.analysis ??= { sonarIds: [] };
+
+  const body = await req.json();
+
+  if (!('token' in body)) { throw new BadRequestError(); }
+
+  // 3. add token to analysis results
+  const token = body.token;
+  project.analysis.sonarIds.push(token);
+
+  // 4. store complete document (this introduces a race-condition but w.e.)
+  await doc.put({ TableName: TABLE_PROJECTS, Item: project});
+
+  return { ok: true };
+});
+
 app.get(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ res, params: { projectId, fileId }}) => {
   // 1. get project
   const project = await getProjectFromDb(doc, projectId);
