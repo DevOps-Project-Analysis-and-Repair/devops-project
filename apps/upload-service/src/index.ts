@@ -40,6 +40,10 @@ function findFile(fileId: string, project: Project): ProjectFile | null {
   return null;
 }
 
+app.get(`/${serviceName}/health`, () => {
+  return { ok: true };
+});
+
 app.get(`/${serviceName}/projects`, async () => {
   const paginationConfig = { client: doc };
   const tableConfig = {
@@ -206,7 +210,6 @@ app.get(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ res, param
   
   return stream;
 });
-
 
 export const handler = async (event: unknown, context: Context) => {
   return app.resolve(event, context);
