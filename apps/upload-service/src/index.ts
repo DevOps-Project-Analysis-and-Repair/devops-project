@@ -3,7 +3,7 @@ import { BadRequestError, InternalServerError, NotFoundError, Router, Unauthoriz
 import { Logger } from '@aws-lambda-powertools/logger';
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { GetCommand, DynamoDBDocument, paginateScan } from "@aws-sdk/lib-dynamodb";
+import { GetCommand, DynamoDBDocument, paginateScan, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { Upload } from "@aws-sdk/lib-storage";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -30,6 +30,18 @@ async function getProjectFromDb(doc: DynamoDBDocument, projectId: string): Promi
   if (!res.Item) { throw new NotFoundError(); }
 
   return res.Item as Project;
+}
+
+async function appendFile(projectId: string, newFile: ProjectFile): Promise<void> {
+  await db.send(new UpdateCommand({
+    TableName: "Projects",
+    Key: { id: projectId },
+    UpdateExpression: "SET files = list_append(files, :newFile)",
+    ExpressionAttributeValues: {
+      ":newFile": [newFile],
+    },
+    ConditionExpression: "attribute_exists(id)",
+  }));
 }
 
 function findFile(fileId: string, project: Project): ProjectFile | null {
@@ -145,12 +157,23 @@ app.post(`/${serviceName}/projects/:projectId/files`, async ({ req, params: { pr
   if (!isUploadCompleted(result)) { throw new InternalServerError(); }
 
   // 4. add file to project
-  project.files.push({
+  // project.files.push({
+  //   id: fileId,
+  //   filename, // do we need to clean filename?
+  //   url: result.Location ?? "",
+  //   mimetype
+  // });
+
+  await appendFile(project.id, {
     id: fileId,
     filename, // do we need to clean filename?
     url: result.Location ?? "",
     mimetype
   });
+
+  // await doc.update({
+  //   Key: 
+  // });
 
   // 5. update project
   await doc.put({ TableName: TABLE_PROJECTS, Item: project });
@@ -190,7 +213,7 @@ app.post(`/${serviceName}/projects/:projectId/files/:fileId/repaired`, async ({ 
   project.analyzedFiles[file.id].push({
     ...file,
     id: repairedFileId,
-    iteration: project.analyzedFiles[file.id].length,
+    iteration: project.analyzedFiles[file.id].length + 1,
     createdAt: Date.now()
   });
   
