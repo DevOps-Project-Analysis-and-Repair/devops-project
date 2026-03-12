@@ -21,22 +21,22 @@ export const runSonarScanner = async (projectPath: string) => {
     return { ok: true };
 };
 
-export const pollSonarCloud(projectId: string): boolean {
-    const auth = "Basic " + Buffer.from(`${SONAR_TOKEN}:`).toString("base64");
+// export const pollSonarCloud(projectId: string): boolean {
+//     const auth = "Basic " + Buffer.from(`${SONAR_TOKEN}:`).toString("base64");
 
-    await fetch("https://sonarcloud.io/api/projects/create", {
-    method: "POST",
-    headers: {
-        Authorization: auth,
-        "Content-Type": "application/x-www-form-urlencoded"
-    },
-    body: new URLSearchParams({
-        organization: "my-org",
-        project: "my-org_repo",
-        name: "repo"
-    })
-    });
-}
+//     await fetch("https://sonarcloud.io/api/projects/create", {
+//     method: "POST",
+//     headers: {
+//         Authorization: auth,
+//         "Content-Type": "application/x-www-form-urlencoded"
+//     },
+//     body: new URLSearchParams({
+//         organization: "my-org",
+//         project: "my-org_repo",
+//         name: "repo"
+//     })
+//     });
+// }
 
 // export const runSonarScanner = async () => {
 //     await execFileAsync("sonar-scanner", { cwd: "/tmp/project" });
