@@ -79,4 +79,4 @@ Outputs:
     Description: ARN of the Lambda function
     Value: !GetAtt LambdaFunction.Arn
     Export:
-      Name: !Sub "Analysis-AnalysisArn"
+      Name: !Sub "Analysis-FunctionArn"
