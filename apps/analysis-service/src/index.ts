@@ -9,6 +9,10 @@ const serviceName = 'scan';
 const logger = new Logger({ serviceName });
 const app = new Router({ logger });
 
+app.get(`/${serviceName}/health`, async () => {
+  return true;
+});
+
 // Scan a project with Sonar.
 app.post(`/${serviceName}/:projectId`, async ({ params: { projectId } }) => {
 
