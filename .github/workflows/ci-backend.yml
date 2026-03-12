@@ -26,7 +26,7 @@ jobs:
         service:
           - upload-service
           - llm-service
-          - analysis-service
+          # - analysis-service (Need to add when analysis service is live)
 
     steps:
       - name: Checkout code
