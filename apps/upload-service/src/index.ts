@@ -180,7 +180,7 @@ app.post(`/${serviceName}/projects/:projectId/files`, async ({ req, params: { pr
   // });
 
   // 5. update project
-  await doc.put({ TableName: TABLE_PROJECTS, Item: project });
+  // await doc.put({ TableName: TABLE_PROJECTS, Item: project });
   
   return project;
 });
