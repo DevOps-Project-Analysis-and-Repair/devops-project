@@ -46,30 +46,30 @@ Resources:
                   - !ImportValue Fix-FunctionArn
 
   ApiGatewayLoggingRole:
-  Type: AWS::IAM::Role
-  Properties:
-    AssumeRolePolicyDocument:
-      Version: '2012-10-17'
-      Statement:
-        - Effect: Allow
-          Principal:
-            Service: apigateway.amazonaws.com
-          Action: sts:AssumeRole
-    Policies:
-      - PolicyName: ApiGatewayLogsPolicy
-        PolicyDocument:
-          Version: '2012-10-17'
-          Statement:
-            - Effect: Allow
-              Action:
-                - logs:CreateLogGroup
-                - logs:CreateLogStream
-                - logs:DescribeLogGroups
-                - logs:DescribeLogStreams
-                - logs:PutLogEvents
-                - logs:GetLogEvents
-                - logs:FilterLogEvents
-              Resource: "*"
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: ApiGatewayLogsPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:DescribeLogGroups
+                  - logs:DescribeLogStreams
+                  - logs:PutLogEvents
+                  - logs:GetLogEvents
+                  - logs:FilterLogEvents
+                Resource: "*"
 
   # Integrations
   UploadIntegration:
@@ -156,7 +156,7 @@ Resources:
       RouteKey: 'POST /upload/{proxy+}'
       Target: !Join ["/", ["integrations", !Ref UploadIntegration]]
 
-    UploadGetRoute:
+  UploadGetRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
       ApiId: !Ref HttpApi
