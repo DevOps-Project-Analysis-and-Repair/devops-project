@@ -252,10 +252,10 @@ Resources:
 
   # LogGroup
   ApiGatewayLogs:
-  Type: AWS::Logs::LogGroup
-  Properties:
-    LogGroupName: !Sub '/aws/apigateway/http-api'
-    RetentionInDays: 10
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/apigateway/http-api'
+      RetentionInDays: 10
 
   # Stage
   Stage:
