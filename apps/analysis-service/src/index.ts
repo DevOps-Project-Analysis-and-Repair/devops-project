@@ -3,15 +3,14 @@ import { Logger } from '@aws-lambda-powertools/logger';
 import { Context } from 'aws-lambda';
 
 import { downloadProjectFiles } from './project';
-import { verifyToken } from './auth';
 import { runSonarScanner } from './sonar';
 
-const serviceName = 'sonar';
+const serviceName = 'scan';
 const logger = new Logger({ serviceName });
 const app = new Router({ logger });
 
 // Scan a project with Sonar.
-app.post(`/${serviceName}/scan/:projectId`, async ({ params: { projectId } }) => {
+app.post(`/${serviceName}/:projectId`, async ({ params: { projectId } }) => {
 
     // const id = uuidv4();
 
