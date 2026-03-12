@@ -3,7 +3,7 @@ import { BadRequestError, InternalServerError, NotFoundError, Router, Unauthoriz
 import { Logger } from '@aws-lambda-powertools/logger';
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { GetCommand, DynamoDBDocument, paginateScan, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocument, paginateScan } from "@aws-sdk/lib-dynamodb";
 import { Upload } from "@aws-sdk/lib-storage";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -179,11 +179,19 @@ app.post(`/${serviceName}/projects/:projectId/files/:fileId/repaired`, async ({ 
 
   if (!isUploadCompleted(result)) { throw new InternalServerError(); }
 
+  const getCurrentIteration = (fileId: string): number => {
+    if (fileId in project.analyzedFiles) {
+      return project.analyzedFiles[file.id].length + 1;
+    }
+
+    return 1;
+  }
+
   // 4. add file to analyzed files
   await appendAnalyzedFile(db, project.id, {
     ...file,
     id: repairedFileId,
-    iteration: project.analyzedFiles[file.id].length + 1,
+    iteration: getCurrentIteration(file.id),
     createdAt: Date.now()
   });
 
