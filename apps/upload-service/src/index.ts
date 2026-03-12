@@ -188,7 +188,7 @@ app.post(`/${serviceName}/projects/:projectId/files/:fileId/repaired`, async ({ 
   }
 
   // 4. add file to analyzed files
-  await appendAnalyzedFile(db, project.id, {
+  await appendAnalyzedFile(db, project.id, file.id, {
     ...file,
     id: repairedFileId,
     iteration: getCurrentIteration(file.id),

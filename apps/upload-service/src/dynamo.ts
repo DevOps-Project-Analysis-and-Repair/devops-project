@@ -25,8 +25,8 @@ export async function appendFile(db: DynamoDBClient, projectId: string, newFile:
   }));
 }
 
-export async function appendAnalyzedFile(db: DynamoDBClient, projectId: string, analyzedFile: AnalyzedFile): Promise<void> {
-  const key = analyzedFile.id;
+export async function appendAnalyzedFile(db: DynamoDBClient, projectId: string, fileId: string, analyzedFile: AnalyzedFile): Promise<void> {
+  const key = fileId;
 
   await db.send(new UpdateCommand({
     TableName: TABLE_PROJECTS,
