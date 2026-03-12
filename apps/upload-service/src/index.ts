@@ -33,7 +33,15 @@ async function getProjectFromDb(doc: DynamoDBDocument, projectId: string): Promi
 }
 
 function findFile(fileId: string, project: Project): ProjectFile | null {
+  // Find file searches in both the original project files as the analyzed files
   for (const file of project.files) {
+    if (file.id === fileId) { return file };
+  }
+
+  // Flatmap all the analyzedFiles for easy searching
+  const analyzedFiles = Object.values(project.analyzedFiles).flatMap(x => x);
+
+  for (const file of analyzedFiles) {
     if (file.id === fileId) { return file };
   }
 
