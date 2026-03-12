@@ -205,8 +205,11 @@ app.post(`/${serviceName}/projects/:projectId/analysis/sonar`, async ({ req, par
 
   // 2. add sonar id to list
   try {
-    const body = await req.json();
-    console.log(body);
+    const text = await req.text();
+    console.log(text);
+
+    const json = JSON.parse(text);
+    console.log(json);
   } catch (e) {
     console.log(e);
   }
