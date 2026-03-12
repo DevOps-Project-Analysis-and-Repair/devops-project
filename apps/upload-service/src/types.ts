@@ -8,9 +8,9 @@ export type ProjectFile = {
 export type Project = {
   id: string,
   name: string,
-  files: ProjectFile[];
+  files: ProjectFile[],
   createdAt: number,
-  repairedFiles: Record<string, RepairedFile[]>;
+  repairedFiles: Record<string, RepairedFile[]>,
   analysis: AnalysisResults
 };
 

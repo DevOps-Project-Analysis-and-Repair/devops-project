@@ -10,7 +10,14 @@ export async function getProjectFromDb(doc: DynamoDBDocument, projectId: string)
 
   if (!res.Item) { throw new NotFoundError(); }
 
-  return res.Item as Project;
+  return {
+    id: res.Item.id,
+    name: res.Item.name,
+    files: res.Item.files,
+    createdAt: res.Item.createdAt,
+    repairedFiles: res.Item.repairedFile ?? {},
+    analysis: res.Item.analysis ?? { sonarIds: [] }
+  }
 }
 
 export async function appendFile(db: DynamoDBClient, projectId: string, newFile: ProjectFile): Promise<void> {
