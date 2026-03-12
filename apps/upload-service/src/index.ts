@@ -10,7 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Project, ProjectFile } from './types';
 import { createToken, verifyToken } from './auth';
 import { datestring, isUploadCompleted, latest } from './util';
-import { appendAnalyzedFile, appendFile, getProjectFromDb } from './dynamo';
+import { appendRepairedFile, appendFile, getProjectFromDb } from './dynamo';
 
 const serviceName = 'upload';
 
@@ -25,15 +25,15 @@ export const TABLE_PROJECTS = "Projects-upload-stack";
 export const FILES_BUCKET = "files-upload-stack";
 
 function findFile(fileId: string, project: Project): ProjectFile | null {
-  // Find file searches in both the original project files as the analyzed files
+  // Find file searches in both the original project files as the repaired files
   for (const file of project.files) {
     if (file.id === fileId) { return file };
   }
 
-  // Flatmap all the analyzedFiles for easy searching
-  const analyzedFiles = Object.values(project.analyzedFiles).flatMap(x => x);
+  // Flatmap all the repaired for easy searching
+  const repairedFiles = Object.values(project.repairedFiles).flatMap(x => x);
 
-  for (const file of analyzedFiles) {
+  for (const file of repairedFiles) {
     if (file.id === fileId) { return file };
   }
 
@@ -75,7 +75,8 @@ app.post(`/${serviceName}/projects`, async () => {
     name: `Upload ${datestring()}`,
     files: [],
     createdAt: Date.now(),
-    analyzedFiles: {},
+    repairedFiles: {},
+    analysis: { sonarIds: [] }
   };
 
   await doc.put({
@@ -97,12 +98,12 @@ app.get(`/${serviceName}/projects/:projectId`, async ({ params: { projectId }}) 
 app.get(`/${serviceName}/projects/:projectId/latest`, async ({ params: { projectId }}) => {
   // 1. get project from db
   // 2. return project object, including file names
-  // 3. replace all the file references with the latest entry of the analyzed file
+  // 3. replace all the file references with the latest entry of the repaired file
   let project = await getProjectFromDb(doc, projectId);
 
   project.files = project.files.map(x => {
-    if (x.id in project.analyzedFiles) {
-      return latest(project.analyzedFiles[x.id]) ?? x;
+    if (x.id in project.repairedFiles) {
+      return latest(project.repairedFiles[x.id]) ?? x;
     }
 
     return x;
@@ -180,15 +181,15 @@ app.post(`/${serviceName}/projects/:projectId/files/:fileId/repaired`, async ({ 
   if (!isUploadCompleted(result)) { throw new InternalServerError(); }
 
   const getCurrentIteration = (fileId: string): number => {
-    if (fileId in project.analyzedFiles) {
-      return project.analyzedFiles[file.id].length + 1;
+    if (fileId in project.repairedFiles) {
+      return project.repairedFiles[file.id].length + 1;
     }
 
     return 1;
   }
 
-  // 4. add file to analyzed files
-  await appendAnalyzedFile(db, project.id, file.id, {
+  // 4. add file to repaired files
+  await appendRepairedFile(db, project.id, file.id, {
     ...file,
     id: repairedFileId,
     iteration: getCurrentIteration(file.id),

@@ -10,10 +10,15 @@ export type Project = {
   name: string,
   files: ProjectFile[];
   createdAt: number,
-  analyzedFiles: Record<string, AnalyzedFile[]>;
+  repairedFiles: Record<string, RepairedFile[]>;
+  analysis: AnalysisResults
 };
 
-export type AnalyzedFile = ProjectFile & {
+export type AnalysisResults = {
+  sonarIds: string[];
+}
+
+export type RepairedFile = ProjectFile & {
   iteration: number,
   createdAt: number,
 }
