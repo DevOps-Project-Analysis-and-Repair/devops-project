@@ -1,7 +1,8 @@
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import TroubleshootIcon from "@mui/icons-material/Troubleshoot";
 import { Button, CircularProgress, Stack, Typography } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { API_BASE_URL, BASE_URL, type UploadProject } from "../../../api";
 import {
@@ -87,6 +88,20 @@ function Project() {
 
   return (
     <Container direction="column" overflow="auto">
+      <Button
+        component={Link}
+        to={`/`}
+        startIcon={<ArrowBackIcon />}
+        variant="outlined"
+        sx={{
+          mb: 3,
+          borderRadius: 2,
+          textTransform: "none",
+          fontWeight: 500,
+        }}
+      >
+        Back to home screen
+      </Button>
       <Typography
         component="h1"
         variant="h4"

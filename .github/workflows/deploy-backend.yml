@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/deploy-backend.yml'
       - 'apps/services/**'
+      - 'apps/upload-service/**'
       - 'apps/llm-service/**'
       - 'apps/analysis-service/**'
 
@@ -58,16 +59,16 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Publish Dockerfile
-        working-directory: ./apps/services/upload
+        working-directory: ./apps/upload-service
         run: sh ./publish.sh
 
       - name: Validate CloudFormation template
         run: |
           aws cloudformation validate-template \
-            --template-body file://./apps//services/upload/upload-stack.yml
+            --template-body file://./apps/upload-service/upload-stack.yml
 
       - name: Deploy CloudFormation
-        working-directory: ./apps/services/upload
+        working-directory: ./apps/upload-service
         run: sh ./deploy.sh
 
   deploy_analysis_stack:
