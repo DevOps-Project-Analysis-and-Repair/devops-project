@@ -3,16 +3,14 @@ import { Logger } from '@aws-lambda-powertools/logger';
 import { Context } from 'aws-lambda';
 import { fixCode } from './client';
 
-const serviceName = 'fix';
+export const serviceName = 'fix';
 
 const logger = new Logger({ serviceName });
 const app = new Router({ logger });
 
 const API_SERVICE_URL = "https://jjz7wxr827.execute-api.eu-west-1.amazonaws.com";
 
-app.get(`/${serviceName}/health`, async () => {
-  return true;
-});
+
 
 app.post(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ params: { projectId, fileId } }) => {
   let text: string;
@@ -42,6 +40,10 @@ app.post(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ params: {
 
   // Step 3: return the last outputCode
   return outputCode;
+});
+
+app.get(`/${serviceName}/health`, async () => {
+  return true;
 });
 
 export const handler = async (event: unknown, context: Context) => app.resolve(event, context);
