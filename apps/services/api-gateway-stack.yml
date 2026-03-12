@@ -23,7 +23,7 @@ Resources:
           - "*"
         MaxAge: 86400
 
-  # Execution Role
+  # Roles
   ApiGatewayExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -44,6 +44,32 @@ Resources:
                 Resource:
                   - !ImportValue Upload-FunctionArn
                   - !ImportValue Fix-FunctionArn
+
+  ApiGatewayLoggingRole:
+  Type: AWS::IAM::Role
+  Properties:
+    AssumeRolePolicyDocument:
+      Version: '2012-10-17'
+      Statement:
+        - Effect: Allow
+          Principal:
+            Service: apigateway.amazonaws.com
+          Action: sts:AssumeRole
+    Policies:
+      - PolicyName: ApiGatewayLogsPolicy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:DescribeLogGroups
+                - logs:DescribeLogStreams
+                - logs:PutLogEvents
+                - logs:GetLogEvents
+                - logs:FilterLogEvents
+              Resource: "*"
 
   # Integrations
   UploadIntegration:
@@ -305,6 +331,9 @@ Resources:
       ApiId: !Ref HttpApi
       StageName: '$default'
       AutoDeploy: true
+      AccessLogSettings:
+        DestinationArn: !GetAtt ApiGatewayLoggingRole.Arn
+        Format: '{"requestId":"$context.requestId","ip":"$context.identity.sourceIp","caller":"$context.identity.caller","user":"$context.identity.user","requestTime":"$context.requestTime","httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath","status":"$context.status","protocol":"$context.protocol","responseLength":"$context.responseLength"}'
 
   # Permissions for API Gateway to invoke each Lambda
   UploadLambdaInvokePermission:
