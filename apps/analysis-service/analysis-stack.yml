@@ -3,7 +3,7 @@ Description: >
   This template deploys a Lambda function using a Docker image, with S3 and DynamoDB access.
 
 Parameters:
-  FixServiceImageUri:
+  AnalysisServiceImageUri:
     Description: Uri to the image
     Type: String
   Repo:
@@ -61,7 +61,7 @@ Resources:
       Role: !GetAtt LambdaExecutionRole.Arn
       PackageType: Image
       Code:
-        ImageUri: !Ref FixServiceImageUri
+        ImageUri: !Ref AnalysisServiceImageUri
       Timeout: 30
       MemorySize: 128
       VpcConfig:
