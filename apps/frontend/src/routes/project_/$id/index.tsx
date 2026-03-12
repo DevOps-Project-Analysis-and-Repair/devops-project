@@ -23,7 +23,7 @@ export const Route = createFileRoute("/project_/$id/")({
 
 function Project() {
   const [fileContent, setFileContent] = useState<CodeViewerProps | null>(null);
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const { id } = Route.useParams();
 
   const {
