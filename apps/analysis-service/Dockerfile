@@ -33,7 +33,7 @@ ENV PATH="/opt/sonar-scanner/bin:${PATH}"
 
 # Let sonar-scanner store cache in writable location (/tmp).
 ENV SONAR_USER_HOME="/tmp/.sonar"
-ENV SONAR_SCANNER_OPTS="-Xmx384m"
+ENV SONAR_SCANNER_OPTS="-Xmx256m"
 
 # Configure the Lambda runtime to execute the handler.
 WORKDIR ${LAMBDA_TASK_ROOT}
