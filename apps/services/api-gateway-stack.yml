@@ -45,18 +45,6 @@ Resources:
                   - !ImportValue Upload-FunctionArn
                   - !ImportValue Analysis-FunctionArn
                   - !ImportValue Fix-FunctionArn
-
-  ApiGatewayLoggingRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: apigateway.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
         - PolicyName: ApiGatewayLogsPolicy
           PolicyDocument:
             Version: '2012-10-17'
@@ -101,69 +89,6 @@ Resources:
       CredentialsArn: !GetAtt ApiGatewayExecutionRole.Arn
 
   # Routes for each endpoint
-  UploadGetRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref HttpApi
-      RouteKey: 'GET /upload'
-      Target: !Join ["/", ["integrations", !Ref UploadIntegration]]
-
-  UploadPutRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref HttpApi
-      RouteKey: 'PUT /upload'
-      Target: !Join ["/", ["integrations", !Ref UploadIntegration]]
-
-  UploadPatchRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref HttpApi
-      RouteKey: 'PATCH /upload'
-      Target: !Join ["/", ["integrations", !Ref UploadIntegration]]
-
-  UploadPostRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref HttpApi
-      RouteKey: 'POST /upload'
-      Target: !Join ["/", ["integrations", !Ref UploadIntegration]]
-
-  UploadProxyGetRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref HttpApi
-      RouteKey: 'GET /upload/{proxy+}'
-      Target: !Join ["/", ["integrations", !Ref UploadIntegration]]
-
-  UploadProxyPutRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref HttpApi
-      RouteKey: 'PUT /upload/{proxy+}'
-      Target: !Join ["/", ["integrations", !Ref UploadIntegration]]
-
-  UploadProxyPatchRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref HttpApi
-      RouteKey: 'PATCH /upload/{proxy+}'
-      Target: !Join ["/", ["integrations", !Ref UploadIntegration]]
-
-  UploadProxyPostRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref HttpApi
-      RouteKey: 'POST /upload/{proxy+}'
-      Target: !Join ["/", ["integrations", !Ref UploadIntegration]]
-
-  UploadGetRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref HttpApi
-      RouteKey: 'GET /upload'
-      Target: !Join ["/", ["integrations", !Ref UploadIntegration]]
-
   UploadPutRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
@@ -325,6 +250,13 @@ Resources:
       RouteKey: 'POST /fix/{proxy+}'
       Target: !Join ["/", ["integrations", !Ref FixIntegration]]
 
+  # LogGroup
+  ApiGatewayLogs:
+  Type: AWS::Logs::LogGroup
+  Properties:
+    LogGroupName: !Sub '/aws/apigateway/http-api'
+    RetentionInDays: 10
+
   # Stage
   Stage:
     Type: AWS::ApiGatewayV2::Stage
@@ -333,7 +265,7 @@ Resources:
       StageName: '$default'
       AutoDeploy: true
       AccessLogSettings:
-        DestinationArn: !GetAtt ApiGatewayLoggingRole.Arn
+        DestinationArn: !GetAtt ApiGatewayLogs.Arn
         Format: '{"requestId":"$context.requestId","ip":"$context.identity.sourceIp","caller":"$context.identity.caller","user":"$context.identity.user","requestTime":"$context.requestTime","httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath","status":"$context.status","protocol":"$context.protocol","responseLength":"$context.responseLength"}'
 
   # Permissions for API Gateway to invoke each Lambda
