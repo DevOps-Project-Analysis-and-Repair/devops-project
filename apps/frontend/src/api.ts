@@ -6,7 +6,7 @@ export const BASE_URL: string = import.meta.env.PROD ? API_BASE_URL : "http://12
 
 
 export interface UploadProject {
-    files: unknown[];
+    files: UploadedFile[];
     id: string;
     name: string;
 }
