@@ -16,23 +16,35 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-frontend
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup frontend
+        uses: ./.github/actions/setup-frontend
+
       - run: npm run lint
         working-directory: apps/frontend
 
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-frontend
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup frontend
+        uses: ./.github/actions/setup-frontend
+
       - run: npm run test
         working-directory: apps/frontend
 
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-frontend
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup frontend
+        uses: ./.github/actions/setup-frontend
+
       - run: npm run build
         working-directory: apps/frontend
