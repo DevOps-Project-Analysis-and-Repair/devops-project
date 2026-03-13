@@ -66,8 +66,6 @@ export const createSonarProject = async (projectId: string): Promise<boolean> =>
     }
     console.log(result.status);
 
-    // makeSonarProjectPublic(projectId);
-
     return true;
 };
 
