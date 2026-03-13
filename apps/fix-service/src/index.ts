@@ -16,7 +16,7 @@ app.post(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ params: {
 
   try {
     // Step 1: Download file
-    const DOWNLOAD_URL = `${API_SERVICE_URL}/upload/projects/${projectId}/files/${fileId}`;
+    const DOWNLOAD_URL = `${API_SERVICE_URL}/upload/projects/${projectId}/files/${fileId}/latest`;
     const res = await fetch(DOWNLOAD_URL);
     input = await res.text();
   } catch (error) {

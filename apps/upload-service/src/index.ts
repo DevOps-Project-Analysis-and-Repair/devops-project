@@ -8,7 +8,7 @@ import { Context } from 'aws-lambda';
 import { v4 as uuidv4 } from 'uuid';
 
 import { createToken, verifyToken } from './auth';
-import { appendFile, appendRepairedFile, getProjectFromDb } from './dynamo';
+import { appendFile, appendRepairedFile, getLatestProjectFromDb, getProjectFromDb } from './dynamo';
 import { Project, ProjectFile } from './types';
 import { datestring, isUploadCompleted, latest } from './util';
 
@@ -99,17 +99,7 @@ app.get(`/${serviceName}/projects/:projectId/latest`, async ({ params: { project
   // 1. get project from db
   // 2. return project object, including file names
   // 3. replace all the file references with the latest entry of the repaired file
-  const project = await getProjectFromDb(doc, projectId);
-
-  project.files = project.files.map(x => {
-    if (x.id in project.repairedFiles) {
-      return latest(project.repairedFiles[x.id]) ?? x;
-    }
-
-    return x;
-  });
-
-  return project;
+  return await getLatestProjectFromDb(doc, projectId);
 });
 
 app.post(`/${serviceName}/projects/:projectId/files`, async ({ req, params: { projectId } }) => {
@@ -222,6 +212,25 @@ app.post(`/${serviceName}/projects/:projectId/analysis/sonar`, async ({ req, par
 app.get(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ res, params: { projectId, fileId } }) => {
   // 1. get project
   const project = await getProjectFromDb(doc, projectId);
+
+  // 2. get file from project
+  const file = findFile(fileId, project);
+  if (!file) { throw new NotFoundError(); }
+
+  // 3. return file contents
+  const result = await s3client.send(new GetObjectCommand({ Bucket: FILES_BUCKET, Key: file.id }));
+
+  res.headers.set('Content-Type', file.mimetype || 'text/plain');
+  res.headers.set('Content-Disposition', `inline; filename="${file.filename}"`);
+
+  const stream = result.Body?.transformToWebStream();
+
+  return stream;
+});
+
+app.get(`/${serviceName}/projects/:projectId/files/:fileId/latest`, async ({ res, params: { projectId, fileId } }) => {
+  // 1. get project
+  const project = await getLatestProjectFromDb(doc, projectId);
 
   // 2. get file from project
   const file = findFile(fileId, project);
