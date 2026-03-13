@@ -3,7 +3,7 @@ import { Logger } from '@aws-lambda-powertools/logger';
 import { Context } from 'aws-lambda';
 
 import { downloadProjectFiles, uploadAnalysisId } from './project';
-import { createSonarProject, existsSonarProject, pollSonarCloud, runSonarScanner } from './sonar';
+import { createSonarProject, existsSonarProject, makeSonarProjectPublic, pollSonarCloud, runSonarScanner } from './sonar';
 
 const serviceName = 'analysis';
 const logger = new Logger({ serviceName });
@@ -36,6 +36,9 @@ app.post(`/${serviceName}/:projectId`, async ({ params: { projectId } }) => {
     console.log("Scanning files...");
     const ceTaskUrl = await runSonarScanner(projectPath, projectId);
     console.log("ceTaskUrl", ceTaskUrl);
+    
+    // Change the project visibility while waiting for the Sonar report to be created.
+    await makeSonarProjectPublic(projectId);
 
     // Poll for the Sonar report.
     console.log("Polling report...");

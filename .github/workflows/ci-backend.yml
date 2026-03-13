@@ -6,7 +6,7 @@ on:
     paths:
       - ".github/workflows/ci-backend.yml"
       - "apps/upload-service/**"
-      - "apps/llm-service/**"
+      - "apps/fix-service/**"
       - "apps/analysis-service/**"
 
   push:
@@ -14,7 +14,7 @@ on:
     paths:
       - ".github/workflows/ci-backend.yml"
       - "apps/upload-service/**"
-      - "apps/llm-service/**"
+      - "apps/fix-service/**"
       - "apps/analysis-service/**"
 
 jobs:
@@ -46,7 +46,7 @@ jobs:
     strategy:
       matrix:
         service:
-          - llm-service
+          - fix-service
           # - upload-service (Need to add tests)
           # - analysis-service (Need to add when analysis service is live)
 
@@ -69,7 +69,7 @@ jobs:
       matrix:
         service:
           - upload-service
-          - llm-service
+          - fix-service
           # - analysis-service (Need to add when analysis service is live)
 
     steps:
