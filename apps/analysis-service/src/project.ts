@@ -28,7 +28,6 @@ export type Project = {
 // TODO: Move to env.
 const TABLE_PROJECTS = "Projects-upload-stack";
 const FILES_BUCKET = "files-upload-stack";
-const API_BASE_URL = "https://1wk9q92xx1.execute-api.eu-west-1.amazonaws.com";
 
 // Fetch project from project ID, or fail.
 export async function getProjectFromDb(projectId: string): Promise<Project> {
@@ -41,7 +40,7 @@ export async function getProjectFromDb(projectId: string): Promise<Project> {
 }
 
 function ensureDirectoryExistence(filePath: string) {
-  var dirname = path.dirname(filePath);
+  const dirname = path.dirname(filePath);
   if (existsSync(dirname)) {
     return true;
   }
@@ -74,14 +73,4 @@ export async function downloadProjectFiles(projectId: string, targetProjectLocat
 
         console.log('write successful');
     }
-}
-
-export async function uploadAnalysisId(projectId: string, analysisId: string): Promise<void> {
-    await fetch(`${API_BASE_URL}/upload/projects/${projectId}/analysis/sonar`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ analysisId: analysisId })
-    });
 }
