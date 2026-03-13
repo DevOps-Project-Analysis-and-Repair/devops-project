@@ -67,6 +67,21 @@ export const createSonarProject = async (projectId: string): Promise<boolean> =>
     return true;
 };
 
+export const existsSonarProject = async (projectId: string): Promise<boolean> => {
+    const result = await fetch(`https://sonarcloud.io/api/projects/search?organization=${SONAR_ORG}&projects=${SONAR_ORG}_${projectId}`, {
+        method: "GET",
+        headers: {
+            Authorization: SONAR_AUTH
+        }
+    });
+
+    if (!result.ok) {
+        throw new Error("Failed to check if Sonar project exists");
+    }
+
+    return result.ok;
+}
+
 export const pollSonarCloud = async (ceTaskUrl: string, intervalMs: number = 2000): Promise<string> => {
 
     while (true) {

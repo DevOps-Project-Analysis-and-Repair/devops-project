@@ -3,14 +3,14 @@ import { Logger } from '@aws-lambda-powertools/logger';
 import { Context } from 'aws-lambda';
 
 import { downloadProjectFiles, uploadAnalysisId } from './project';
-import { createSonarProject, pollSonarCloud, runSonarScanner } from './sonar';
+import { createSonarProject, existsSonarProject, pollSonarCloud, runSonarScanner } from './sonar';
 
 const serviceName = 'analysis';
 const logger = new Logger({ serviceName });
 const app = new Router({ logger });
 
 app.get(`/${serviceName}/health`, async () => {
-  return true;
+    return true;
 });
 
 // Scan a project with Sonar.
@@ -23,9 +23,12 @@ app.post(`/${serviceName}/:projectId`, async ({ params: { projectId } }) => {
     console.log("Downloading project files...");
     await downloadProjectFiles(projectId, projectPath);
 
-    // Create a new Sonar project to store the analysis report.
+    // Ensure that there is a Sonar project to store the analysis report.
+    const exists = await existsSonarProject(projectId);
     console.log("Creating Sonar project...");
-    await createSonarProject(projectId);
+    if(!exists) {
+        await createSonarProject(projectId);
+    }
 
     // Run the Sonar scanner.
     console.log("Scanning files...");
