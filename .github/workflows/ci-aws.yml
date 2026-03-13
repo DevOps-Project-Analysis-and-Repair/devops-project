@@ -2,6 +2,7 @@ name: CI AWS Checks
 
 on:
   pull_request:
+    paths: .github/workflows/ci-aws.yml
     paths: &stack_paths
       - apps/frontend/frontend-stack.yml
       - apps/fix-service/fix-stack.yml
@@ -12,6 +13,7 @@ on:
       - networking/monitoring-stack.yml
   push:
     branches: [main]
+    paths: .github/workflows/ci-aws.yml
     paths: *stack_paths
 
 env:
