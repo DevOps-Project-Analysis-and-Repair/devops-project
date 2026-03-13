@@ -8,12 +8,17 @@ export type ProjectFile = {
 export type Project = {
   id: string,
   name: string,
-  files: ProjectFile[];
+  files: ProjectFile[],
   createdAt: number,
-  analyzedFiles: Record<string, AnalyzedFile[]>;
+  repairedFiles: Record<string, RepairedFile[]>,
+  analysis: AnalysisResults
 };
 
-export type AnalyzedFile = ProjectFile & {
+export type AnalysisResults = {
+  sonarIds: string[];
+}
+
+export type RepairedFile = ProjectFile & {
   iteration: number,
   createdAt: number,
 }

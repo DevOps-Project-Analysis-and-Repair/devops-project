@@ -1,6 +1,6 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocument, GetCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
-import { AnalyzedFile, Project, ProjectFile } from "./types";
+import { RepairedFile, Project, ProjectFile } from "./types";
 import { TABLE_PROJECTS } from ".";
 import { NotFoundError } from "@aws-lambda-powertools/event-handler/http";
 
@@ -10,7 +10,14 @@ export async function getProjectFromDb(doc: DynamoDBDocument, projectId: string)
 
   if (!res.Item) { throw new NotFoundError(); }
 
-  return res.Item as Project;
+  return {
+    id: res.Item.id,
+    name: res.Item.name,
+    files: res.Item.files,
+    createdAt: res.Item.createdAt,
+    repairedFiles: res.Item.repairedFile ?? {},
+    analysis: res.Item.analysis ?? { sonarIds: [] }
+  }
 }
 
 export async function appendFile(db: DynamoDBClient, projectId: string, newFile: ProjectFile): Promise<void> {
@@ -25,18 +32,18 @@ export async function appendFile(db: DynamoDBClient, projectId: string, newFile:
   }));
 }
 
-export async function appendAnalyzedFile(db: DynamoDBClient, projectId: string, fileId: string, analyzedFile: AnalyzedFile): Promise<void> {
+export async function appendRepairedFile(db: DynamoDBClient, projectId: string, fileId: string, repairedFile: RepairedFile): Promise<void> {
   const key = fileId;
 
   await db.send(new UpdateCommand({
     TableName: TABLE_PROJECTS,
     Key: { id: projectId },
-    UpdateExpression: "SET analyzedFiles.#key = list_append(if_not_exists(analyzedFiles.#key, :empty), :newFile)",
+    UpdateExpression: "SET repairedFiles.#key = list_append(if_not_exists(repairedFiles.#key, :empty), :newFile)",
     ExpressionAttributeNames: {
       "#key": key,
     },
     ExpressionAttributeValues: {
-      ":newFile": [analyzedFile],
+      ":newFile": [repairedFile],
       ":empty": [],
     },
     ConditionExpression: "attribute_exists(id)",
