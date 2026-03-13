@@ -74,7 +74,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Deploy Lambda service
+      - name: Deploy Lambda Service
         uses: ./.github/actions/deploy-lambda
         with:
           working-directory: ./apps/analysis-service
@@ -103,7 +103,8 @@ jobs:
           template-file: ./apps/fix-service/fix-stack.yml
           stack-name: fix-service-stack
           parameter-overrides: FixServiceImageUri=${{ env.ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/fix-service:${{ env.GIT_HASH }}
-          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+        env:
+          OPENAI_API_KEY: ${{ inputs.openai-api-key }}
 
   deploy_api_gateway_stack:
     needs: [deploy_upload_stack, deploy_fix_stack, deploy_analysis_stack]

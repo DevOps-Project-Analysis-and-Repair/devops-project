@@ -18,10 +18,6 @@ inputs:
     description: "Parameter overrides for the stack"
     required: false
     default: ""
-  openai-api-key:
-    description: "OpenAI API key (if required)"
-    required: false
-    default: ""
 
 runs:
   using: "composite"
@@ -43,5 +39,3 @@ runs:
         stack-name: ${{ inputs.stack-name }}
         capabilities: ${{ inputs.capabilities }}
         parameter-overrides: ${{ inputs.parameter-overrides }}
-      env:
-        OPENAI_API_KEY: ${{ inputs.openai-api-key }}
