@@ -15,7 +15,6 @@ env:
   AWS_REGION: eu-west-1
   GIT_HASH: ${{ github.sha }}
   ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-  REPO: my-repo  # or use a secret/variable as needed
 
 jobs:
   deploy_vpc_stack:

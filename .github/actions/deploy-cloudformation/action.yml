@@ -28,7 +28,7 @@ runs:
           --stack-name "${{ inputs.stack-name }}" \
           --capabilities "${{ inputs.capabilities }}"
 
-    - name: Deploy CloudFormation stack (test)
+    - name: Deploy CloudFormation stack
       if: ${{ inputs.parameter-overrides != '' }}
       shell: bash
       run: |
