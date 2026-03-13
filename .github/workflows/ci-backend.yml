@@ -47,8 +47,8 @@ jobs:
       matrix:
         service:
           - fix-service
-          # - upload-service (Need to add tests)
-          # - analysis-service (Need to add when analysis service is live)
+          - upload-service
+          - analysis-service
 
     steps:
       - name: Checkout code
@@ -70,7 +70,7 @@ jobs:
         service:
           - upload-service
           - fix-service
-          # - analysis-service (Need to add when analysis service is live)
+          - analysis-service
 
     steps:
       - name: Checkout code

@@ -1,3 +1,4 @@
+
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import assert from "node:assert";
 import { describe, it } from "node:test";
@@ -5,10 +6,10 @@ import { handler } from ".";
 
 
 describe('Router handler', () => {
-    it('should return true on GET /fix/health', async () => {
+    it('should return true on GET /analysis/health', async () => {
         const mockEvent: APIGatewayProxyEvent = {
             httpMethod: 'GET',
-            path: '/fix/health',         // matches your route
+            path: '/analysis/health',         // matches your route
             headers: {},
             resource: '',
             multiValueHeaders: {},

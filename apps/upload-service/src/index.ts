@@ -41,7 +41,7 @@ function findFile(fileId: string, project: Project): ProjectFile | null {
 }
 
 app.get(`/${serviceName}/health`, () => {
-  return { ok: true };
+  return true;
 });
 
 app.get(`/${serviceName}/projects`, async () => {
