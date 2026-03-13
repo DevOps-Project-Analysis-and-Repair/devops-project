@@ -38,7 +38,6 @@ type SonarAnalysisUpload = {
     projectKey: string
     fetchedAt: string
 
-    qualityGate: {}
     metrics: {}
 
     issues: SonarRepairIssue[]
@@ -323,24 +322,21 @@ export const createAnalysisReport = async (projectId: string, analysisId: string
     const projectKey = `${SONAR_ORG}_${projectId}`;
 
     // fetch in parallel (important)
-    const [issuesRaw, metrics, qualityGate] = await Promise.all([
+    const [issuesRaw, metrics] = await Promise.all([
         getAllSonarIssues(projectId),
-        getSonarMetrics(projectId),
-        getQualityGate(analysisId),
+        getSonarMetrics(projectId)
     ]);
-
-    console.log(issuesRaw);
-    console.log(metrics);
-    console.log(qualityGate);
 
     // map to repair shape
     const issues = issuesRaw.map(mapSonarIssueForRepair);
+
+    console.log(issues);
+    console.log(metrics);
 
     return {
         analysisId,
         projectKey,
         fetchedAt: new Date().toISOString(),
-        qualityGate,
         metrics,
         issues,
     };
