@@ -180,6 +180,12 @@ function Project() {
             )}
           </div>
         </Stack>
+        {project && (
+          <div>
+            <h3>Sonarcube results</h3>
+            <a href={`https://sonarcloud.io/project/overview?id=devops-software-engineering_${project.id}`}>Sonarcube project</a>
+          </div>
+        )}
       </Container>
     </>
   );
