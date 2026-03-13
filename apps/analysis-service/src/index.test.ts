@@ -6,10 +6,10 @@ import { handler } from ".";
 
 
 describe('Router handler', () => {
-    it('should return true on GET /upload/health', async () => {
+    it('should return true on GET /analysis/health', async () => {
         const mockEvent: APIGatewayProxyEvent = {
             httpMethod: 'GET',
-            path: '/upload/health',         // matches your route
+            path: '/analysis/health',         // matches your route
             headers: {},
             resource: '',
             multiValueHeaders: {},
