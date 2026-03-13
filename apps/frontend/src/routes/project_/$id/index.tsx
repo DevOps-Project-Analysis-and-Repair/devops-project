@@ -1,6 +1,6 @@
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import TroubleshootIcon from "@mui/icons-material/Troubleshoot";
-import { Button, CircularProgress, Stack, Typography } from "@mui/material";
+import { Box, Button, ButtonGroup, CircularProgress, Divider, Stack, Typography } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
@@ -22,8 +22,22 @@ export const Route = createFileRoute("/project_/$id/")({
   component: Project,
 });
 
+type FileIterationData = { id: string, iteration: number };
+
+function FileIterations(props: { iterations: FileIterationData[], handler: (id: string) => void }) {
+  const { iterations, handler } = props;
+
+  return (<>
+    <ButtonGroup variant="outlined">
+      { iterations.map(x => <Button key={x.id} onClick={() => handler(x.id)}>{x.iteration}</Button>)}
+    </ButtonGroup>
+  </>);
+}
+
 function Project() {
   const [fileContent, setFileContent] = useState<CodeViewerProps | null>(null);
+  const [iterationContent, setIterationContent] = useState<CodeViewerProps | null>(null);
+
   const navigate = useNavigate();
   const { id } = Route.useParams();
 
@@ -42,9 +56,10 @@ function Project() {
   if (error) return <div> An error occured {error.message} </div>;
 
   async function onFileClick(file: FileSystemFile) {
-    const content = await downloadFile(
-      `${API_BASE_URL}/upload/projects/${id}/files/${file.downloadId}`,
-    );
+    setFileContent(null);
+    setIterationContent(null);
+
+    const content = await downloadFile(`${API_BASE_URL}/upload/projects/${id}/files/${file.downloadId}`);
     const fileExtension = getFileExtension(file.name);
 
     if (!fileExtension) {
@@ -52,6 +67,21 @@ function Project() {
     }
 
     setFileContent({ content, language: fileExtension, id: file.downloadId });
+  }
+
+  function getFileIterations(project: UploadProject, fileId: string): FileIterationData[] {
+    const iterations = project.repairedFiles[fileId] ??= [];
+
+    return iterations.map(x => { return { id: x.id, iteration: x.iteration }});
+  }
+
+  async function onFileIterationClick(fileId: string) {
+    console.log(fileId);
+
+    const content = await downloadFile(`${API_BASE_URL}/upload/projects/${id}/files/${fileId}`);
+
+    // using filecontent here is the biggest hack of 2k26
+    setIterationContent({ content, language: fileContent!.language, id: fileId });
   }
 
   async function analyzeFile() {
@@ -80,56 +110,77 @@ function Project() {
   }
 
   return (
-    <Container direction="column" overflow="auto">
-      <Button
-        component={Link}
-        to={`/`}
-        startIcon={<ArrowBackIcon />}
-        variant="outlined"
-        sx={{
-          mb: 3,
-          borderRadius: 2,
-          textTransform: "none",
-          fontWeight: 500,
-        }}
-      >
-        Back to home screen
-      </Button>
-      <Typography
-        component="h1"
-        variant="h4"
-        sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
-      >
-        Project {project.name} ({project.files.length})
-      </Typography>
-      <Stack direction="row" overflow="auto" margin={2}>
-        {project.files && (
-          <FileTree
-            directory={uploadFilesToFileSystemTree(project.files)}
-            onFileClick={onFileClick}
-          />
-        )}
-        <div>
-          {fileContent && (
-            <>
-              <Button
-                component="label"
-                role={undefined}
-                variant="contained"
-                tabIndex={-1}
-                onClick={analyzeFile}
-                startIcon={<TroubleshootIcon />}
-              >
-                Analyze & Repair
-              </Button>
-              <CodeViewer
-                content={fileContent.content}
-                language={fileContent.language}
-              />
-            </>
+    <>
+      <Container direction="column" overflow="auto">
+        <Button
+          component={Link}
+          to={`/`}
+          startIcon={<ArrowBackIcon />}
+          variant="outlined"
+          sx={{
+            mb: 3,
+            borderRadius: 2,
+            textTransform: "none",
+            fontWeight: 500,
+          }}
+        >
+          Back to home screen
+        </Button>
+        <Typography
+          component="h1"
+          variant="h4"
+          sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
+        >
+          Project {project.name} ({project.files.length})
+        </Typography>
+        <Stack direction="row" overflow="auto" margin={2}>
+          {project.files && (
+            <FileTree
+              directory={uploadFilesToFileSystemTree(project.files)}
+              onFileClick={onFileClick}
+            />
           )}
-        </div>
-      </Stack>
-    </Container>
+          <div>
+            {fileContent && (
+              <>
+                <Box sx={{ display: 'flex' }}>
+                  <Box sx={{ flex: 1, p: 2, overflowY: 'auto' }}>
+                    <Button
+                      component="label"
+                      role={undefined}
+                      variant="contained"
+                      tabIndex={-1}
+                      onClick={analyzeFile}
+                      startIcon={<TroubleshootIcon />}
+                    >
+                      Analyze & Repair
+                    </Button>
+                    <CodeViewer
+                      content={fileContent.content}
+                      language={fileContent.language}
+                    />
+                  </Box>
+
+                  <Divider orientation="vertical" flexItem />
+
+                  <Box sx={{ flex: 1, p: 2, overflowY: 'auto' }}>
+                    <FileIterations
+                      iterations={getFileIterations(project, fileContent.id!)}
+                      handler={onFileIterationClick}
+                    />
+                    {iterationContent && (
+                      <CodeViewer
+                        content={iterationContent.content}
+                        language={iterationContent.language}
+                      />
+                    )}
+                  </Box>
+                </Box>
+              </>
+            )}
+          </div>
+        </Stack>
+      </Container>
+    </>
   );
 }
