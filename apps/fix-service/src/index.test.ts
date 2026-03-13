@@ -1,7 +1,8 @@
-import { describe, expect, it } from '@jest/globals';
-import type { APIGatewayProxyEvent, Context } from "aws-lambda";
-import { handler } from ".";
 
+import type { APIGatewayProxyEvent, Context } from "aws-lambda";
+import assert from "node:assert";
+import { describe, it } from "node:test";
+import { handler } from ".";
 
 
 describe('Router handler', () => {
@@ -24,8 +25,8 @@ describe('Router handler', () => {
         const context = {} as unknown as Context;
 
         const response = await handler(mockEvent, context);
-        expect(response.statusCode).toBe(200);
+        assert.strictEqual(response.statusCode, 200);
         const body = JSON.parse(response.body || 'null');
-        expect(Boolean(body)).toBe(true);
+        assert.strictEqual(Boolean(body), true);
     });
 });
