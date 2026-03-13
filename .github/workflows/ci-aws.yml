@@ -1,0 +1,31 @@
+name: CI AWS Checks
+
+on:
+  pull_request:
+    paths: &stack_paths
+      - apps/frontend/frontend-stack.yml
+      - apps/fix-service/fix-stack.yml
+      - apps/upload-service/upload-stack.yml
+      - apps/analysis-service/analysis-stack.yml
+      - networking/vpc-stack.yml
+      - networking/api-gateway-stack.yml
+      - networking/monitoring-stack.yml
+  push:
+    paths: *stack_paths
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        template-file: *stack_paths
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Validate CloudFormation template
+        uses: ./.github/actions/validate-cloudformation
+        with:
+          template-file: ${{ matrix.template-file }}

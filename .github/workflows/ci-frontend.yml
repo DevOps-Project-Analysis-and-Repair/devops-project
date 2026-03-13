@@ -2,15 +2,11 @@ name: CI Frontend Checks
 
 on:
   pull_request:
-    branches: [main]
-    paths:
+    paths: &paths
       - ".github/workflows/ci-frontend.yml"
       - "apps/frontend/**"
-
   push:
-    branches: [main]
-    paths:
-      - "apps/frontend/**"
+    paths: *paths
 
 jobs:
   lint:
