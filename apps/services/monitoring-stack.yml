@@ -18,9 +18,9 @@ Resources:
               "height": 6,
               "properties": {
                 "metrics": [
-                  ["AWS/ApiGateway", "Count", "ApiName", "http-api", "Stage", "%24default", {"stat": "Sum", "period": 300}],
-                  ["AWS/ApiGateway", "Latency", "ApiName", "http-api", "Stage", "%24default", {"stat": "Average", "period": 300}],
-                  ["AWS/ApiGateway", "5XXError", "ApiName", "http-api", "Stage", "%24default", {"stat": "Sum", "period": 300}]
+                  ["AWS/ApiGateway", "Count", "ApiName", "prod-http-api", "Stage", "$default", {"stat": "Sum", "period": 300}],
+                  ["AWS/ApiGateway", "Latency", "ApiName", "prod-http-api", "Stage", "$default", {"stat": "Average", "period": 300}],
+                  ["AWS/ApiGateway", "5XXError", "ApiName", "prod-http-api", "Stage", "$default", {"stat": "Sum", "period": 300}]
                 ],
                 "view": "timeSeries",
                 "stacked": false,
@@ -104,9 +104,9 @@ Resources:
       Threshold: 1
       Dimensions:
         - Name: ApiName
-          Value: "http-api"
+          Value: "prod-http-api"
         - Name: Stage
-          Value: "%24default"
+          Value: "$default"
       AlarmDescription: "Alarm when API Gateway returns 5XX errors"
       TreatMissingData: notBreaching
 
