@@ -17,7 +17,6 @@ import {
   type FileSystemFile,
 } from "../../../filesystem";
 import { AnalyzeAndRepairDialog, type AnalyzeAndRepairData } from "../../../dialogs/AnalyzeAndRepairDialog";
-import { SettingsPowerOutlined } from "@mui/icons-material";
 
 export const Route = createFileRoute("/project_/$id/")({
   component: Project,
