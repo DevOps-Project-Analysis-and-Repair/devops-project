@@ -10,7 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { createToken, verifyToken } from './auth';
 import { appendFile, appendRepairedFile, getLatestProjectFromDb, getProjectFromDb } from './dynamo';
 import { Project, ProjectFile } from './types';
-import { datestring, isUploadCompleted } from './util';
+import { datestring, isUploadCompleted, latest } from './util';
 
 const serviceName = 'upload';
 
@@ -23,6 +23,16 @@ const doc = DynamoDBDocument.from(db);
 
 export const TABLE_PROJECTS = "Projects-upload-stack";
 export const FILES_BUCKET = "files-upload-stack";
+
+function latestVersionOfFile(fileId: string, project: Project): ProjectFile | null {
+  // Small note, if the file is not the original file, it will never give the latest version.
+  // Always use this function with the fileId of the source.
+  if (fileId in project.repairedFiles) {
+    return latest(project.repairedFiles[fileId])!;
+  }
+
+  return findFile(fileId, project);
+}
 
 function findFile(fileId: string, project: Project): ProjectFile | null {
   // Find file searches in both the original project files as the repaired files
@@ -228,10 +238,10 @@ app.get(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ res, param
 
 app.get(`/${serviceName}/projects/:projectId/files/:fileId/latest`, async ({ res, params: { projectId, fileId } }) => {
   // 1. get project
-  const project = await getLatestProjectFromDb(doc, projectId);
+  const project = await getProjectFromDb(doc, projectId);
 
   // 2. get file from project
-  const file = findFile(fileId, project);
+  const file = latestVersionOfFile(fileId, project);
   if (!file) { throw new NotFoundError(); }
 
   // 3. return file contents
