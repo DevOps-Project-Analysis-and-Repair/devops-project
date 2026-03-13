@@ -75,7 +75,8 @@ export const createSonarProject = async (projectId: string): Promise<boolean> =>
         },
         body: new URLSearchParams({
             project: `${SONAR_ORG}_${projectId}`,
-            visibility: "public"
+            visibility: "public",
+            name: projectId
         })
     });
 
