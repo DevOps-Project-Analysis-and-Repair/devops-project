@@ -1,4 +1,3 @@
-
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import assert from "node:assert";
 import { describe, it } from "node:test";
