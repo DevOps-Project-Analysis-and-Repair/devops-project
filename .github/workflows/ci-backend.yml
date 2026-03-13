@@ -18,6 +18,28 @@ on:
       - "apps/analysis-service/**"
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        service:
+          # llm-service
+          # - upload-service (Need to add tests)
+          - analysis-service
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup dependencies
+        uses: ./.github/actions/setup-dependencies
+        with:
+          working-directory: apps/${{ matrix.service }}
+
+      - run: npm run lint
+        working-directory: apps/${{ matrix.service }}
+
   test:
     runs-on: ubuntu-latest
 
