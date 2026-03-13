@@ -46,6 +46,8 @@ export const runSonarScanner = async (projectPath: string, projectId: string): P
 }
 
 export const createSonarProject = async (projectId: string): Promise<boolean> => {
+
+    // 1. Create a private Sonar project.
     const result = await fetch("https://sonarcloud.io/api/projects/create", {
         method: "POST",
         headers: {
@@ -64,6 +66,25 @@ export const createSonarProject = async (projectId: string): Promise<boolean> =>
         throw new Error(`Sonar project creation failed: ${result.status} ${text}`);
     }
 
+    // 2. Make the Sonar project public.
+    const visibilityResult = await fetch("https://sonarcloud.io/api/projects/update_visibility", {
+        method: "POST",
+        headers: {
+            Authorization: SONAR_AUTH,
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: new URLSearchParams({
+            organization: SONAR_ORG,
+            project: `${SONAR_ORG}_${projectId}`,
+            visibility: "public"
+        })
+    });
+
+    if (!visibilityResult.ok) {
+        const text = await visibilityResult.text();
+        throw new Error(`Sonar visibility update failed: ${visibilityResult.status} ${text}`);
+    }
+
     return true;
 };
 
@@ -76,10 +97,13 @@ export const existsSonarProject = async (projectId: string): Promise<boolean> =>
     });
 
     if (!result.ok) {
-        throw new Error("Failed to check if Sonar project exists");
+        throw new Error(`Sonar check failed with HTTP ${result.status}`);
     }
 
-    return result.ok;
+    const checkJson = await result.json();
+    const projectExists = !checkJson.errors;
+
+    return projectExists;
 }
 
 export const pollSonarCloud = async (ceTaskUrl: string, intervalMs: number = 2000): Promise<string> => {
