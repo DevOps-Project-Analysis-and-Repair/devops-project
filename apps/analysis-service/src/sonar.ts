@@ -329,6 +329,10 @@ export const createAnalysisReport = async (projectId: string, analysisId: string
         getQualityGate(analysisId),
     ]);
 
+    console.log(issuesRaw);
+    console.log(metrics);
+    console.log(qualityGate);
+
     // map to repair shape
     const issues = issuesRaw.map(mapSonarIssueForRepair);
 
