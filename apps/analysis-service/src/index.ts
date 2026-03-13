@@ -27,11 +27,14 @@ app.post(`/${serviceName}/:projectId`, async ({ params: { projectId } }) => {
 
     // Run the Sonar scanner.
     const ceTaskUrl = await runSonarScanner(projectPath, projectId);
+    console.log("ceTaskUrl", ceTaskUrl);
 
     // Poll for the Sonar report.
     const analysisId = await pollSonarCloud(ceTaskUrl);
+    console.log("analysisId", analysisId);
 
     // Upload the analysis ID to the S3 bucket so that metrics and issues can be retrieved.
+    console.log("Uploading analysisId...");
     await uploadAnalysisId(projectId, analysisId);
 
     // Clean
