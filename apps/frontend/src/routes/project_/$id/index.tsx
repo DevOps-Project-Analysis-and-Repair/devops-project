@@ -1,10 +1,10 @@
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import TroubleshootIcon from "@mui/icons-material/Troubleshoot";
-import { Box, Button, ButtonGroup, CircularProgress, Divider, Stack, Typography } from "@mui/material";
+import { Box, Button, ButtonGroup, CircularProgress, Divider, Typography } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { API_BASE_URL, BASE_URL, type UploadProject } from "../../../api";
+import { API_BASE_URL, type UploadProject } from "../../../api";
 import {
   CodeViewer,
   type CodeViewerProps,
@@ -17,6 +17,7 @@ import {
   uploadFilesToFileSystemTree,
   type FileSystemFile,
 } from "../../../filesystem";
+import { AnalyzeAndRepairDialog, type AnalyzeAndRepairData } from "../../../dialogs/AnalyzeAndRepairDialog";
 
 export const Route = createFileRoute("/project_/$id/")({
   component: Project,
@@ -38,6 +39,7 @@ function FileIterations(props: { iterations: FileIterationData[], handler: (id: 
 function Project() {
   const [fileContent, setFileContent] = useState<CodeViewerProps | null>(null);
   const [iterationContent, setIterationContent] = useState<CodeViewerProps | null>(null);
+  const [projectUnderAnalysis, setAnalyzeProject] = useState<AnalyzeAndRepairData | null>(null);
 
   const { id } = Route.useParams();
 
@@ -85,23 +87,15 @@ function Project() {
   }
 
   async function analyzeProject() {
-    console.log(BASE_URL);
+    if (!project) { return; }
+    if (!fileContent || !fileContent.id) { return; }
 
-    const result = await fetch(
-      `${API_BASE_URL}/analysis/${id}`,
-      {
-        method: "POST"
-      },
-    )
-      .then((res) => res.text())
-      .catch((err) => console.error(err));
-
-    localStorage.setItem("TMP_RESULT", JSON.stringify(result));
-    console.log(result);
+    setAnalyzeProject({ projectId: project.id, fileId: fileContent.id });
   }
 
   return (
     <>
+      <AnalyzeAndRepairDialog data={projectUnderAnalysis} onComplete={() => { setAnalyzeProject(null); }}/>
       <Container direction="column" overflow="auto">
         <Button
           component={Link}

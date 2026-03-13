@@ -10,8 +10,6 @@ const app = new Router({ logger });
 
 const API_SERVICE_URL = "https://jjz7wxr827.execute-api.eu-west-1.amazonaws.com";
 
-
-
 app.post(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ params: { projectId, fileId } }) => {
   let text: string;
   console.log('start xt');
