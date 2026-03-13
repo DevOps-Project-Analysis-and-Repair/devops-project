@@ -2,7 +2,7 @@ import { NotFoundError } from '@aws-lambda-powertools/event-handler/http';
 import { GetCommand, DynamoDBDocument, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { writeFileSync, mkdirSync } from "fs";
+import { writeFileSync, mkdirSync, existsSync } from "fs";
 import path from "path";
 
 
@@ -40,6 +40,15 @@ export async function getProjectFromDb(projectId: string): Promise<Project> {
     return res.Item as Project;
 }
 
+function ensureDirectoryExistence(filePath: string) {
+  var dirname = path.dirname(filePath);
+  if (existsSync(dirname)) {
+    return true;
+  }
+  ensureDirectoryExistence(dirname);
+  mkdirSync(dirname);
+}
+
 // Download a project from the S3 bucket into a local directory.
 export async function downloadProjectFiles(projectId: string, targetProjectLocation: string): Promise<void> {
 
@@ -60,6 +69,7 @@ export async function downloadProjectFiles(projectId: string, targetProjectLocat
 
         const bytes = await fileContents.Body.transformToByteArray();
 
+        ensureDirectoryExistence(targetFileLocation);
         writeFileSync(targetFileLocation, bytes);
 
         console.log('write successful');
