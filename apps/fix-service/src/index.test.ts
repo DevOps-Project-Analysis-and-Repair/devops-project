@@ -26,6 +26,6 @@ describe('Router handler', () => {
         const response = await handler(mockEvent, context);
         expect(response.statusCode).toBe(200);
         const body = JSON.parse(response.body || 'null');
-        expect(Boolean(body)).toBe(true);
+        expect(body).toBe({ ok: true });
     });
 });
