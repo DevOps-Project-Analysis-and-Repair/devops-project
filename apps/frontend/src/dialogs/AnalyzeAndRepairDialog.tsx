@@ -1,5 +1,6 @@
 import { Avatar, Button, Dialog, DialogActions, DialogContent, DialogTitle, List, ListItem, ListItemAvatar, ListItemText } from "@mui/material";
 import { useEffect, useState} from "react"
+import { API_BASE_URL } from "../api";
 
 export type AnalyzeAndRepairData = { projectId: string, fileId: string };
 
@@ -34,25 +35,24 @@ function TextOnState(props: { state: AnalyzeActionState, text: string }) {
   }
 }
 
-const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
-
 export function AnalyzeAndRepairDialog({ data, onComplete }: AnalyzeAndRepairDialogProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [actions, setActions] = useState<AnalyzeAction[]>([]);
 
   async function doAnalysis(data: AnalyzeAndRepairData) {
-    console.log('analyze project', data);
-
-    // TODO: Call analysis service
-
-    await sleep(5000);
+    await fetch(`${API_BASE_URL}/analysis/${data.projectId}`,
+      {
+        method: "POST"
+      }
+    );
   }
-  async function fixFile(data: AnalyzeAndRepairData) {
-    console.log('fix file', data);
 
-    // TODO: Call fix service
-    
-    await sleep(5000);
+  async function fixFile(data: AnalyzeAndRepairData) {
+    await fetch(`${API_BASE_URL}/fix/projects/${data.projectId}/files/${data.fileId}`,
+      {
+        method: "POST"
+      }
+    );
   }
 
   async function processActions(data: AnalyzeAndRepairData, actions: AnalyzeAction[]) {
