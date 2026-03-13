@@ -39,3 +39,5 @@ runs:
         stack-name: ${{ inputs.stack-name }}
         capabilities: ${{ inputs.capabilities }}
         parameter-overrides: ${{ inputs.parameter-overrides }}
+      env:
+        OPENAI_API_KEY: ${{ env.OPENAI_API_KEY }}
