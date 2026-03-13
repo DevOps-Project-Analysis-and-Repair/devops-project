@@ -23,12 +23,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Configure AWS Credentials
+      - name: Set up AWS CLI
         uses: aws-actions/configure-aws-credentials@v6
         with:
-          aws-access-key-id: ${{ inputs.aws-access-key-id }}
-          aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
-          aws-region: ${{ inputs.aws-region }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Deploy Networking stack
         uses: ./.github/actions/deploy-networking
@@ -44,12 +44,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Configure AWS Credentials
+      - name: Set up AWS CLI
         uses: aws-actions/configure-aws-credentials@v6
         with:
-          aws-access-key-id: ${{ inputs.aws-access-key-id }}
-          aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
-          aws-region: ${{ inputs.aws-region }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Deploy Lambda service
         uses: ./.github/actions/deploy-lambda
@@ -66,12 +66,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Configure AWS Credentials
+      - name: Set up AWS CLI
         uses: aws-actions/configure-aws-credentials@v6
         with:
-          aws-access-key-id: ${{ inputs.aws-access-key-id }}
-          aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
-          aws-region: ${{ inputs.aws-region }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Deploy Lambda service
         uses: ./.github/actions/deploy-lambda
@@ -88,12 +88,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Configure AWS Credentials
+      - name: Set up AWS CLI
         uses: aws-actions/configure-aws-credentials@v6
         with:
-          aws-access-key-id: ${{ inputs.aws-access-key-id }}
-          aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
-          aws-region: ${{ inputs.aws-region }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Deploy Lambda service
         uses: ./.github/actions/deploy-lambda
@@ -111,12 +111,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Configure AWS Credentials
+      - name: Set up AWS CLI
         uses: aws-actions/configure-aws-credentials@v6
         with:
-          aws-access-key-id: ${{ inputs.aws-access-key-id }}
-          aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
-          aws-region: ${{ inputs.aws-region }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Deploy Networking stack
         uses: ./.github/actions/deploy-networking
@@ -132,12 +132,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Configure AWS Credentials
+      - name: Set up AWS CLI
         uses: aws-actions/configure-aws-credentials@v6
         with:
-          aws-access-key-id: ${{ inputs.aws-access-key-id }}
-          aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
-          aws-region: ${{ inputs.aws-region }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Deploy Networking stack
         uses: ./.github/actions/deploy-networking
