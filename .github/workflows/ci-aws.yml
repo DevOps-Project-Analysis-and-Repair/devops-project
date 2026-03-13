@@ -11,6 +11,7 @@ on:
       - networking/api-gateway-stack.yml
       - networking/monitoring-stack.yml
   push:
+    branches: [main]
     paths: *stack_paths
 
 jobs:

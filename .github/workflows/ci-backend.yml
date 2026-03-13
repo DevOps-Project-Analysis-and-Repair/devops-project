@@ -8,6 +8,7 @@ on:
       - "apps/fix-service/**"
       - "apps/analysis-service/**"
   push:
+    branches: [main]
     paths: *paths
 
 jobs:
