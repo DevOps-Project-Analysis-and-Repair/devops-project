@@ -1,7 +1,7 @@
 import { spawn } from "child_process";
 import { once } from "events";
-import path from "path";
 import fs from "fs/promises";
+import path from "path";
 
 const SONAR_ORG = "devops-software-engineering";
 // const SONAR_PROJECT_KEY = "devops-software-engineering_just-testing";
@@ -25,22 +25,22 @@ export const runSonarScanner = async (projectPath: string, projectId: string): P
         "-Dsonar.scanner.skipSystemTruststore=true",
         "-Dsonar.scm.disabled=true",
         "-Dsonar.javascript.node.maxspace=256"
-        ], {
-            cwd: projectPath,
-            env: process.env
-        });
+    ], {
+        cwd: projectPath,
+        env: process.env
+    });
 
     proc.stdout.pipe(process.stdout);
     proc.stderr.pipe(process.stderr);
 
     const [code] = await once(proc, "close");
 
-    if(code != 0) {
+    if (code != 0) {
         throw new Error();
     }
 
     const reportPath = path.join(projectPath, ".scannerwork", "report-task.txt");
-    const ceTaskUrl = (await fs.readFile(reportPath, "utf8")).match(/^ceTaskUrl=(.*)$/m)?.[1]!;
+    const ceTaskUrl = (await fs.readFile(reportPath, "utf8")).match(/^ceTaskUrl=(.*)$/m)?.[1] || '';
 
     return ceTaskUrl;
 }
@@ -66,12 +66,10 @@ export const createSonarProject = async (projectId: string): Promise<boolean> =>
     }
     console.log(result.status);
 
-    // makeSonarProjectPublic(projectId);
-
     return true;
 };
 
-export const makeSonarProjectPublic = async (projectId: string): Promise<Boolean> => {
+export const makeSonarProjectPublic = async (projectId: string): Promise<boolean> => {
     const visibilityResult = await fetch("https://sonarcloud.io/api/projects/update_visibility", {
         method: "POST",
         headers: {

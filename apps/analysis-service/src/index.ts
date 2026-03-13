@@ -1,4 +1,4 @@
-import { BadRequestError, UnauthorizedError, Router } from '@aws-lambda-powertools/event-handler/http';
+import { Router } from '@aws-lambda-powertools/event-handler/http';
 import { Logger } from '@aws-lambda-powertools/logger';
 import { Context } from 'aws-lambda';
 
@@ -28,7 +28,7 @@ app.post(`/${serviceName}/:projectId`, async ({ params: { projectId } }) => {
     // Ensure that there is a Sonar project to store the analysis report.
     const exists = await existsSonarProject(projectId);
     console.log("Creating Sonar project...");
-    if(!exists) {
+    if (!exists) {
         await createSonarProject(projectId);
     }
 
@@ -36,6 +36,9 @@ app.post(`/${serviceName}/:projectId`, async ({ params: { projectId } }) => {
     console.log("Scanning files...");
     const ceTaskUrl = await runSonarScanner(projectPath, projectId);
     console.log("ceTaskUrl", ceTaskUrl);
+
+    // Change the project visibility while waiting for the Sonar report to be created.
+    await makeSonarProjectPublic(projectId);
 
     // Poll for the Sonar report.
     console.log("Polling report...");
@@ -45,8 +48,6 @@ app.post(`/${serviceName}/:projectId`, async ({ params: { projectId } }) => {
     // Upload the analysis ID to the S3 bucket so that metrics and issues can be retrieved.
     console.log("Uploading analysisId...");
     await uploadAnalysisId(projectId, analysisId);
-
-    await makeSonarProjectPublic(projectId);
 
     // Clean
     console.log("Done");
