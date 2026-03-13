@@ -47,7 +47,6 @@ export const runSonarScanner = async (projectPath: string, projectId: string): P
 
 export const createSonarProject = async (projectId: string): Promise<boolean> => {
 
-    // 1. Create a private Sonar project.
     const result = await fetch("https://sonarcloud.io/api/projects/create", {
         method: "POST",
         headers: {
@@ -65,28 +64,35 @@ export const createSonarProject = async (projectId: string): Promise<boolean> =>
         const text = await result.text();
         throw new Error(`Sonar project creation failed: ${result.status} ${text}`);
     }
+    console.log(result.status);
 
-    // 2. Make the Sonar project public.
-    const visibilityResult = await fetch("https://sonarcloud.io/api/projects/update_visibility", {
-        method: "POST",
-        headers: {
-            Authorization: SONAR_AUTH,
-            "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: new URLSearchParams({
-            project: `${SONAR_ORG}_${projectId}`,
-            visibility: "public",
-            name: projectId
-        })
-    });
-
-    if (!visibilityResult.ok) {
-        const text = await visibilityResult.text();
-        throw new Error(`Sonar visibility update failed: ${visibilityResult.status} ${text}`);
-    }
+    // makeSonarProjectPublic(projectId);
 
     return true;
 };
+
+// export const makeSonarProjectPublic = async (projectId: string): Promise<Boolean> => {
+//     const visibilityResult = await fetch("https://sonarcloud.io/api/projects/update_visibility", {
+//         method: "POST",
+//         headers: {
+//             Authorization: SONAR_AUTH,
+//             "Content-Type": "application/x-www-form-urlencoded"
+//         },
+//         body: new URLSearchParams({
+//             project: `${SONAR_ORG}_${projectId}`,
+//             visibility: "public"
+//         })
+//     });
+
+//     if (!visibilityResult.ok) {
+//         const text = await visibilityResult.text();
+//         throw new Error(`Sonar visibility update failed: ${visibilityResult.status} ${text}`);
+//     }
+
+//     console.log(visibilityResult.status);
+
+//     return true;
+// }
 
 export const existsSonarProject = async (projectId: string): Promise<boolean> => {
     const result = await fetch(`https://sonarcloud.io/api/projects/search?organization=${SONAR_ORG}&projects=${SONAR_ORG}_${projectId}`, {
