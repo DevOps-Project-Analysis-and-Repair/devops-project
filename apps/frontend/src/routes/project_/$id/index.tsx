@@ -84,6 +84,8 @@ function Project() {
   }
 
   async function analyzeProject() {
+    console.log(BASE_URL);
+
     const result = await fetch(
       `${API_BASE_URL}/analysis/${id}`,
       {
