@@ -15,7 +15,7 @@ export async function getProjectFromDb(doc: DynamoDBDocument, projectId: string)
     name: res.Item.name,
     files: res.Item.files,
     createdAt: res.Item.createdAt,
-    repairedFiles: res.Item.repairedFile ?? {},
+    repairedFiles: res.Item.repairedFiles ?? {},
     analysis: res.Item.analysis ?? { sonarIds: [] }
   }
 }
