@@ -1,0 +1,14 @@
+name: "Publish Docker Image"
+description: "Builds and publishes a Docker image"
+inputs:
+  working-directory:
+    description: "Directory containing the Dockerfile and publish script"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Publish Dockerfile
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: sh ./publish.sh
