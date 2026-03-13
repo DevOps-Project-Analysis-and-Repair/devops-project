@@ -21,6 +21,7 @@ app.post(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ params: {
     const res = await fetch(DOWNLOAD_URL);
     text = await res.text();
   } catch (error) {
+    console.log(error);
     throw new BadRequestError("Could not find the specified file");
   }
 

@@ -16,7 +16,8 @@ describe('Router handler', () => {
             multiValueQueryStringParameters: null,
             pathParameters: null,
             stageVariables: null,
-            requestContext: {} as any,   // can be empty for tests
+            requestContext: {} as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+
             body: null,
             isBase64Encoded: false,
         };

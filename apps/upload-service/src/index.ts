@@ -1,16 +1,16 @@
-import { Context } from 'aws-lambda';
 import { BadRequestError, InternalServerError, NotFoundError, Router, UnauthorizedError } from '@aws-lambda-powertools/event-handler/http';
 import { Logger } from '@aws-lambda-powertools/logger';
-import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { DynamoDBDocument, paginateScan } from "@aws-sdk/lib-dynamodb";
 import { Upload } from "@aws-sdk/lib-storage";
+import { Context } from 'aws-lambda';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Project, ProjectFile } from './types';
 import { createToken, verifyToken } from './auth';
+import { appendFile, appendRepairedFile, getProjectFromDb } from './dynamo';
+import { Project, ProjectFile } from './types';
 import { datestring, isUploadCompleted, latest } from './util';
-import { appendRepairedFile, appendFile, getProjectFromDb } from './dynamo';
 
 const serviceName = 'upload';
 
@@ -54,7 +54,7 @@ app.get(`/${serviceName}/projects`, async () => {
   let projects: Project[] = [];
 
   for await (const page of paginateScan(paginationConfig, tableConfig)) {
-    const pageItems = Object.entries(page.Items ?? {}).map(([_, v]) => v) as Project[];
+    const pageItems = Object.values(page.Items ?? {}) as Project[];
 
     projects = projects.concat(pageItems);
   }
@@ -89,17 +89,17 @@ app.post(`/${serviceName}/projects`, async () => {
   return { projectId, token: createToken(projectId) };
 });
 
-app.get(`/${serviceName}/projects/:projectId`, async ({ params: { projectId }}) => {
+app.get(`/${serviceName}/projects/:projectId`, async ({ params: { projectId } }) => {
   // 1. get project from db
   // 2. return project object, including file names
   return await getProjectFromDb(doc, projectId);
 });
 
-app.get(`/${serviceName}/projects/:projectId/latest`, async ({ params: { projectId }}) => {
+app.get(`/${serviceName}/projects/:projectId/latest`, async ({ params: { projectId } }) => {
   // 1. get project from db
   // 2. return project object, including file names
   // 3. replace all the file references with the latest entry of the repaired file
-  let project = await getProjectFromDb(doc, projectId);
+  const project = await getProjectFromDb(doc, projectId);
 
   project.files = project.files.map(x => {
     if (x.id in project.repairedFiles) {
@@ -112,7 +112,7 @@ app.get(`/${serviceName}/projects/:projectId/latest`, async ({ params: { project
   return project;
 });
 
-app.post(`/${serviceName}/projects/:projectId/files`, async ({ req, params: { projectId }}) => {
+app.post(`/${serviceName}/projects/:projectId/files`, async ({ req, params: { projectId } }) => {
   // Note: Body should be send in binary
   // Other values have to be send via the headers/params
   const token = req.headers.get('X-Project-Token');
@@ -123,7 +123,7 @@ app.post(`/${serviceName}/projects/:projectId/files`, async ({ req, params: { pr
 
   // 1. validate jwt, or fail
   if (!verifyToken(token, projectId)) { throw new UnauthorizedError(); }
-  
+
   // 2. fetch project from project id, or fail
   const project = await getProjectFromDb(doc, projectId);
 
@@ -154,7 +154,7 @@ app.post(`/${serviceName}/projects/:projectId/files`, async ({ req, params: { pr
   return { ok: true };
 });
 
-app.post(`/${serviceName}/projects/:projectId/files/:fileId/repaired`, async ({ req, params: { projectId, fileId }}) => {
+app.post(`/${serviceName}/projects/:projectId/files/:fileId/repaired`, async ({ req, params: { projectId, fileId } }) => {
   // Note: Body should be send in binary
 
   // 1. fetch project from project id, or fail
@@ -199,7 +199,7 @@ app.post(`/${serviceName}/projects/:projectId/files/:fileId/repaired`, async ({ 
   return { ok: true };
 });
 
-app.post(`/${serviceName}/projects/:projectId/analysis/sonar`, async ({ req, params: { projectId }}) => {
+app.post(`/${serviceName}/projects/:projectId/analysis/sonar`, async ({ req, params: { projectId } }) => {
   // 1. get project
   const project = await getProjectFromDb(doc, projectId);
 
@@ -214,12 +214,12 @@ app.post(`/${serviceName}/projects/:projectId/analysis/sonar`, async ({ req, par
   project.analysis.sonarIds.push(analysisId);
 
   // 4. store complete document (this introduces a race-condition but w.e.)
-  await doc.put({ TableName: TABLE_PROJECTS, Item: project});
+  await doc.put({ TableName: TABLE_PROJECTS, Item: project });
 
   return { ok: true };
 });
 
-app.get(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ res, params: { projectId, fileId }}) => {
+app.get(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ res, params: { projectId, fileId } }) => {
   // 1. get project
   const project = await getProjectFromDb(doc, projectId);
 
@@ -229,12 +229,12 @@ app.get(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ res, param
 
   // 3. return file contents
   const result = await s3client.send(new GetObjectCommand({ Bucket: FILES_BUCKET, Key: file.id }));
-  
+
   res.headers.set('Content-Type', file.mimetype || 'text/plain');
   res.headers.set('Content-Disposition', `inline; filename="${file.filename}"`);
-  
+
   const stream = result.Body?.transformToWebStream();
-  
+
   return stream;
 });
 

@@ -7,13 +7,18 @@
   "type": "commonjs",
   "main": "index.ts",
   "scripts": {
+    "lint": "eslint .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "esbuild src/index.ts --bundle --minify --sourcemap --platform=node --target=es2020 --outfile=dist/index.js"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/aws-lambda": "^8.10.160",
     "@types/jsonwebtoken": "^9.0.10",
-    "esbuild": "^0.27.3"
+    "esbuild": "^0.27.3",
+    "eslint": "^10.0.3",
+    "globals": "^17.4.0",
+    "typescript-eslint": "^8.57.0"
   },
   "dependencies": {
     "@aws-lambda-powertools/event-handler": "^2.31.0",
