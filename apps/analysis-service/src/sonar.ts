@@ -74,7 +74,6 @@ export const createSonarProject = async (projectId: string): Promise<boolean> =>
             "Content-Type": "application/x-www-form-urlencoded"
         },
         body: new URLSearchParams({
-            organization: SONAR_ORG,
             project: `${SONAR_ORG}_${projectId}`,
             visibility: "public"
         })
