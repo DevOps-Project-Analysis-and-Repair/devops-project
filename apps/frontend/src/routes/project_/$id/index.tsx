@@ -2,7 +2,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import TroubleshootIcon from "@mui/icons-material/Troubleshoot";
 import { Box, Button, ButtonGroup, CircularProgress, Divider, Stack, Typography } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { API_BASE_URL, BASE_URL, type UploadProject } from "../../../api";
 import {
@@ -38,7 +38,6 @@ function Project() {
   const [fileContent, setFileContent] = useState<CodeViewerProps | null>(null);
   const [iterationContent, setIterationContent] = useState<CodeViewerProps | null>(null);
 
-  const navigate = useNavigate();
   const { id } = Route.useParams();
 
   const {
@@ -84,17 +83,13 @@ function Project() {
     setIterationContent({ content, language: fileContent!.language, id: fileId });
   }
 
-  async function analyzeFile() {
-    if (!fileContent?.id) {
-      console.error("Could not analyze file");
-      alert("Could not analyze file, no file ID provided");
-      return;
-    }
+  async function analyzeProject() {
+    console.log(BASE_URL);
 
     const result = await fetch(
-      `${BASE_URL}/fix/projects/${id}/files/${fileContent?.id}`,
+      `${API_BASE_URL}/analysis/${id}`,
       {
-        method: "POST",
+        method: "POST"
       },
     )
       .then((res) => res.text())
@@ -102,11 +97,6 @@ function Project() {
 
     localStorage.setItem("TMP_RESULT", JSON.stringify(result));
     console.log(result);
-
-    navigate({
-      to: `/project/$id/results/$file`,
-      params: { id, file: fileContent?.id },
-    });
   }
 
   return (
@@ -150,7 +140,7 @@ function Project() {
                       role={undefined}
                       variant="contained"
                       tabIndex={-1}
-                      onClick={analyzeFile}
+                      onClick={analyzeProject}
                       startIcon={<TroubleshootIcon />}
                     >
                       Analyze & Repair

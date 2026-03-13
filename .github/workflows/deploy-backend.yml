@@ -2,8 +2,8 @@ name: Deploy Backend
 
 on:
   push:
-    branches:
-      - main
+    # branches:
+    #   - main
     paths:
       - '.github/workflows/deploy-backend.yml'
       - 'apps/services/**'
@@ -71,6 +71,33 @@ jobs:
         working-directory: ./apps/upload-service
         run: sh ./deploy.sh
 
+  deploy_analysis_stack:
+    needs: [deploy_vpc_stack]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Publish Dockerfile
+        working-directory: ./apps/analysis-service
+        run: sh ./publish.sh
+
+      - name: Validate CloudFormation template
+        run: |
+          aws cloudformation validate-template \
+            --template-body file://./apps/analysis-service/analysis-stack.yml
+
+      - name: Deploy CloudFormation
+        working-directory: ./apps/analysis-service
+        run: sh ./deploy.sh
+
   deploy_fix_stack:
     needs: [deploy_vpc_stack]
     runs-on: ubuntu-latest
@@ -101,7 +128,7 @@ jobs:
         run: sh ./deploy.sh
 
   deploy_api_gateway_stack:
-    needs: [deploy_upload_stack, deploy_fix_stack]
+    needs: [deploy_upload_stack, deploy_fix_stack, deploy_analysis_stack]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -124,6 +151,34 @@ jobs:
           aws cloudformation deploy \
             --template-file ./apps/services/api-gateway-stack.yml \
             --stack-name api-gateway-stack \
+            --capabilities CAPABILITY_IAM \
+            --parameter-overrides \
+              EnvironmentName=prod
+    
+  deploy_monitoring_stack:
+    needs: [deploy_api_gateway_stack]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Validate CloudFormation template
+        run: |
+          aws cloudformation validate-template \
+            --template-body file://./apps/services/monitoring-stack.yml
+
+      - name: Deploy CloudFormation stack
+        run: |
+          aws cloudformation deploy \
+            --template-file ./apps/services/monitoring-stack.yml \
+            --stack-name monitoring-stack \
             --capabilities CAPABILITY_IAM \
             --parameter-overrides \
               EnvironmentName=prod

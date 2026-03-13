@@ -1,0 +1,82 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  This template deploys a Lambda function using a Docker image, with S3 and DynamoDB access.
+
+Parameters:
+  AnalysisServiceImageUri:
+    Description: Uri to the image
+    Type: String
+  Repo:
+    Description: The ECR repository name for the Lambda Docker image
+    Type: String
+    Default: analysis-service
+
+Resources:
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+      Policies:
+        - PolicyName: S3Access
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:DeleteObject
+                  - s3:ListBucket
+                Resource:
+                  - 'arn:aws:s3:::files-upload-stack'
+                  - 'arn:aws:s3:::files-upload-stack/*'
+        - PolicyName: DynamoDBAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:Scan
+                  - dynamodb:Query
+                Resource:
+                  - arn:aws:dynamodb:eu-west-1:379245767025:table/Projects-upload-stack
+
+  LambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'Analysis-${AWS::StackName}'
+      Role: !GetAtt LambdaExecutionRole.Arn
+      PackageType: Image
+      Code:
+        ImageUri: !Ref AnalysisServiceImageUri
+      Timeout: 120
+      MemorySize: 2048
+      VpcConfig:
+        SecurityGroupIds:
+          - !ImportValue LambdaSecurityGroup
+        SubnetIds:
+          - !ImportValue PrivateSubnet
+      Environment:
+        Variables:
+          S3_BUCKET_NAME: !ImportValue Upload-BucketName
+          DYNAMODB_TABLE_NAME: !ImportValue Upload-TableName
+
+Outputs:
+  AnalysisArn:
+    Description: ARN of the Lambda function
+    Value: !GetAtt LambdaFunction.Arn
+    Export:
+      Name: !Sub "Analysis-FunctionArn"
