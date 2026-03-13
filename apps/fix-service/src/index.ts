@@ -8,7 +8,7 @@ export const serviceName = 'fix';
 const logger = new Logger({ serviceName });
 const app = new Router({ logger });
 
-const API_SERVICE_URL = "https://jjz7wxr827.execute-api.eu-west-1.amazonaws.com";
+const API_SERVICE_URL = "https://1wk9q92xx1.execute-api.eu-west-1.amazonaws.com";
 
 app.post(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ params: { projectId, fileId } }) => {
   let text: string;
