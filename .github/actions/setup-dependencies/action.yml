@@ -1,5 +1,5 @@
-name: Setup Dependencies
-description: Checkout repo, setup node, and install dependencies
+name: "Setup Dependencies"
+description: "Checkout repo, setup node, and install dependencies"
 
 inputs:
   working-directory:

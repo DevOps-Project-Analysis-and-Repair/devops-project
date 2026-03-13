@@ -8,20 +8,17 @@
   "main": "index.ts",
   "scripts": {
     "lint": "eslint .",
-    "test": "jest",
+    "test": "npm run build && node --test dist",
     "build": "esbuild src/index.ts --bundle --minify --sourcemap --platform=node --target=es2020 --outfile=dist/index.js",
     "watch": "esbuild src/index.ts --bundle --sourcemap --platform=node --target=es2020 --outfile=.aws-sam/build/LlmServiceFunction/index.js --watch",
     "dev": "npm run build && sam build && sam local start-api --env-vars env.json --port 4000"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.160",
-    "@types/jest": "^30.0.0",
     "@types/node": "^25.3.0",
     "esbuild": "^0.27.3",
     "eslint": "^10.0.3",
     "globals": "^17.4.0",
-    "jest": "^30.3.0",
-    "ts-jest": "^29.4.6",
     "typescript-eslint": "^8.57.0"
   },
   "dependencies": {
