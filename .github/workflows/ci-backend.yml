@@ -1,0 +1,63 @@
+name: CI Backend Checks
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/ci-backend.yml"
+      - "apps/upload-service/**"
+      - "apps/llm-service/**"
+      - "apps/analysis-service/**"
+
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/ci-backend.yml"
+      - "apps/upload-service/**"
+      - "apps/llm-service/**"
+      - "apps/analysis-service/**"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        service:
+          - llm-service
+          # - upload-service (Need to add tests)
+          # - analysis-service (Need to add when analysis service is live)
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup dependencies
+        uses: ./.github/actions/setup-dependencies
+        with:
+          working-directory: apps/${{ matrix.service }}
+
+      - run: npm run build
+        working-directory: apps/${{ matrix.service }}
+
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        service:
+          - upload-service
+          - llm-service
+          # - analysis-service (Need to add when analysis service is live)
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup dependencies
+        uses: ./.github/actions/setup-dependencies
+        with:
+          working-directory: apps/${{ matrix.service }}
+
+      - run: npm run build
+        working-directory: apps/${{ matrix.service }}

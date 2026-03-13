@@ -17,10 +17,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      - name: Setup frontend
-        uses: ./.github/actions/setup-frontend
+      - name: Setup dependencies
+        uses: ./.github/actions/setup-dependencies
+        with:
+          working-directory: apps/frontend
 
       - run: npm run lint
         working-directory: apps/frontend
@@ -29,10 +31,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      - name: Setup frontend
-        uses: ./.github/actions/setup-frontend
+      - name: Setup dependencies
+        uses: ./.github/actions/setup-dependencies
+        with:
+          working-directory: apps/frontend
 
       - run: npm run test
         working-directory: apps/frontend
@@ -41,10 +45,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      - name: Setup frontend
-        uses: ./.github/actions/setup-frontend
+      - name: Setup dependencies
+        uses: ./.github/actions/setup-dependencies
+        with:
+          working-directory: apps/frontend
 
       - run: npm run build
         working-directory: apps/frontend
