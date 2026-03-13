@@ -85,7 +85,7 @@ function Project() {
 
   async function analyzeProject() {
     const result = await fetch(
-      `${BASE_URL}/analysis/${id}`,
+      `${API_BASE_URL}/analysis/${id}`,
       {
         method: "POST"
       },
