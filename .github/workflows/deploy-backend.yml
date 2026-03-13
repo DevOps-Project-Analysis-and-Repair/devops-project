@@ -6,7 +6,7 @@ on:
     #   - main
     paths:
       - ".github/workflows/deploy-backend.yml"
-      - "apps/services/**"
+      - "networking/**"
       - "apps/upload-service/**"
       - "apps/llm-service/**"
       - "apps/analysis-service/**"
@@ -33,12 +33,12 @@ jobs:
       - name: Validate CloudFormation template
         run: |
           aws cloudformation validate-template \
-            --template-body file://./apps/services/vpc-stack.yml
+            --template-body file://./networking/vpc-stack.yml
 
       - name: Deploy CloudFormation stack
         run: |
           aws cloudformation deploy \
-            --template-file ./apps/services/vpc-stack.yml \
+            --template-file ./networking/vpc-stack.yml \
             --stack-name vpc-stack \
             --capabilities CAPABILITY_IAM \
             --parameter-overrides \
@@ -144,12 +144,12 @@ jobs:
       - name: Validate CloudFormation template
         run: |
           aws cloudformation validate-template \
-            --template-body file://./apps/services/api-gateway-stack.yml
+            --template-body file://./networking/api-gateway-stack.yml
 
       - name: Deploy CloudFormation stack
         run: |
           aws cloudformation deploy \
-            --template-file ./apps/services/api-gateway-stack.yml \
+            --template-file ./networking/api-gateway-stack.yml \
             --stack-name api-gateway-stack \
             --capabilities CAPABILITY_IAM \
             --parameter-overrides \
@@ -172,12 +172,12 @@ jobs:
       - name: Validate CloudFormation template
         run: |
           aws cloudformation validate-template \
-            --template-body file://./apps/services/monitoring-stack.yml
+            --template-body file://./networking/monitoring-stack.yml
 
       - name: Deploy CloudFormation stack
         run: |
           aws cloudformation deploy \
-            --template-file ./apps/services/monitoring-stack.yml \
+            --template-file ./networking/monitoring-stack.yml \
             --stack-name monitoring-stack \
             --capabilities CAPABILITY_IAM \
             --parameter-overrides \
