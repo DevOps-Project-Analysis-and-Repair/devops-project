@@ -37,8 +37,8 @@ Resources:
       PackageType: Image
       Code:
         ImageUri: !Ref FixServiceImageUri
-      Timeout: 30
-      MemorySize: 128
+      Timeout: 120
+      MemorySize: 256
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue LambdaSecurityGroup
