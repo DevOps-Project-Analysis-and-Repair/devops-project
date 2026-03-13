@@ -24,7 +24,7 @@ jobs:
     strategy:
       matrix:
         service:
-          # llm-service
+          - fix-service
           # - upload-service (Need to add tests)
           - analysis-service
 
