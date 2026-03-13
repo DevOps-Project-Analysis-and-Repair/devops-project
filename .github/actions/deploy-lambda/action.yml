@@ -1,0 +1,47 @@
+name: "Deploy Lambda Service"
+description: "Publishes a Docker image and deploys a CloudFormation stack for a Lambda service"
+inputs:
+  working-directory:
+    description: "Directory containing the Dockerfile and publish script"
+    required: true
+  template-file:
+    description: "Path to the CloudFormation template file"
+    required: true
+  stack-name:
+    description: "Name of the CloudFormation stack"
+    required: true
+  capabilities:
+    description: "Capabilities required for the stack"
+    required: false
+    default: "CAPABILITY_IAM"
+  parameter-overrides:
+    description: "Parameter overrides for the stack"
+    required: false
+    default: ""
+  openai-api-key:
+    description: "OpenAI API key (if required)"
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - name: Publish Docker image
+      uses: ./.github/actions/publish-docker
+      with:
+        working-directory: ${{ inputs.working-directory }}
+
+    - name: Validate CloudFormation template
+      uses: ./.github/actions/validate-cloudformation
+      with:
+        template-file: ${{ inputs.template-file }}
+
+    - name: Deploy CloudFormation stack
+      uses: ./.github/actions/deploy-cloudformation
+      with:
+        template-file: ${{ inputs.template-file }}
+        stack-name: ${{ inputs.stack-name }}
+        capabilities: ${{ inputs.capabilities }}
+        parameter-overrides: ${{ inputs.parameter-overrides }}
+      env:
+        OPENAI_API_KEY: ${{ inputs.openai-api-key }}
