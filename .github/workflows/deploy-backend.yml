@@ -145,3 +145,4 @@ jobs:
           template-file: ./networking/monitoring-stack.yml
           stack-name: monitoring-stack
           parameter-overrides: EnvironmentName=prod
+
