@@ -103,7 +103,7 @@ jobs:
           template-file: ./apps/fix-service/fix-stack.yml
           stack-name: fix-service-stack
           parameter-overrides: |
-            "OpenAIApiKey=${{ secrets.OPENAI_API_KEY }}"
+            "OpenAIApiKey=${{ secrets.OPENAI_API_KEY }}" \
             "FixServiceImageUri=${{ env.ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/fix-service:${{ env.GIT_HASH }}"
 
   deploy_api_gateway_stack:
