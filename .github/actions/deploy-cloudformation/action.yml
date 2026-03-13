@@ -36,4 +36,4 @@ runs:
           --template-file "${{ inputs.template-file }}" \
           --stack-name "${{ inputs.stack-name }}" \
           --capabilities "${{ inputs.capabilities }}" \
-          --parameter-overrides "${{ inputs.parameter-overrides }}"
+          --parameter-overrides ${{ inputs.parameter-overrides }}
