@@ -1,9 +1,8 @@
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import TroubleshootIcon from "@mui/icons-material/Troubleshoot";
 import { Box, Button, ButtonGroup, CircularProgress, Divider, Typography } from "@mui/material";
-import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { API_BASE_URL, type UploadProject } from "../../../api";
 import {
   CodeViewer,
@@ -18,6 +17,7 @@ import {
   type FileSystemFile,
 } from "../../../filesystem";
 import { AnalyzeAndRepairDialog, type AnalyzeAndRepairData } from "../../../dialogs/AnalyzeAndRepairDialog";
+import { SettingsPowerOutlined } from "@mui/icons-material";
 
 export const Route = createFileRoute("/project_/$id/")({
   component: Project,
@@ -37,25 +37,33 @@ function FileIterations(props: { iterations: FileIterationData[], handler: (id: 
 }
 
 function Project() {
+  const [project, setProject] = useState<UploadProject | null>(null);
+  const [initialLoad, setInitialLoad] = useState<boolean>(true);
+  const [error, setError] = useState<Error | null>(null);
+
   const [fileContent, setFileContent] = useState<CodeViewerProps | null>(null);
   const [iterationContent, setIterationContent] = useState<CodeViewerProps | null>(null);
   const [projectUnderAnalysis, setAnalyzeProject] = useState<AnalyzeAndRepairData | null>(null);
 
   const { id } = Route.useParams();
 
-  const {
-    data: project,
-    isPending,
-    error,
-  } = useQuery<UploadProject>({
-    queryKey: ["projects", id],
-    queryFn: () =>
-      fetch(`${API_BASE_URL}/upload/projects/${id}`).then((r) => r.json()),
-  });
+  async function downloadProject() {
+    const resp = await fetch(`${API_BASE_URL}/upload/projects/${id}`);
 
-  if (isPending) return <CircularProgress />;
+    console.log(resp);
 
-  if (error) return <div> An error occured {error.message} </div>;
+    setProject(await resp.json());
+  }
+
+  useEffect(() => {
+    downloadProject()
+      .then(() => setInitialLoad(false))
+      .catch(e => setError(e));
+  }, []);
+
+  if (initialLoad) return <CircularProgress />;
+
+  if (error || !project) return <div> An error occured {error?.message} </div>;
 
   async function onFileClick(file: FileSystemFile) {
     setFileContent(null);
@@ -93,9 +101,16 @@ function Project() {
     setAnalyzeProject({ projectId: project.id, fileId: fileContent.id });
   }
 
+  async function postAnalyzedProject() {
+    setAnalyzeProject(null);
+
+    // Refresh project
+    await downloadProject();
+  }
+
   return (
     <>
-      <AnalyzeAndRepairDialog data={projectUnderAnalysis} onComplete={() => { setAnalyzeProject(null); }}/>
+      <AnalyzeAndRepairDialog data={projectUnderAnalysis} onComplete={postAnalyzedProject}/>
       <Container direction="column" overflow="auto">
         <Button
           component={Link}
