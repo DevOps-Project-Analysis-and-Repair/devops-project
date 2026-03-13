@@ -14,6 +14,8 @@ on:
 env:
   AWS_REGION: eu-west-1
   GIT_HASH: ${{ github.sha }}
+  ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+  REPO: my-repo  # or use a secret/variable as needed
 
 jobs:
   deploy_vpc_stack:
@@ -57,7 +59,9 @@ jobs:
           working-directory: ./apps/upload-service
           template-file: ./apps/upload-service/upload-stack.yml
           stack-name: upload-service-stack
-          parameter-overrides: EnvironmentName=prod
+          parameter-overrides: |
+            EnvironmentName=prod
+            UploadServiceImageUri=${{ env.ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/upload-service:${{ env.GIT_HASH }}
 
   deploy_analysis_stack:
     needs: [deploy_vpc_stack]
@@ -79,7 +83,9 @@ jobs:
           working-directory: ./apps/analysis-service
           template-file: ./apps/analysis-service/analysis-stack.yml
           stack-name: analysis-service-stack
-          parameter-overrides: EnvironmentName=prod
+          parameter-overrides: |
+            EnvironmentName=prod
+            AnalysisServiceImageUri=${{ env.ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/analysis-service:${{ env.GIT_HASH }}
 
   deploy_fix_stack:
     needs: [deploy_vpc_stack]
@@ -101,7 +107,9 @@ jobs:
           working-directory: ./apps/fix-service
           template-file: ./apps/fix-service/fix-stack.yml
           stack-name: fix-service-stack
-          parameter-overrides: EnvironmentName=prod
+          parameter-overrides: |
+            EnvironmentName=prod
+            FixServiceImageUri=${{ env.ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/fix-service:${{ env.GIT_HASH }}
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
 
   deploy_api_gateway_stack:
@@ -145,4 +153,3 @@ jobs:
           template-file: ./networking/monitoring-stack.yml
           stack-name: monitoring-stack
           parameter-overrides: EnvironmentName=prod
-
