@@ -23,6 +23,7 @@ export const Route = createFileRoute("/project_/$id/")({
 });
 
 type FileIterationData = { id: string, iteration: number };
+const flex110 = { flexGrow: 1, flexShrink: 1, flexBasis: 0 };
 
 function FileIterations(props: { iterations: FileIterationData[], handler: (id: string) => void }) {
   const { iterations, handler } = props;
@@ -123,53 +124,62 @@ function Project() {
         >
           Project {project.name} ({project.files.length})
         </Typography>
-        <Stack direction="row" overflow="auto" margin={2}>
+
+        <Box sx={{ display: 'flex', direction: 'row' }} pt={2}>
           {project.files && (
             <FileTree
               directory={uploadFilesToFileSystemTree(project.files)}
               onFileClick={onFileClick}
             />
           )}
-          <div>
-            {fileContent && (
-              <>
-                <Box sx={{ display: 'flex' }}>
-                  <Box sx={{ flex: 1, p: 2, overflowY: 'auto' }}>
-                    <Button
-                      component="label"
-                      role={undefined}
-                      variant="contained"
-                      tabIndex={-1}
-                      onClick={analyzeProject}
-                      startIcon={<TroubleshootIcon />}
-                    >
-                      Analyze & Repair
-                    </Button>
-                    <CodeViewer
-                      content={fileContent.content}
-                      language={fileContent.language}
-                    />
-                  </Box>
 
-                  <Divider orientation="vertical" flexItem />
+          {fileContent && (
+            <Box sx={{
+              display: 'flex',
+              direction: 'row',
+              overflow: 'auto',
+              ...flex110
+            }}>
+              <Box sx={{ display: 'flex', overflowY: 'auto', ...flex110 }}>
+                <Box p={2} sx={{ minWidth: '100%' }}>
+                  <Button
+                    component="label"
+                    role={undefined}
+                    variant="contained"
+                    tabIndex={-1}
+                    onClick={analyzeProject}
+                    startIcon={<TroubleshootIcon />}
+                  >
+                    Analyze & Repair
+                  </Button>
 
-                  <Box sx={{ flex: 1, p: 2, overflowY: 'auto' }}>
-                    <FileIterations
-                      iterations={getFileIterations(project, fileContent.id!)}
-                      handler={onFileIterationClick}
-                    />
-                    {iterationContent && (
-                      <CodeViewer
-                        content={iterationContent.content}
-                        language={iterationContent.language}
-                      />
-                    )}
-                  </Box>
+                  <CodeViewer
+                    content={fileContent.content}
+                    language={fileContent.language}
+                  />
                 </Box>
-              </>
-            )}
-          </div>
-        </Stack>
+              </Box>
+
+              <Divider orientation="vertical" flexItem />
+
+              <Box sx={{ display: 'flex', overflowY: 'auto', ...flex110 }}>
+                <Box p={2} sx={{ minWidth: '100%' }}>
+                  <FileIterations
+                    iterations={getFileIterations(project, fileContent.id!)}
+                    handler={onFileIterationClick}
+                  />
+
+                  {iterationContent && (
+                    <CodeViewer
+                      content={iterationContent.content}
+                      language={iterationContent.language}
+                    />
+                  )}
+                </Box>
+              </Box>
+            </Box>
+          )}
+        </Box>
         {project && (
           <div>
             <h3>Sonarcube results</h3>
