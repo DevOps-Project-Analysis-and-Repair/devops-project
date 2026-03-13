@@ -3,7 +3,7 @@ import { Logger } from '@aws-lambda-powertools/logger';
 import { Context } from 'aws-lambda';
 
 import { downloadProjectFiles, uploadAnalysisId } from './project';
-import { createSonarProject, existsSonarProject, pollSonarCloud, runSonarScanner } from './sonar';
+import { createSonarProject, existsSonarProject, makeSonarProjectPublic, pollSonarCloud, runSonarScanner } from './sonar';
 
 const serviceName = 'analysis';
 const logger = new Logger({ serviceName });
@@ -45,6 +45,8 @@ app.post(`/${serviceName}/:projectId`, async ({ params: { projectId } }) => {
     // Upload the analysis ID to the S3 bucket so that metrics and issues can be retrieved.
     console.log("Uploading analysisId...");
     await uploadAnalysisId(projectId, analysisId);
+
+    await makeSonarProjectPublic(projectId);
 
     // Clean
     console.log("Done");
