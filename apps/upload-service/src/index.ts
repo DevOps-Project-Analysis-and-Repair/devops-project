@@ -10,7 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { createToken, verifyToken } from './auth';
 import { appendFile, appendRepairedFile, getLatestProjectFromDb, getProjectFromDb } from './dynamo';
 import { Project, ProjectFile } from './types';
-import { datestring, isUploadCompleted, latest } from './util';
+import { datestring, isUploadCompleted } from './util';
 
 const serviceName = 'upload';
 
@@ -223,9 +223,7 @@ app.get(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ res, param
   res.headers.set('Content-Type', file.mimetype || 'text/plain');
   res.headers.set('Content-Disposition', `inline; filename="${file.filename}"`);
 
-  const stream = result.Body?.transformToWebStream();
-
-  return stream;
+  return result.Body?.transformToWebStream();
 });
 
 app.get(`/${serviceName}/projects/:projectId/files/:fileId/latest`, async ({ res, params: { projectId, fileId } }) => {
@@ -242,9 +240,7 @@ app.get(`/${serviceName}/projects/:projectId/files/:fileId/latest`, async ({ res
   res.headers.set('Content-Type', file.mimetype || 'text/plain');
   res.headers.set('Content-Disposition', `inline; filename="${file.filename}"`);
 
-  const stream = result.Body?.transformToWebStream();
-
-  return stream;
+  return result.Body?.transformToWebStream();
 });
 
 export const handler = async (event: unknown, context: Context) => {
