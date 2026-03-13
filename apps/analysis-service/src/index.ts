@@ -23,6 +23,8 @@ app.post(`/${serviceName}/:projectId`, async ({ params: { projectId } }) => {
     console.log("Downloading project files...");
     await downloadProjectFiles(projectId, projectPath);
 
+    console.log("Downloaded files");
+
     // Ensure that there is a Sonar project to store the analysis report.
     const exists = await existsSonarProject(projectId);
     console.log("Creating Sonar project...");

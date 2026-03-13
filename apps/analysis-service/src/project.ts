@@ -55,8 +55,14 @@ export async function downloadProjectFiles(projectId: string, targetProjectLocat
         if(!fileContents.Body) throw new NotFoundError;
 
         const targetFileLocation = path.join(targetProjectLocation, file.filename);
+
+        console.log(targetFileLocation);
+
         const bytes = await fileContents.Body.transformToByteArray();
+
         writeFileSync(targetFileLocation, bytes);
+
+        console.log('write successful');
     }
 }
 
