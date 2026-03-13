@@ -203,15 +203,9 @@ app.post(`/${serviceName}/projects/:projectId/analysis/sonar`, async ({ req, par
   // 1. get project
   const project = await getProjectFromDb(doc, projectId);
 
-  // 2. add sonar id to list
+  // 2. add sonar report to list
   const body = await req.json();
-
-  if (!('analysisId' in body)) { throw new BadRequestError(); }
-
-  // 3. add analysisId to analysis results
-  const analysisId = body.analysisId;
-
-  project.analysis.sonarIds.push(analysisId);
+  project.analysis.reports.push(body);
 
   // 4. store complete document (this introduces a race-condition but w.e.)
   await doc.put({ TableName: TABLE_PROJECTS, Item: project});

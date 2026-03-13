@@ -15,7 +15,7 @@ export type Project = {
 };
 
 export type AnalysisResults = {
-  sonarIds: string[];
+  reports: string[];
 }
 
 export type RepairedFile = ProjectFile & {
