@@ -8,7 +8,7 @@ on:
       - ".github/workflows/deploy-backend.yml"
       - "networking/**"
       - "apps/upload-service/**"
-      - "apps/llm-service/**"
+      - "apps/fix-service/**"
       - "apps/analysis-service/**"
 
 env:
@@ -113,16 +113,16 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Publish Dockerfile
-        working-directory: ./apps/llm-service
+        working-directory: ./apps/fix-service
         run: sh ./publish.sh
 
       - name: Validate CloudFormation template
         run: |
           aws cloudformation validate-template \
-            --template-body file://./apps//llm-service/fix-stack.yml
+            --template-body file://./apps//fix-service/fix-stack.yml
 
       - name: Deploy CloudFormation
-        working-directory: ./apps/llm-service
+        working-directory: ./apps/fix-service
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: sh ./deploy.sh
