@@ -20,16 +20,20 @@ app.post(`/${serviceName}/:projectId`, async ({ params: { projectId } }) => {
 
     // Download project from S3 bucket.
     const projectPath = '/tmp/project';
+    console.log("Downloading project files...");
     await downloadProjectFiles(projectId, projectPath);
 
     // Create a new Sonar project to store the analysis report.
+    console.log("Creating Sonar project...");
     await createSonarProject(projectId);
 
     // Run the Sonar scanner.
+    console.log("Scanning files...");
     const ceTaskUrl = await runSonarScanner(projectPath, projectId);
     console.log("ceTaskUrl", ceTaskUrl);
 
     // Poll for the Sonar report.
+    console.log("Polling report...");
     const analysisId = await pollSonarCloud(ceTaskUrl);
     console.log("analysisId", analysisId);
 
@@ -38,6 +42,7 @@ app.post(`/${serviceName}/:projectId`, async ({ params: { projectId } }) => {
     await uploadAnalysisId(projectId, analysisId);
 
     // Clean
+    console.log("Done");
 
     return analysisId;
 });
