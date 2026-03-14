@@ -22,7 +22,7 @@ export async function getProjectFromDb(doc: DynamoDBDocument, projectId: string)
 }
 
 export async function getLatestProjectFromDb(doc: DynamoDBDocument, projectId: string): Promise<Project> {
-  let project = await getProjectFromDb(doc, projectId);
+  const project = await getProjectFromDb(doc, projectId);
 
   project.files = project.files.map(x => {
     if (x.id in project.repairedFiles) {
