@@ -8,43 +8,49 @@ export const serviceName = 'fix';
 const logger = new Logger({ serviceName });
 const app = new Router({ logger });
 
-const API_SERVICE_URL = "https://jjz7wxr827.execute-api.eu-west-1.amazonaws.com";
-
-
+const API_SERVICE_URL = "https://1wk9q92xx1.execute-api.eu-west-1.amazonaws.com";
 
 app.post(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ params: { projectId, fileId } }) => {
-  let text: string;
-  console.log('start xt');
+  let input: string;
+  console.log('start fixing process');
+
   try {
     // Step 1: Download file
-    const DOWNLOAD_URL = `${API_SERVICE_URL}/upload/projects/${projectId}/files/${fileId}`;
+    const DOWNLOAD_URL = `${API_SERVICE_URL}/upload/projects/${projectId}/files/${fileId}/latest`;
     const res = await fetch(DOWNLOAD_URL);
-    text = await res.text();
+    input = await res.text();
   } catch (error) {
     console.log(error);
     throw new BadRequestError("Could not find the specified file");
   }
 
-  if (!text) throw new BadRequestError("Project ID and File ID don't find the specified file");
+  if (!input) throw new BadRequestError("Project ID and File ID don't find the specified file");
 
   // Step 2: Analyze file
-  let outputCode: string = text;
+  const response = await fixCode(input);
+
+  const lines = response.split('\n');
+  const code = lines.slice(1, lines.length - 1).join('\n');
+
+  // Step 3: Upload the code back to the upload service
   try {
-    for (const index of Array(2)) {
-      console.log(`Analyzing code loop ${index}`);
-      outputCode = await fixCode(outputCode);
-    }
+    await fetch(`${API_SERVICE_URL}/upload/projects/${projectId}/files/${fileId}/repaired`,
+      { 
+        method: 'POST',
+        body: code
+      }
+    );
   } catch (error) {
     console.log(error);
-    throw new BadRequestError("Fixing failed");
+    throw new BadRequestError("Could not upload the file");
   }
 
-  // Step 3: return the last outputCode
-  return outputCode;
+  // Step 4: Return ok
+  return { ok: true };
 });
 
 app.get(`/${serviceName}/health`, async () => {
-  return true;
+  return { ok: true };
 });
 
 export const handler = async (event: unknown, context: Context) => app.resolve(event, context);

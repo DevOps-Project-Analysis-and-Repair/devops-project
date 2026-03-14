@@ -1,10 +1,9 @@
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import TroubleshootIcon from "@mui/icons-material/Troubleshoot";
-import { Box, Button, ButtonGroup, CircularProgress, Divider, Stack, Typography } from "@mui/material";
-import { useQuery } from "@tanstack/react-query";
+import { Box, Button, ButtonGroup, CircularProgress, Divider, Typography } from "@mui/material";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { API_BASE_URL, BASE_URL, type UploadProject } from "../../../api";
+import { useEffect, useState } from "react";
+import { API_BASE_URL, type UploadProject } from "../../../api";
 import {
   CodeViewer,
   type CodeViewerProps,
@@ -17,12 +16,14 @@ import {
   uploadFilesToFileSystemTree,
   type FileSystemFile,
 } from "../../../filesystem";
+import { AnalyzeAndRepairDialog, type AnalyzeAndRepairData } from "../../../dialogs/AnalyzeAndRepairDialog";
 
 export const Route = createFileRoute("/project_/$id/")({
   component: Project,
 });
 
 type FileIterationData = { id: string, iteration: number };
+const flex110 = { flexGrow: 1, flexShrink: 1, flexBasis: 0 };
 
 function FileIterations(props: { iterations: FileIterationData[], handler: (id: string) => void }) {
   const { iterations, handler } = props;
@@ -35,24 +36,33 @@ function FileIterations(props: { iterations: FileIterationData[], handler: (id: 
 }
 
 function Project() {
+  const [project, setProject] = useState<UploadProject | null>(null);
+  const [initialLoad, setInitialLoad] = useState<boolean>(true);
+  const [error, setError] = useState<Error | null>(null);
+
   const [fileContent, setFileContent] = useState<CodeViewerProps | null>(null);
   const [iterationContent, setIterationContent] = useState<CodeViewerProps | null>(null);
+  const [projectUnderAnalysis, setAnalyzeProject] = useState<AnalyzeAndRepairData | null>(null);
 
   const { id } = Route.useParams();
 
-  const {
-    data: project,
-    isPending,
-    error,
-  } = useQuery<UploadProject>({
-    queryKey: ["projects", id],
-    queryFn: () =>
-      fetch(`${API_BASE_URL}/upload/projects/${id}`).then((r) => r.json()),
-  });
+  async function downloadProject() {
+    const resp = await fetch(`${API_BASE_URL}/upload/projects/${id}`);
 
-  if (isPending) return <CircularProgress />;
+    console.log(resp);
 
-  if (error) return <div> An error occured {error.message} </div>;
+    setProject(await resp.json());
+  }
+
+  useEffect(() => {
+    downloadProject()
+      .then(() => setInitialLoad(false))
+      .catch(e => setError(e));
+  }, []);
+
+  if (initialLoad) return <CircularProgress />;
+
+  if (error || !project) return <div> An error occured {error?.message} </div>;
 
   async function onFileClick(file: FileSystemFile) {
     setFileContent(null);
@@ -84,23 +94,22 @@ function Project() {
   }
 
   async function analyzeProject() {
-    console.log(BASE_URL);
+    if (!project) { return; }
+    if (!fileContent || !fileContent.id) { return; }
 
-    const result = await fetch(
-      `${API_BASE_URL}/analysis/${id}`,
-      {
-        method: "POST"
-      },
-    )
-      .then((res) => res.text())
-      .catch((err) => console.error(err));
+    setAnalyzeProject({ projectId: project.id, fileId: fileContent.id });
+  }
 
-    localStorage.setItem("TMP_RESULT", JSON.stringify(result));
-    console.log(result);
+  async function postAnalyzedProject() {
+    setAnalyzeProject(null);
+
+    // Refresh project
+    await downloadProject();
   }
 
   return (
     <>
+      <AnalyzeAndRepairDialog data={projectUnderAnalysis} onComplete={postAnalyzedProject}/>
       <Container direction="column" overflow="auto">
         <Button
           component={Link}
@@ -123,53 +132,62 @@ function Project() {
         >
           Project {project.name} ({project.files.length})
         </Typography>
-        <Stack direction="row" overflow="auto" margin={2}>
+
+        <Box sx={{ display: 'flex', direction: 'row' }} pt={2}>
           {project.files && (
             <FileTree
               directory={uploadFilesToFileSystemTree(project.files)}
               onFileClick={onFileClick}
             />
           )}
-          <div>
-            {fileContent && (
-              <>
-                <Box sx={{ display: 'flex' }}>
-                  <Box sx={{ flex: 1, p: 2, overflowY: 'auto' }}>
-                    <Button
-                      component="label"
-                      role={undefined}
-                      variant="contained"
-                      tabIndex={-1}
-                      onClick={analyzeProject}
-                      startIcon={<TroubleshootIcon />}
-                    >
-                      Analyze & Repair
-                    </Button>
-                    <CodeViewer
-                      content={fileContent.content}
-                      language={fileContent.language}
-                    />
-                  </Box>
 
-                  <Divider orientation="vertical" flexItem />
+          {fileContent && (
+            <Box sx={{
+              display: 'flex',
+              direction: 'row',
+              overflow: 'auto',
+              ...flex110
+            }}>
+              <Box sx={{ display: 'flex', overflowY: 'auto', ...flex110 }}>
+                <Box p={2} sx={{ minWidth: '100%' }}>
+                  <Button
+                    component="label"
+                    role={undefined}
+                    variant="contained"
+                    tabIndex={-1}
+                    onClick={analyzeProject}
+                    startIcon={<TroubleshootIcon />}
+                  >
+                    Analyze & Repair
+                  </Button>
 
-                  <Box sx={{ flex: 1, p: 2, overflowY: 'auto' }}>
-                    <FileIterations
-                      iterations={getFileIterations(project, fileContent.id!)}
-                      handler={onFileIterationClick}
-                    />
-                    {iterationContent && (
-                      <CodeViewer
-                        content={iterationContent.content}
-                        language={iterationContent.language}
-                      />
-                    )}
-                  </Box>
+                  <CodeViewer
+                    content={fileContent.content}
+                    language={fileContent.language}
+                  />
                 </Box>
-              </>
-            )}
-          </div>
-        </Stack>
+              </Box>
+
+              <Divider orientation="vertical" flexItem />
+
+              <Box sx={{ display: 'flex', overflowY: 'auto', ...flex110 }}>
+                <Box p={2} sx={{ minWidth: '100%' }}>
+                  <FileIterations
+                    iterations={getFileIterations(project, fileContent.id!)}
+                    handler={onFileIterationClick}
+                  />
+
+                  {iterationContent && (
+                    <CodeViewer
+                      content={iterationContent.content}
+                      language={iterationContent.language}
+                    />
+                  )}
+                </Box>
+              </Box>
+            </Box>
+          )}
+        </Box>
         {project && (
           <div>
             <h3>Sonarcube results</h3>

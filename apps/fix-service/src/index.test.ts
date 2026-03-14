@@ -26,6 +26,7 @@ describe('Router handler', () => {
         const response = await handler(mockEvent, context);
         assert.strictEqual(response.statusCode, 200);
         const body = JSON.parse(response.body || 'null');
-        assert.strictEqual(Boolean(body), true);
+
+        assert.equal(body, { ok: true });
     });
 });
