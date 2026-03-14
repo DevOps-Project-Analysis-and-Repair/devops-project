@@ -55,8 +55,14 @@ export function AnalyzeAndRepairDialog({ data, onComplete }: AnalyzeAndRepairDia
     );
   }
 
+  function isComplete(actions: AnalyzeAction[]): boolean {
+    if (actions.length === 0) { return false; }
+
+    return actions.every(x => x.state === 'complete');
+  }
+
   async function processActions(data: AnalyzeAndRepairData, actions: AnalyzeAction[]) {
-    let workingActions = actions;
+    const workingActions = actions;
 
     function firstActiveActionIndex(actions: AnalyzeAction[]): number {
       return actions.findIndex(x => x.state === 'pending');
@@ -78,8 +84,11 @@ export function AnalyzeAndRepairDialog({ data, onComplete }: AnalyzeAndRepairDia
 
   function handleComplete() { onComplete(); }
 
+  // I am aware that using useEffect with a dependency can lead to an infinite loop.
+  // However, that is not the case here and fixing the it cleanly will take hours
+  // It also goes against what I am trying to do, as I want the re-render to occur
   useEffect(() => {
-    setIsOpen(data !== null);
+    setIsOpen(data !== null); // eslint-disable-line react-hooks/set-state-in-effect
     if (data === null) { return; }
 
     const initialActions: AnalyzeAction[] = [
@@ -90,15 +99,9 @@ export function AnalyzeAndRepairDialog({ data, onComplete }: AnalyzeAndRepairDia
     ];
 
     setActions(initialActions);
-    processActions(data, initialActions);
+    processActions(structuredClone(data), initialActions);
 
   }, [data]);
-
-  function isComplete(actions: AnalyzeAction[]): boolean {
-    if (actions.length === 0) { return false; }
-
-    return actions.every(x => x.state === 'complete');
-  }
 
   return (
     <Dialog open={isOpen} maxWidth="lg" fullWidth>
