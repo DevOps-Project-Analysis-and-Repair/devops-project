@@ -1,6 +1,13 @@
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import TroubleshootIcon from "@mui/icons-material/Troubleshoot";
-import { Box, Button, ButtonGroup, CircularProgress, Divider, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  CircularProgress,
+  Divider,
+  Typography,
+} from "@mui/material";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { API_BASE_URL, type UploadProject } from "../../../api";
@@ -9,6 +16,11 @@ import {
   type CodeViewerProps,
 } from "../../../components/CodeViewer";
 import { FileTree } from "../../../components/FileTree";
+import {
+  AnalyzeAndRepairDialog,
+  type AnalyzeAndRepairData,
+} from "../../../components/partials/AnalyzeAndRepairDialog";
+import { MetricsView } from "../../../components/partials/MetricsView";
 import { Container } from "../../../components/ui/Container";
 import {
   downloadFile,
@@ -16,24 +28,40 @@ import {
   uploadFilesToFileSystemTree,
   type FileSystemFile,
 } from "../../../filesystem";
-import { AnalyzeAndRepairDialog, type AnalyzeAndRepairData } from "../../../dialogs/AnalyzeAndRepairDialog";
 
 export const Route = createFileRoute("/project_/$id/")({
   component: Project,
 });
 
-type FileIterationData = { id: string, iteration: number };
+type FileIterationData = { id: string; iteration: number };
 const flex110 = { flexGrow: 1, flexShrink: 1, flexBasis: 0 };
 
-function FileIterations(props: { iterations: FileIterationData[], handler: (id: string) => void }) {
+function FileIterations(props: {
+  iterations: FileIterationData[];
+  handler: (id: string) => void;
+}) {
   const { iterations, handler } = props;
 
-  return (<>
-    <ButtonGroup variant="outlined">
-      { iterations.map(x => <Button key={x.id} onClick={() => handler(x.id)}>{x.iteration}</Button>)}
-    </ButtonGroup>
-  </>);
+  return (
+    <>
+      <ButtonGroup variant="outlined">
+        {iterations.map((x) => (
+          <Button key={x.id} onClick={() => handler(x.id)}>
+            {x.iteration}
+          </Button>
+        ))}
+      </ButtonGroup>
+    </>
+  );
 }
+
+const metrics = [
+  { id: "1", name: "Maintainability", value: "3.2%" },
+  { id: "2", name: "Issues", value: "17" },
+  { id: "3", name: "Quality", value: "4" },
+  { id: "4", name: "CC", value: "55" },
+  { id: "5", name: "R", value: "55%" },
+];
 
 function Project() {
   const [project, setProject] = useState<UploadProject | null>(null);
@@ -41,8 +69,10 @@ function Project() {
   const [error, setError] = useState<Error | null>(null);
 
   const [fileContent, setFileContent] = useState<CodeViewerProps | null>(null);
-  const [iterationContent, setIterationContent] = useState<CodeViewerProps | null>(null);
-  const [projectUnderAnalysis, setAnalyzeProject] = useState<AnalyzeAndRepairData | null>(null);
+  const [iterationContent, setIterationContent] =
+    useState<CodeViewerProps | null>(null);
+  const [projectUnderAnalysis, setAnalyzeProject] =
+    useState<AnalyzeAndRepairData | null>(null);
 
   const { id } = Route.useParams();
 
@@ -57,7 +87,7 @@ function Project() {
   useEffect(() => {
     downloadProject()
       .then(() => setInitialLoad(false))
-      .catch(e => setError(e));
+      .catch((e) => setError(e));
   }, []);
 
   if (initialLoad) return <CircularProgress />;
@@ -68,7 +98,9 @@ function Project() {
     setFileContent(null);
     setIterationContent(null);
 
-    const content = await downloadFile(`${API_BASE_URL}/upload/projects/${id}/files/${file.downloadId}`);
+    const content = await downloadFile(
+      `${API_BASE_URL}/upload/projects/${id}/files/${file.downloadId}`,
+    );
     const fileExtension = getFileExtension(file.name);
 
     if (!fileExtension) {
@@ -78,24 +110,39 @@ function Project() {
     setFileContent({ content, language: fileExtension, id: file.downloadId });
   }
 
-  function getFileIterations(project: UploadProject, fileId: string): FileIterationData[] {
-    const iterations = project.repairedFiles[fileId] ??= [];
+  function getFileIterations(
+    project: UploadProject,
+    fileId: string,
+  ): FileIterationData[] {
+    const iterations = (project.repairedFiles[fileId] ??= []);
 
-    return iterations.map(x => { return { id: x.id, iteration: x.iteration }});
+    return iterations.map((x) => {
+      return { id: x.id, iteration: x.iteration };
+    });
   }
 
   async function onFileIterationClick(fileId: string) {
     console.log(fileId);
 
-    const content = await downloadFile(`${API_BASE_URL}/upload/projects/${id}/files/${fileId}`);
+    const content = await downloadFile(
+      `${API_BASE_URL}/upload/projects/${id}/files/${fileId}`,
+    );
 
     // using filecontent here is the biggest hack of 2k26
-    setIterationContent({ content, language: fileContent!.language, id: fileId });
+    setIterationContent({
+      content,
+      language: fileContent!.language,
+      id: fileId,
+    });
   }
 
   async function analyzeProject() {
-    if (!project) { return; }
-    if (!fileContent || !fileContent.id) { return; }
+    if (!project) {
+      return;
+    }
+    if (!fileContent || !fileContent.id) {
+      return;
+    }
 
     setAnalyzeProject({ projectId: project.id, fileId: fileContent.id });
   }
@@ -109,7 +156,10 @@ function Project() {
 
   return (
     <>
-      <AnalyzeAndRepairDialog data={projectUnderAnalysis} onComplete={postAnalyzedProject}/>
+      <AnalyzeAndRepairDialog
+        data={projectUnderAnalysis}
+        onComplete={postAnalyzedProject}
+      />
       <Container direction="column" overflow="auto">
         <Button
           component={Link}
@@ -133,7 +183,7 @@ function Project() {
           Project {project.name} ({project.files.length})
         </Typography>
 
-        <Box sx={{ display: 'flex', direction: 'row' }} pt={2}>
+        <Box sx={{ display: "flex", direction: "row" }} pt={2}>
           {project.files && (
             <FileTree
               directory={uploadFilesToFileSystemTree(project.files)}
@@ -142,14 +192,16 @@ function Project() {
           )}
 
           {fileContent && (
-            <Box sx={{
-              display: 'flex',
-              direction: 'row',
-              overflow: 'auto',
-              ...flex110
-            }}>
-              <Box sx={{ display: 'flex', overflowY: 'auto', ...flex110 }}>
-                <Box p={2} sx={{ minWidth: '100%' }}>
+            <Box
+              sx={{
+                display: "flex",
+                direction: "row",
+                overflow: "auto",
+                ...flex110,
+              }}
+            >
+              <Box sx={{ display: "flex", overflowY: "auto", ...flex110 }}>
+                <Box p={2} sx={{ minWidth: "100%" }}>
                   <Button
                     component="label"
                     role={undefined}
@@ -161,6 +213,8 @@ function Project() {
                     Analyze & Repair
                   </Button>
 
+                  <MetricsView metrics={metrics} />
+
                   <CodeViewer
                     content={fileContent.content}
                     language={fileContent.language}
@@ -170,8 +224,8 @@ function Project() {
 
               <Divider orientation="vertical" flexItem />
 
-              <Box sx={{ display: 'flex', overflowY: 'auto', ...flex110 }}>
-                <Box p={2} sx={{ minWidth: '100%' }}>
+              <Box sx={{ display: "flex", overflowY: "auto", ...flex110 }}>
+                <Box p={2} sx={{ minWidth: "100%" }}>
                   <FileIterations
                     iterations={getFileIterations(project, fileContent.id!)}
                     handler={onFileIterationClick}
@@ -191,7 +245,11 @@ function Project() {
         {project && (
           <div>
             <h3>Sonarcube results</h3>
-            <a href={`https://sonarcloud.io/project/overview?id=devops-software-engineering_${project.id}`}>Sonarcube project</a>
+            <a
+              href={`https://sonarcloud.io/project/overview?id=devops-software-engineering_${project.id}`}
+            >
+              Sonarcube project
+            </a>
           </div>
         )}
       </Container>
