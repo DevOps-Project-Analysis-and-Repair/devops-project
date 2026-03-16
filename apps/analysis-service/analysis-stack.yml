@@ -51,7 +51,7 @@ Resources:
                 Resource:
                   - 'arn:aws:s3:::files-upload-stack'
                   - 'arn:aws:s3:::files-upload-stack/*'
-        - PolicyName: DynamoDBAccess
+        - PolicyName: DynamoDBUploadAccess
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
@@ -65,7 +65,7 @@ Resources:
                   - dynamodb:Query
                 Resource:
                   - arn:aws:dynamodb:eu-west-1:379245767025:table/Projects-upload-stack
-        - PolicyName: DynamoDBAccess
+        - PolicyName: DynamoDBAnalysisAccess
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
