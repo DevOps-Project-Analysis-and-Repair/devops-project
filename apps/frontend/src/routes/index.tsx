@@ -6,8 +6,8 @@ import { styled } from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type ChangeEvent } from "react";
+import { SelectedFilesDialog } from "../components/partials/SelectedFilesDialog";
 import { Container } from "../components/ui/Container";
-import { SelectedFilesDialog } from "../dialogs/SelectedFilesDialog";
 import { filesToFileSystemTree, type FileSystemDirectory } from "../filesystem";
 import { createProject } from "../services/uploadService";
 
@@ -66,7 +66,9 @@ function Index() {
   }
 
   async function upload() {
-    if (files === null) { return }
+    if (files === null) {
+      return;
+    }
 
     const progressHandler = (progress: number) => {
       console.log(progress);

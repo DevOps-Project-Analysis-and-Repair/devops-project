@@ -7,13 +7,13 @@ import {
   Stack,
 } from "@mui/material";
 import { useState, type Dispatch, type SetStateAction } from "react";
-import { CodeViewer, type CodeViewerProps } from "../components/CodeViewer";
-import { FileTree } from "../components/FileTree";
 import {
   getFileExtension,
   type FileSystemDirectory,
   type FileSystemFile,
-} from "../filesystem";
+} from "../../filesystem";
+import { CodeViewer, type CodeViewerProps } from "../CodeViewer";
+import { FileTree } from "../FileTree";
 
 interface SelectedFilesDialogProps {
   open: boolean;
