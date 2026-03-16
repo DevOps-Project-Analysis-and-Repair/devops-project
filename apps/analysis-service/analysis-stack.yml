@@ -12,6 +12,18 @@ Parameters:
     Default: analysis-service
 
 Resources:
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'Projects-${AWS::StackName}'
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -53,6 +65,20 @@ Resources:
                   - dynamodb:Query
                 Resource:
                   - arn:aws:dynamodb:eu-west-1:379245767025:table/Projects-upload-stack
+        - PolicyName: DynamoDBAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:Scan
+                  - dynamodb:Query
+                Resource:
+                  - !GetAtt DynamoDBTable.Arn
 
   LambdaFunction:
     Type: AWS::Lambda::Function
@@ -73,6 +99,7 @@ Resources:
         Variables:
           S3_BUCKET_NAME: !ImportValue Upload-BucketName
           DYNAMODB_TABLE_NAME: !ImportValue Upload-TableName
+          DYNAMODB_TABLE_NAME_ANALYSIS: !Ref DynamoDBTable
 
 Outputs:
   AnalysisArn:
@@ -80,3 +107,8 @@ Outputs:
     Value: !GetAtt LambdaFunction.Arn
     Export:
       Name: !Sub "Analysis-FunctionArn"
+  TableName:
+    Description: Name of the DynamoDB table
+    Value: !Ref DynamoDBTable
+    Export:
+      Name: !Sub "Analysis-TableName"
