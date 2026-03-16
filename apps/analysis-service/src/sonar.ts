@@ -137,7 +137,9 @@ export const existsSonarProject = async (projectId: string): Promise<boolean> =>
     }
 
     const json = await result.json();
-    return json.paging?.total > 0;
+    console.log(json);
+
+    return json.paging?.total ?? 0 > 0;
 }
 
 export const pollSonarCloud = async (ceTaskUrl: string, intervalMs: number = 2000): Promise<string> => {
