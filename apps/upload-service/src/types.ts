@@ -1,3 +1,5 @@
+import { SonarAnalysisUpload } from "./sonar";
+
 export type ProjectFile = {
   id: string,
   url: string, // s3 bucket url
@@ -11,11 +13,11 @@ export type Project = {
   files: ProjectFile[],
   createdAt: number,
   repairedFiles: Record<string, RepairedFile[]>,
-  analysis: AnalysisResults
 };
 
 export type AnalysisResults = {
-  reports: string[];
+  projectId: string,
+  reports: SonarAnalysisUpload[],
 }
 
 export type RepairedFile = ProjectFile & {

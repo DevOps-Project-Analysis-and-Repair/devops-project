@@ -322,13 +322,13 @@ export const createAnalysisReport = async (projectId: string, analysisId: string
 
     const projectKey = `${SONAR_ORG}_${projectId}`;
 
-    // fetch in parallel (important)
+    // Fetch in parallel
     const [issuesRaw, metrics] = await Promise.all([
         getAllSonarIssues(projectId),
         getSonarMetrics(projectId)
     ]);
 
-    // map to repair shape
+    // Map to repair shape
     const issues = issuesRaw.map(mapSonarIssueForRepair);
 
     console.log(issues);

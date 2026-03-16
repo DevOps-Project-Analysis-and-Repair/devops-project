@@ -10,7 +10,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { Project, ProjectFile } from './types';
 import { createToken, verifyToken } from './auth';
 import { datestring, isUploadCompleted, latest } from './util';
-import { appendRepairedFile, appendFile, getProjectFromDb } from './dynamo';
+import { appendRepairedFile, appendFile, getProjectFromDb, appendSonarReport } from './dynamo';
+import { SonarAnalysisUpload } from './sonar';
 
 const serviceName = 'upload';
 
@@ -23,6 +24,7 @@ const doc = DynamoDBDocument.from(db);
 
 export const TABLE_PROJECTS = "Projects-upload-stack";
 export const FILES_BUCKET = "files-upload-stack";
+export const TABLE_ANALYSIS = "Projects-analysis-stack";
 
 function findFile(fileId: string, project: Project): ProjectFile | null {
   // Find file searches in both the original project files as the repaired files
@@ -75,8 +77,7 @@ app.post(`/${serviceName}/projects`, async () => {
     name: `Upload ${datestring()}`,
     files: [],
     createdAt: Date.now(),
-    repairedFiles: {},
-    analysis: { reports: [] }
+    repairedFiles: {}
   };
 
   await doc.put({
@@ -199,16 +200,11 @@ app.post(`/${serviceName}/projects/:projectId/files/:fileId/repaired`, async ({ 
   return { ok: true };
 });
 
-app.post(`/${serviceName}/projects/:projectId/analysis/sonar`, async ({ req, params: { projectId }}) => {
-  // 1. get project
-  const project = await getProjectFromDb(doc, projectId);
+app.post(`/${serviceName}/projects/:projectId/analysis/sonar`, async ({ req, params: { projectId } }) => {
+  const json = await req.json();
+  const sonarReport = json as SonarAnalysisUpload;
 
-  // 2. add sonar report to list
-  const body = await req.json();
-  project.analysis.reports.push(body);
-
-  // 4. store complete document (this introduces a race-condition but w.e.)
-  await doc.put({ TableName: TABLE_PROJECTS, Item: project});
+  await appendSonarReport(db, projectId, sonarReport);
 
   return { ok: true };
 });

@@ -2,7 +2,7 @@ import { BadRequestError, UnauthorizedError, Router } from '@aws-lambda-powertoo
 import { Logger } from '@aws-lambda-powertools/logger';
 import { Context } from 'aws-lambda';
 
-import { downloadProjectFiles, uploadAnalysisId } from './project';
+import { downloadProjectFiles } from './project';
 import { createAnalysisReport, createSonarProject, existsSonarProject, makeSonarProjectPublic, pollSonarCloud, runSonarScanner, uploadAnalysisReport } from './sonar';
 
 const serviceName = 'analysis';

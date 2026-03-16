@@ -60,7 +60,10 @@ export async function downloadProjectFiles(projectId: string, targetProjectLocat
         
         const fileContents = await s3Client.send(new GetObjectCommand({ Bucket: FILES_BUCKET, Key: file.id }));
 
-        if(!fileContents.Body) console.error("Could not load body for project file.");
+        if(!fileContents.Body) {
+            console.error("Could not load body for project file.");
+            throw new Error();
+        }
 
         const targetFileLocation = path.join(targetProjectLocation, file.filename);
 
