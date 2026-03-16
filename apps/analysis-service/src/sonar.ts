@@ -68,7 +68,7 @@ export const runSonarScanner = async (projectPath: string, projectId: string): P
     const [code] = await once(proc, "close");
 
     if(code != 0) {
-        throw new Error();
+        console.error();
     }
 
     const reportPath = path.join(projectPath, ".scannerwork", "report-task.txt");
@@ -94,7 +94,7 @@ export const createSonarProject = async (projectId: string): Promise<boolean> =>
 
     if (!result.ok) {
         const text = await result.text();
-        throw new Error(`Sonar project creation failed: ${result.status} ${text}`);
+        console.error(`Sonar project creation failed: ${result.status} ${text}`);
     }
     console.log(result.status);
 
@@ -116,7 +116,7 @@ export const makeSonarProjectPublic = async (projectId: string): Promise<Boolean
 
     if (!visibilityResult.ok) {
         const text = await visibilityResult.text();
-        throw new Error(`Sonar visibility update failed: ${visibilityResult.status} ${text}`);
+        console.error(`Sonar visibility update failed: ${visibilityResult.status} ${text}`);
     }
 
     console.log(visibilityResult.status);
@@ -132,8 +132,9 @@ export const existsSonarProject = async (projectId: string): Promise<boolean> =>
         }
     });
 
+
     if (!result.ok) {
-        throw new Error(`Sonar check failed with HTTP ${result.status}`);
+        console.error(`Sonar check failed with HTTP ${result.status}`);
     }
 
     const json = await result.json();
@@ -161,7 +162,7 @@ export const pollSonarCloud = async (ceTaskUrl: string, intervalMs: number = 200
         }
 
         if (status === "FAILED" || status === "CANCELED") {
-            throw new Error();
+            console.error();
         }
 
         await sleep(intervalMs);
@@ -354,6 +355,6 @@ export async function uploadAnalysisReport(projectId: string, report: SonarAnaly
     });
 
     if (!result.ok) {
-        throw new Error(`Upload failed: ${result.status}`);
+        console.error(`Upload failed: ${result.status}`);
     }
 }
