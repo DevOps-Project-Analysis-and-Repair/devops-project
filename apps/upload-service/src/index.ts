@@ -76,7 +76,7 @@ app.post(`/${serviceName}/projects`, async () => {
     files: [],
     createdAt: Date.now(),
     repairedFiles: {},
-    analysis: { sonarIds: [] }
+    analysis: { reports: [] }
   };
 
   await doc.put({

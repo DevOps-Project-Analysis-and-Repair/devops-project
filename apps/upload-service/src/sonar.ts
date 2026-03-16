@@ -19,7 +19,7 @@ export type SonarRepairIssue = {
     tags?: string[];
 };
 
-type SonarAnalysisUpload = {
+export type SonarAnalysisUpload = {
     analysisId: string
     projectKey: string
     fetchedAt: string
