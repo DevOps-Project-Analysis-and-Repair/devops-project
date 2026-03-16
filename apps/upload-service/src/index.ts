@@ -11,11 +11,8 @@ import { createToken, verifyToken } from './auth';
 import { appendFile, appendRepairedFile, getLatestProjectFromDb, getProjectFromDb } from './dynamo';
 import { Project, ProjectFile } from './types';
 import { datestring, isUploadCompleted, latest } from './util';
-<<<<<<< HEAD
 import { appendRepairedFile, appendFile, getProjectFromDb, appendSonarReport } from './dynamo';
 import { SonarAnalysisUpload } from './sonar';
-=======
->>>>>>> 4abf1653178e00ca3c496ad4d409a14fe9ce6003
 
 const serviceName = 'upload';
 
