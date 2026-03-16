@@ -14,6 +14,7 @@ on:
 env:
   AWS_REGION: eu-west-1
   GIT_HASH: ${{ github.sha }}
+  ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
 jobs:
   deploy_vpc_stack:
@@ -30,19 +31,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Validate CloudFormation template
-        run: |
-          aws cloudformation validate-template \
-            --template-body file://./networking/vpc-stack.yml
-
-      - name: Deploy CloudFormation stack
-        run: |
-          aws cloudformation deploy \
-            --template-file ./networking/vpc-stack.yml \
-            --stack-name vpc-stack \
-            --capabilities CAPABILITY_IAM \
-            --parameter-overrides \
-              EnvironmentName=prod
+      - name: Deploy Networking stack
+        uses: ./.github/actions/deploy-networking
+        with:
+          template-file: ./networking/vpc-stack.yml
+          stack-name: vpc-stack
+          parameter-overrides: EnvironmentName=prod
 
   deploy_upload_stack:
     needs: [deploy_vpc_stack]
@@ -58,18 +52,13 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Publish Dockerfile
-        working-directory: ./apps/upload-service
-        run: sh ./publish.sh
-
-      - name: Validate CloudFormation template
-        run: |
-          aws cloudformation validate-template \
-            --template-body file://./apps/upload-service/upload-stack.yml
-
-      - name: Deploy CloudFormation
-        working-directory: ./apps/upload-service
-        run: sh ./deploy.sh
+      - name: Deploy Lambda service
+        uses: ./.github/actions/deploy-lambda
+        with:
+          working-directory: ./apps/upload-service
+          template-file: ./apps/upload-service/upload-stack.yml
+          stack-name: upload-stack
+          parameter-overrides: UploadServiceImageUri=${{ env.ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/upload-service:${{ env.GIT_HASH }}
 
   deploy_analysis_stack:
     needs: [deploy_vpc_stack]
@@ -85,18 +74,13 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Publish Dockerfile
-        working-directory: ./apps/analysis-service
-        run: sh ./publish.sh
-
-      - name: Validate CloudFormation template
-        run: |
-          aws cloudformation validate-template \
-            --template-body file://./apps/analysis-service/analysis-stack.yml
-
-      - name: Deploy CloudFormation
-        working-directory: ./apps/analysis-service
-        run: sh ./deploy.sh
+      - name: Deploy Lambda Service
+        uses: ./.github/actions/deploy-lambda
+        with:
+          working-directory: ./apps/analysis-service
+          template-file: ./apps/analysis-service/analysis-stack.yml
+          stack-name: analysis-stack
+          parameter-overrides: AnalysisServiceImageUri=${{ env.ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/analysis-service:${{ env.GIT_HASH }}
 
   deploy_fix_stack:
     needs: [deploy_vpc_stack]
@@ -112,20 +96,15 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Publish Dockerfile
-        working-directory: ./apps/fix-service
-        run: sh ./publish.sh
-
-      - name: Validate CloudFormation template
-        run: |
-          aws cloudformation validate-template \
-            --template-body file://./apps//fix-service/fix-stack.yml
-
-      - name: Deploy CloudFormation
-        working-directory: ./apps/fix-service
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: sh ./deploy.sh
+      - name: Deploy Lambda service
+        uses: ./.github/actions/deploy-lambda
+        with:
+          working-directory: ./apps/fix-service
+          template-file: ./apps/fix-service/fix-stack.yml
+          stack-name: fix-stack
+          parameter-overrides: |
+            "OpenAIApiKey=${{ secrets.OPENAI_API_KEY }}" \
+            "FixServiceImageUri=${{ env.ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/fix-service:${{ env.GIT_HASH }}"
 
   deploy_api_gateway_stack:
     needs: [deploy_upload_stack, deploy_fix_stack, deploy_analysis_stack]
@@ -141,44 +120,30 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Validate CloudFormation template
-        run: |
-          aws cloudformation validate-template \
-            --template-body file://./networking/api-gateway-stack.yml
+      - name: Deploy Networking stack
+        uses: ./.github/actions/deploy-networking
+        with:
+          template-file: ./networking/api-gateway-stack.yml
+          stack-name: api-gateway-stack
+          parameter-overrides: EnvironmentName=prod
 
-      - name: Deploy CloudFormation stack
-        run: |
-          aws cloudformation deploy \
-            --template-file ./networking/api-gateway-stack.yml \
-            --stack-name api-gateway-stack \
-            --capabilities CAPABILITY_IAM \
-            --parameter-overrides \
-              EnvironmentName=prod
-    
   deploy_monitoring_stack:
     needs: [deploy_api_gateway_stack]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up AWS CLI
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Validate CloudFormation template
-        run: |
-          aws cloudformation validate-template \
-            --template-body file://./networking/monitoring-stack.yml
-
-      - name: Deploy CloudFormation stack
-        run: |
-          aws cloudformation deploy \
-            --template-file ./networking/monitoring-stack.yml \
-            --stack-name monitoring-stack \
-            --capabilities CAPABILITY_IAM \
-            --parameter-overrides \
-              EnvironmentName=prod
+      - name: Deploy Networking stack
+        uses: ./.github/actions/deploy-networking
+        with:
+          template-file: ./networking/monitoring-stack.yml
+          stack-name: monitoring-stack
+          parameter-overrides: EnvironmentName=prod

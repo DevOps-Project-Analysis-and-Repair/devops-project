@@ -1,0 +1,15 @@
+name: "Validate CloudFormation Template"
+description: "Validates a CloudFormation template"
+inputs:
+  template-file:
+    description: "Path to the CloudFormation template file"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Validate CloudFormation template
+      shell: bash
+      run: |
+        aws cloudformation validate-template \
+          --template-body file://${{ inputs.template-file }}

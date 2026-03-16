@@ -1,0 +1,42 @@
+name: CI AWS Checks
+
+on:
+  pull_request:
+    paths: &stack_paths
+      - apps/frontend/frontend-stack.yml
+      - apps/fix-service/fix-stack.yml
+      - apps/upload-service/upload-stack.yml
+      - apps/analysis-service/analysis-stack.yml
+      - networking/vpc-stack.yml
+      - networking/api-gateway-stack.yml
+      - networking/monitoring-stack.yml
+  push:
+    branches: [main]
+    paths: *stack_paths
+
+env:
+  AWS_REGION: eu-west-1
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        template-file: *stack_paths
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Validate CloudFormation template
+        uses: ./.github/actions/validate-cloudformation
+        with:
+          template-file: ${{ matrix.template-file }}

@@ -4,6 +4,7 @@ import { RepairedFile, Project, ProjectFile } from "./types";
 import { TABLE_PROJECTS, TABLE_ANALYSIS } from ".";
 import { NotFoundError } from "@aws-lambda-powertools/event-handler/http";
 import { SonarAnalysisUpload } from "./sonar";
+import { latest } from "./util";
 
 export async function getProjectFromDb(doc: DynamoDBDocument, projectId: string): Promise<Project> {
   const cmd = new GetCommand({ TableName: TABLE_PROJECTS, Key: { id: projectId }});
@@ -18,6 +19,20 @@ export async function getProjectFromDb(doc: DynamoDBDocument, projectId: string)
     createdAt: res.Item.createdAt,
     repairedFiles: res.Item.repairedFiles ?? {}
   }
+}
+
+export async function getLatestProjectFromDb(doc: DynamoDBDocument, projectId: string): Promise<Project> {
+  const project = await getProjectFromDb(doc, projectId);
+
+  project.files = project.files.map(x => {
+    if (x.id in project.repairedFiles) {
+      return latest(project.repairedFiles[x.id]) ?? x;
+    }
+
+    return x;
+  });
+
+  return project;
 }
 
 export async function appendFile(db: DynamoDBClient, projectId: string, newFile: ProjectFile): Promise<void> {

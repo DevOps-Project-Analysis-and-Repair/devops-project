@@ -16,7 +16,8 @@ export interface FileTreeItemProps {
 
 const FileTreeContainer = styled("div")({
   marginRight: "8px",
-  minWidth: "25ch",
+  width: "15rem",
+  display: 'block'
 });
 
 export function FileTreeItem({

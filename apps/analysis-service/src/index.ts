@@ -1,4 +1,4 @@
-import { BadRequestError, UnauthorizedError, Router } from '@aws-lambda-powertools/event-handler/http';
+import { Router } from '@aws-lambda-powertools/event-handler/http';
 import { Logger } from '@aws-lambda-powertools/logger';
 import { Context } from 'aws-lambda';
 
@@ -39,7 +39,7 @@ app.post(`/${serviceName}/:projectId`, async ({ params: { projectId } }) => {
     console.log("Scanning files...");
     const ceTaskUrl = await runSonarScanner(projectPath, projectId);
     console.log("ceTaskUrl", ceTaskUrl);
-    
+
     // Change the project visibility while waiting for the Sonar report to be created.
     await makeSonarProjectPublic(projectId);
 

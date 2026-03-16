@@ -1,0 +1,39 @@
+name: "Deploy CloudFormation Stack"
+description: "Deploys a CloudFormation stack"
+inputs:
+  template-file:
+    description: "Path to the CloudFormation template file"
+    required: true
+  stack-name:
+    description: "Name of the CloudFormation stack"
+    required: true
+  capabilities:
+    description: "Capabilities required for the stack"
+    required: false
+    default: "CAPABILITY_IAM"
+  parameter-overrides:
+    description: "Parameter overrides for the stack"
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - name: Deploy CloudFormation stack
+      if: ${{ inputs.parameter-overrides == '' }}
+      shell: bash
+      run: |
+        aws cloudformation deploy \
+          --template-file "${{ inputs.template-file }}" \
+          --stack-name "${{ inputs.stack-name }}" \
+          --capabilities "${{ inputs.capabilities }}"
+
+    - name: Deploy CloudFormation stack
+      if: ${{ inputs.parameter-overrides != '' }}
+      shell: bash
+      run: |
+        aws cloudformation deploy \
+          --template-file "${{ inputs.template-file }}" \
+          --stack-name "${{ inputs.stack-name }}" \
+          --capabilities "${{ inputs.capabilities }}" \
+          --parameter-overrides ${{ inputs.parameter-overrides }}

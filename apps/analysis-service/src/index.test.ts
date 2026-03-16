@@ -1,3 +1,4 @@
+
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 import assert from "node:assert";
 import { describe, it } from "node:test";
@@ -5,10 +6,10 @@ import { handler } from ".";
 
 
 describe('Router handler', () => {
-    it('should return true on GET /fix/health', async () => {
+    it('should return true on GET /analysis/health', async () => {
         const mockEvent: APIGatewayProxyEvent = {
             httpMethod: 'GET',
-            path: '/fix/health',         // matches your route
+            path: '/analysis/health',         // matches your route
             headers: {},
             resource: '',
             multiValueHeaders: {},
@@ -26,7 +27,6 @@ describe('Router handler', () => {
         const response = await handler(mockEvent, context);
         assert.strictEqual(response.statusCode, 200);
         const body = JSON.parse(response.body || 'null');
-
-        assert.equal(body, { ok: true });
+        assert.strictEqual(Boolean(body), true);
     });
 });

@@ -1,8 +1,8 @@
 import { NotFoundError } from '@aws-lambda-powertools/event-handler/http';
-import { GetCommand, DynamoDBDocument, UpdateCommand } from "@aws-sdk/lib-dynamodb";
-import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { writeFileSync, mkdirSync, existsSync } from "fs";
+import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DynamoDBDocument, GetCommand } from "@aws-sdk/lib-dynamodb";
+import { existsSync, mkdirSync, writeFileSync } from "fs";
 import path from "path";
 
 
@@ -31,7 +31,7 @@ const FILES_BUCKET = "files-upload-stack";
 
 // Fetch project from project ID, or fail.
 export async function getProjectFromDb(projectId: string): Promise<Project> {
-    const cmd = new GetCommand({ TableName: TABLE_PROJECTS, Key: { id: projectId }});
+    const cmd = new GetCommand({ TableName: TABLE_PROJECTS, Key: { id: projectId } });
     const res = await doc.send(cmd);
 
     if (!res.Item) { throw new NotFoundError(); }
@@ -40,12 +40,12 @@ export async function getProjectFromDb(projectId: string): Promise<Project> {
 }
 
 function ensureDirectoryExistence(filePath: string) {
-  const dirname = path.dirname(filePath);
-  if (existsSync(dirname)) {
-    return true;
-  }
-  ensureDirectoryExistence(dirname);
-  mkdirSync(dirname);
+    const dirname = path.dirname(filePath);
+    if (existsSync(dirname)) {
+        return true;
+    }
+    ensureDirectoryExistence(dirname);
+    mkdirSync(dirname);
 }
 
 // Download a project from the S3 bucket into a local directory.
@@ -57,13 +57,10 @@ export async function downloadProjectFiles(projectId: string, targetProjectLocat
 
     // Write each file to the target directory.
     for (const file of project.files) {
-        
+
         const fileContents = await s3Client.send(new GetObjectCommand({ Bucket: FILES_BUCKET, Key: file.id }));
 
-        if(!fileContents.Body) {
-            console.error("Could not load body for project file.");
-            throw new Error();
-        }
+        if (!fileContents.Body) throw new NotFoundError;
 
         const targetFileLocation = path.join(targetProjectLocation, file.filename);
 
