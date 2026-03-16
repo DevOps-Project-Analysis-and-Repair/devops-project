@@ -343,8 +343,6 @@ export const createAnalysisReport = async (projectId: string, analysisId: string
     };
 };
 
-
-
 export async function uploadAnalysisReport(projectId: string, report: SonarAnalysisUpload): Promise<void> {
     const result = await fetch(`${API_BASE_URL}/upload/projects/${projectId}/analysis/sonar`, {
         method: "POST",
