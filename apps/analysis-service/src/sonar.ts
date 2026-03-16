@@ -136,10 +136,8 @@ export const existsSonarProject = async (projectId: string): Promise<boolean> =>
         throw new Error(`Sonar check failed with HTTP ${result.status}`);
     }
 
-    const checkJson = await result.json();
-    const projectExists = !checkJson.errors;
-
-    return projectExists;
+    const json = await result.json();
+    return json.paging?.total > 0;
 }
 
 export const pollSonarCloud = async (ceTaskUrl: string, intervalMs: number = 2000): Promise<string> => {
