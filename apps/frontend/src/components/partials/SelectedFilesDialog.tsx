@@ -1,5 +1,7 @@
 import {
+  Backdrop,
   Button,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -17,6 +19,7 @@ import { FileTree } from "../FileTree";
 
 interface SelectedFilesDialogProps {
   open: boolean;
+  isUploading: { uploading: boolean, progress: number },
   setOpen: Dispatch<SetStateAction<boolean>>;
   onClickAction: () => void;
   files: FileSystemDirectory;
@@ -24,6 +27,7 @@ interface SelectedFilesDialogProps {
 
 export function SelectedFilesDialog({
   open,
+  isUploading,
   setOpen,
   onClickAction,
   files,
@@ -61,11 +65,23 @@ export function SelectedFilesDialog({
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={onClickAction} autoFocus>
+          <Button disabled={isUploading.uploading} onClick={handleClose}>Cancel</Button>
+          <Button disabled={isUploading.uploading} onClick={onClickAction} autoFocus>
             Start Upload
           </Button>
         </DialogActions>
+
+        <Backdrop
+          open={isUploading.uploading}
+          sx={{
+            position: 'absolute',
+            zIndex: (theme) => theme.zIndex.drawer + 1,
+            color: '#fff',
+            borderRadius: 'inherit',
+          }}
+        >
+          <CircularProgress color="inherit" />
+        </Backdrop>
       </Dialog>
     </>
   );

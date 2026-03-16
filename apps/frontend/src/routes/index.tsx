@@ -48,6 +48,8 @@ declare module "react" {
 function Index() {
   const [files, setFiles] = useState<FileSystemDirectory | null>(null);
   const [open, setOpen] = useState(false);
+  const [isUploading, setUploading] = useState<{ uploading: boolean, progress: number }>({ uploading: false, progress: 0 });
+
   const navigate = useNavigate();
 
   function onChange(
@@ -70,9 +72,10 @@ function Index() {
       return;
     }
 
+    setUploading({ uploading: true, progress: 0 });
+
     const progressHandler = (progress: number) => {
-      console.log(progress);
-      // TODO: Show upload spinner
+      setUploading({ uploading: true, progress });
     };
 
     const projectId = await createProject(files, progressHandler);
@@ -139,6 +142,7 @@ function Index() {
       {files && (
         <SelectedFilesDialog
           files={files}
+          isUploading={isUploading}
           open={open}
           setOpen={setOpen}
           onClickAction={upload}
