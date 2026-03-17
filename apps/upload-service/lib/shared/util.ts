@@ -15,3 +15,11 @@ export function findFile(fileId: string, project: Project): ProjectFile | null {
 
   return null;
 }
+
+export function latest<T>(array: T[]): T | undefined {
+  const len = array.length;
+
+  if (len === 0) { return undefined; }
+
+  return array[len - 1];
+}

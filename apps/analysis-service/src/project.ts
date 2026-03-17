@@ -3,27 +3,13 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { DynamoDBDocument, GetCommand } from "@aws-sdk/lib-dynamodb";
 import { existsSync, mkdirSync, writeFileSync } from "fs";
+import { latest, Project} from "shared";
 import path from "path";
 
 
 const s3Client = new S3Client({});
 const db = new DynamoDBClient({});
 const doc = DynamoDBDocument.from(db);
-
-export type ProjectFile = {
-    id: string,
-    url: string, // s3 bucket url
-    filename: string,
-    mimetype: string,
-}
-
-export type Project = {
-    id: string,
-    name: string,
-    files: ProjectFile[];
-    createdAt: number,
-    analysisId?: string
-};
 
 // TODO: Move to env.
 const TABLE_PROJECTS = "Projects-upload-stack";
@@ -39,6 +25,20 @@ export async function getProjectFromDb(projectId: string): Promise<Project> {
     return res.Item as Project;
 }
 
+export async function getLatestProjectFromDb(projectId: string): Promise<Project> {
+  const project = await getProjectFromDb(projectId);
+
+  project.files = project.files.map(x => {
+    if (x.id in project.repairedFiles) {
+      return latest(project.repairedFiles[x.id]) ?? x;
+    }
+
+    return x;
+  });
+
+  return project;
+}
+
 function ensureDirectoryExistence(filePath: string) {
     const dirname = path.dirname(filePath);
     if (existsSync(dirname)) {
@@ -51,7 +51,7 @@ function ensureDirectoryExistence(filePath: string) {
 // Download a project from the S3 bucket into a local directory.
 export async function downloadProjectFiles(projectId: string, targetProjectLocation: string): Promise<void> {
 
-    const project = await getProjectFromDb(projectId);
+    const project = await getLatestProjectFromDb(projectId);
 
     mkdirSync(targetProjectLocation, { recursive: true });
 
