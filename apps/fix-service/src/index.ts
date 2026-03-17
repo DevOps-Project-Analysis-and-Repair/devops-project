@@ -2,7 +2,8 @@ import { BadRequestError, HttpStatusCodes, Router } from '@aws-lambda-powertools
 import { Logger } from '@aws-lambda-powertools/logger';
 import { Context } from 'aws-lambda';
 import { fixCode } from './client';
-import { ProjectAnalysis  } from './types';
+import { Project, ProjectAnalysis, SonarRepairIssue } from '../../shared/types';
+import { findFile } from '../../shared/util';
 
 export const serviceName = 'fix';
 
@@ -10,6 +11,13 @@ const logger = new Logger({ serviceName });
 const app = new Router({ logger });
 
 const API_SERVICE_URL = "https://1wk9q92xx1.execute-api.eu-west-1.amazonaws.com";
+
+async function downloadProject(projectId: string): Promise<Project> {
+  const url = `${API_SERVICE_URL}/upload/projects/${projectId}`;
+  const res = await fetch(url);
+
+  return await res.json();
+}
 
 async function downloadFile(projectId: string, fileId: string): Promise<string> {
   const url = `${API_SERVICE_URL}/upload/projects/${projectId}/files/${fileId}/latest`;
@@ -34,9 +42,25 @@ async function uploadRepair(projectId: string, fileId: string, code: string): Pr
   );
 }
 
+function getFilePathFromProject(project: Project, fileId: string): string | null {
+  const file = findFile(fileId, project);
+
+  if (file === null) { return null; }
+
+  return file.filename;
+}
+
+function getLatestSonarIssues(analysis: ProjectAnalysis, filePath: string): SonarRepairIssue[] {
+  if (analysis.sonar.length === 0) { return []; }
+  const latest = analysis.sonar[analysis.sonar.length - 1];
+
+  return latest.issues.filter(x => x.filePath === filePath);
+}
+
 app.post(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ params: { projectId, fileId } }) => {
   // Step 1: Download file
   const input = await downloadFile(projectId, fileId);
+  const project = await downloadProject(projectId);
 
   if (!input) throw new BadRequestError("Project ID and File ID don't find the specified file");
 
@@ -44,6 +68,10 @@ app.post(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ params: {
   const analysis = await downloadAnalysis(projectId);
 
   console.log(analysis);
+
+  const sonarIssues = getLatestSonarIssues(analysis, getFilePathFromProject(project, fileId)!);
+
+  console.log(sonarIssues);
 
   // Step 3: Analyze file
   const response = await fixCode(input);
