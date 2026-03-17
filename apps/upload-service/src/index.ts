@@ -7,10 +7,9 @@ import { Upload } from "@aws-sdk/lib-storage";
 import { Context } from 'aws-lambda';
 import { v4 as uuidv4 } from 'uuid';
 import { createToken, verifyToken } from './auth';
-import { appendFile, appendRepairedFile, getLatestProjectFromDb, getProjectFromDb, appendSonarReport } from './dynamo';
-import { Project, ProjectFile } from './types';
+import { appendFile, appendRepairedFile, getLatestProjectFromDb, getProjectFromDb, appendSonarReport, getProjectAnalysis } from './dynamo';
+import { Project, ProjectFile, SonarAnalysisUpload } from './types';
 import { datestring, isUploadCompleted, latest } from './util';
-import { SonarAnalysisUpload } from './sonar';
 
 const serviceName = 'upload';
 
@@ -216,6 +215,10 @@ app.post(`/${serviceName}/projects/:projectId/analysis/sonar`, async ({ req, par
   console.log("Uploaded Sonar report.");
 
   return { ok: true };
+});
+
+app.get(`/${serviceName}/projects/:projectId/analysis`, async ({ params: { projectId }}) => {
+  return await getProjectAnalysis(doc, projectId);
 });
 
 app.get(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ res, params: { projectId, fileId } }) => {
