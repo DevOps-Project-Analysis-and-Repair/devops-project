@@ -138,18 +138,12 @@ export function AnalyzeAndRepairDialog({
     }
 
     const initialActions: AnalyzeAction[] = [
+      { name: "Fix file (1/2)", handler: fixFile, state: "pending" },
       {
-        name: "Analyze current project (1/4)",
+        name: "Analyze updated project (2/2)",
         handler: doAnalysis,
         state: "pending",
-      },
-      { name: "Fix file (2/4)", handler: fixFile, state: "pending" },
-      {
-        name: "Analyze updated project (3/4)",
-        handler: doAnalysis,
-        state: "pending",
-      },
-      { name: "Fix file (4/4)", handler: fixFile, state: "pending" },
+      }
     ];
 
     setActions(initialActions);

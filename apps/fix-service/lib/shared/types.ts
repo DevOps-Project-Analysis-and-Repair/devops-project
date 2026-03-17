@@ -46,14 +46,15 @@ export type SonarRepairIssue = {
 };
 
 export type SonarAnalysisUpload = {
-    analysisId: string
-    projectKey: string
-    fetchedAt: string
-    projectAnalysisId: string
+    analysisId: string;
+    projectKey: string;
+    fetchedAt: string;
+    projectAnalysisId: string;
 
-    metrics: {}
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    metrics: any;
 
-    issues: SonarRepairIssue[]
+    issues: SonarRepairIssue[];
 }
 
 export type ProjectAnalysis = {

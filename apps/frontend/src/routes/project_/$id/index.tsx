@@ -251,6 +251,7 @@ function Project() {
               <Box sx={{ display: "flex", overflowY: "auto", ...flex110 }}>
                 <Box p={2} sx={{ minWidth: "100%" }}>
                   <Button
+                    disabled={!sonarMetrics}
                     component="label"
                     role={undefined}
                     variant="contained"
@@ -258,7 +259,7 @@ function Project() {
                     onClick={analyzeProject}
                     startIcon={<TroubleshootIcon />}
                   >
-                    Analyze & Repair
+                    { !sonarMetrics ? <>Analyzing</> : <>Repair & Analyze</>}
                   </Button>
 
                   <CodeViewer
