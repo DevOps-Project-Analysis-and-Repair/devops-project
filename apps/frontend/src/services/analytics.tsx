@@ -15,12 +15,27 @@ type MetricItem = {
   bestValue?: boolean;
 };
 
+type IssueItem = {
+  endLine: number;
+  endOffset: number;
+  filePath: string;
+  issueKey: string;
+  line: number;
+  message: string;
+  rule: string;
+  severity: "INFO" | "MINOR" | "MAJOR" | "CRITICAL" | "BLOCKER";
+  startLine: number;
+  startOffset: number;
+  tags: string[];
+  type: "CODE_SMELL" | "BUG" | "VULNERABILITY";
+};
+
 type SonarReport = {
   metrics?: MetricItem[];
+  issues?: IssueItem[];
 };
 
 type ProjectJson = {
-  projectId: string;
   sonar?: SonarReport[];
 };
 
@@ -32,7 +47,6 @@ type ExtractedMetric = {
 type MetricMap = Record<MetricName, ExtractedMetric>;
 
 export type ExtractedSonarMetrics = {
-  projectId: string;
   first?: MetricMap;
   last?: MetricMap;
 };
@@ -74,7 +88,6 @@ export function extractSonarMetrics(json: ProjectJson): ExtractedSonarMetrics {
   const lastReport = sonarReports[sonarReports.length - 1];
 
   return {
-    projectId: 'foobar',
     first: firstReport ? buildMetricMap(firstReport) : undefined,
     last: lastReport ? buildMetricMap(lastReport) : undefined,
   };
