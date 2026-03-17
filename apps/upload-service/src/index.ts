@@ -26,7 +26,7 @@ const doc = DynamoDBDocument.from(db);
 
 export const TABLE_PROJECTS = "Projects-upload-stack";
 export const FILES_BUCKET = "files-upload-stack";
-export const TABLE_ANALYSIS = "Projects-analysis-stack";
+export const TABLE_ANALYSIS = "Analyses-analysis-stack";
 
 function latestVersionOfFile(fileId: string, project: Project): ProjectFile | null {
   // Small note, if the file is not the original file, it will never give the latest version.
