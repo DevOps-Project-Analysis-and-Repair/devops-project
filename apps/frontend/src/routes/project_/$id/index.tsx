@@ -84,10 +84,53 @@ function Project() {
     setProject(await resp.json());
   }
 
+  async function downloadAnalytics(signal: AbortSignal) {
+    const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
+
+    const resp = await fetch(`${API_BASE_URL}/upload/projects/${id}/analysis`, { signal });
+    const result = await resp.json();
+
+    if (Object.keys(result).length >= 1) {
+      // TODO: Set metrics
+      return;
+    }
+
+    const analyticsResp = await fetch(`${API_BASE_URL}/analysis/${id}`, {
+      method: "POST",
+    });
+
+    const analyticsResult = await analyticsResp.json();
+
+    if (!analyticsResult.analysisId) { throw new Error("Unable to get analysis id"); }
+    
+    while (true) {
+      if (signal.aborted) { return; }
+      await sleep(1000);
+    
+      const analysisResults = await (await fetch(`${API_BASE_URL}/upload/projects/${id}/analysis`, { signal })).json();
+          
+      if (Object.keys(analysisResults).length === 0) { continue; }
+
+      const found = analysisResults.sonar[0];
+
+      if (found) {
+        console.log(found);
+        // TODO: Set metrics
+        return;
+      }
+    }
+  }
+
   useEffect(() => {
+    const abortController = new AbortController();
+
     downloadProject()
       .then(() => setInitialLoad(false))
       .catch((e) => setError(e));
+
+    downloadAnalytics(abortController.signal);
+
+    return () => { abortController.abort(); }
   }, []);
 
   if (initialLoad) return <CircularProgress />;
