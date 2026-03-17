@@ -65,7 +65,7 @@ export async function appendRepairedFile(db: DynamoDBClient, projectId: string, 
   }));
 }
 
-export async function appendSonarReport(doc: DynamoDBDocument, projectId: string, sonarReport: SonarAnalysisUpload): Promise<void> {
+export async function appendSonarReport(doc: DynamoDBClient, projectId: string, sonarReport: SonarAnalysisUpload): Promise<void> {
   const cmd = new UpdateCommand({
     TableName: TABLE_ANALYSIS,
     Key: { projectId },
@@ -75,5 +75,6 @@ export async function appendSonarReport(doc: DynamoDBDocument, projectId: string
       ":empty": [],
     },
   });
-  const res = await doc.send(cmd);
+
+  await doc.send(cmd);
 }

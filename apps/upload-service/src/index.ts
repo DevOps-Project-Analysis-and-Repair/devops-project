@@ -6,12 +6,10 @@ import { DynamoDBDocument, paginateScan, DynamoDBDocumentClient } from "@aws-sdk
 import { Upload } from "@aws-sdk/lib-storage";
 import { Context } from 'aws-lambda';
 import { v4 as uuidv4 } from 'uuid';
-
 import { createToken, verifyToken } from './auth';
-import { appendFile, appendRepairedFile, getLatestProjectFromDb, getProjectFromDb } from './dynamo';
+import { appendFile, appendRepairedFile, getLatestProjectFromDb, getProjectFromDb, appendSonarReport } from './dynamo';
 import { Project, ProjectFile } from './types';
 import { datestring, isUploadCompleted, latest } from './util';
-import { appendRepairedFile, appendFile, getProjectFromDb, appendSonarReport } from './dynamo';
 import { SonarAnalysisUpload } from './sonar';
 
 const serviceName = 'upload';
