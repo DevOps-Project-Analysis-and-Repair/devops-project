@@ -1,5 +1,5 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocument, GetCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocument, GetCommand, UpdateCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
 import { RepairedFile, Project, ProjectFile } from "./types";
 import { TABLE_PROJECTS, TABLE_ANALYSIS } from ".";
 import { NotFoundError } from "@aws-lambda-powertools/event-handler/http";
@@ -66,17 +66,17 @@ export async function appendRepairedFile(db: DynamoDBClient, projectId: string, 
 }
 
 export async function appendSonarReport(db: DynamoDBClient, projectId: string, sonarReport: SonarAnalysisUpload): Promise<void> {
-  await db.send(new UpdateCommand({
-      TableName: TABLE_PROJECTS,
-      Key: { projectId },
-      UpdateExpression: "SET analysis = if_not_exists(analysis, :empty)",
-      ExpressionAttributeValues: {
-        ":empty": {},
-      },
-    }));
+  await db.send(new PutCommand({
+    TableName: TABLE_ANALYSIS,
+    Item: {
+      "projectId": projectId,
+      "analysis": {},
+    },
+    ConditionExpression: "attribute_not_exists(projectId)",
+  }));
   
   await db.send(new UpdateCommand({
-    TableName: TABLE_PROJECTS,
+    TableName: TABLE_ANALYSIS,
     Key: { projectId },
 
     UpdateExpression: "SET analysis.sonar = list_append(if_not_exists(analysis.sonar, :empty), :newReport)",
