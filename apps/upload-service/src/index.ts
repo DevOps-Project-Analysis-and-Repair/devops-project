@@ -204,9 +204,12 @@ app.post(`/${serviceName}/projects/:projectId/files/:fileId/repaired`, async ({ 
 app.post(`/${serviceName}/projects/:projectId/analysis/sonar`, async ({ req, params: { projectId } }) => {
   const json = await req.json();
   const sonarReport = json as SonarAnalysisUpload;
-  console.log(sonarReport);
+
+  console.log("Uploading Sonar report...");
 
   await appendSonarReport(db, projectId, sonarReport);
+  
+  console.log("Uploaded Sonar report.");
 
   return { ok: true };
 });
