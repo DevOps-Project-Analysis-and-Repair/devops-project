@@ -1,13 +1,15 @@
-import { defineConfig, mergeConfig } from 'vitest/config'
-import viteConfig from './vite.config'
+import { defineConfig, mergeConfig } from 'vitest/config';
+import viteConfig from './vite.config';
 
-export default mergeConfig(viteConfig, defineConfig({
+const vitestConfig = defineConfig({
     test: {
         environment: "happy-dom",
         globals: true,
     },
+});
 
-}))
+//@ts-ignore
+export default mergeConfig(viteConfig, vitestConfig);
 
 
 
