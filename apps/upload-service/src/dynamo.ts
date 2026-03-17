@@ -70,7 +70,10 @@ export async function getProjectAnalysis(doc: DynamoDBClient, projectId: string)
 
   if (!res.Item) { throw new NotFoundError(); }
 
-  return { ...res.Item.analysis }
+  console.log(res);
+  console.log(res.Item);
+
+  return { sonar: res.Item.analysis.sonar };
 }
 
 export async function appendSonarReport(doc: DynamoDBClient, projectId: string, sonarReport: SonarAnalysisUpload): Promise<void> {

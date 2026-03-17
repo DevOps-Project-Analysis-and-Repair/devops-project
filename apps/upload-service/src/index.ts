@@ -218,6 +218,7 @@ app.post(`/${serviceName}/projects/:projectId/analysis/sonar`, async ({ req, par
 });
 
 app.get(`/${serviceName}/projects/:projectId/analysis`, async ({ params: { projectId }}) => {
+  console.log(`list project analysis`, projectId);
   return await getProjectAnalysis(doc, projectId);
 });
 
