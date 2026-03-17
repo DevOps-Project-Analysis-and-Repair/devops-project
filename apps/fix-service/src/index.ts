@@ -2,8 +2,7 @@ import { BadRequestError, HttpStatusCodes, Router } from '@aws-lambda-powertools
 import { Logger } from '@aws-lambda-powertools/logger';
 import { Context } from 'aws-lambda';
 import { fixCode } from './client';
-import { Project, ProjectAnalysis, SonarRepairIssue } from '../../shared/types';
-import { findFile } from '../../shared/util';
+import { Project, ProjectAnalysis, SonarRepairIssue, findFile } from 'shared';
 
 export const serviceName = 'fix';
 
