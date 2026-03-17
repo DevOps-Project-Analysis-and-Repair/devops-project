@@ -42,6 +42,8 @@ export type SonarRepairIssue = {
     startOffset?: number;
     endOffset?: number;
 
+    status?: string;
+
     tags?: string[];
 };
 
