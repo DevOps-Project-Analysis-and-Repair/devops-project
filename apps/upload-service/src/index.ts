@@ -1,4 +1,4 @@
-import { BadRequestError, InternalServerError, NotFoundError, Router, UnauthorizedError } from '@aws-lambda-powertools/event-handler/http';
+import { BadRequestError, HttpStatusCodes, InternalServerError, NotFoundError, Router, UnauthorizedError } from '@aws-lambda-powertools/event-handler/http';
 import { Logger } from '@aws-lambda-powertools/logger';
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
@@ -13,7 +13,7 @@ import { datestring, isUploadCompleted, latest } from './util';
 
 const serviceName = 'upload';
 
-const logger = new Logger({ serviceName });
+const logger = new Logger({ serviceName, logLevel: "DEBUG" });
 const app = new Router({ logger });
 
 const s3client = new S3Client({});
@@ -254,6 +254,15 @@ app.get(`/${serviceName}/projects/:projectId/files/:fileId/latest`, async ({ res
   res.headers.set('Content-Disposition', `inline; filename="${file.filename}"`);
 
   return result.Body?.transformToWebStream();
+});
+
+app.errorHandler(Error, async (error, reqCtx) => {
+  logger.error('error occurred:', error);
+
+  return {
+    statusCode: HttpStatusCodes.BAD_REQUEST,
+    message: `Bad request: ${error.message} - ${reqCtx.req.headers.get('x-correlation-id')}`,
+  };
 });
 
 export const handler = async (event: unknown, context: Context) => {
