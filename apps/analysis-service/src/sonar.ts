@@ -2,6 +2,7 @@ import { spawn } from "child_process";
 import { once } from "events";
 import fs from "fs/promises";
 import path from "path";
+import { SonarAnalysisUpload, SonarRepairIssue } from "shared";
 
 const SONAR_ORG = "devops-software-engineering";
 // const SONAR_PROJECT_KEY = "devops-software-engineering_just-testing";
@@ -11,37 +12,6 @@ const SONAR_HOST = "https://sonarcloud.io";
 
 const SONAR_AUTH = `Bearer ${SONAR_TOKEN}`;
 const API_BASE_URL = "https://1wk9q92xx1.execute-api.eu-west-1.amazonaws.com";
-
-export type SonarRepairIssue = {
-    issueKey: string;
-
-    rule: string;
-    type: "BUG" | "VULNERABILITY" | "CODE_SMELL";
-    severity: "BLOCKER" | "CRITICAL" | "MAJOR" | "MINOR" | "INFO";
-
-    message: string;
-
-    filePath: string;
-
-    line?: number;
-
-    startLine?: number;
-    endLine?: number;
-    startOffset?: number;
-    endOffset?: number;
-
-    tags?: string[];
-};
-
-type SonarAnalysisUpload = {
-    analysisId: string
-    projectKey: string
-    fetchedAt: string
-
-    metrics: {}
-
-    issues: SonarRepairIssue[]
-}
 
 // Run the scanner and send the results to the Sonar server.
 export const runSonarScanner = async (projectPath: string, projectId: string): Promise<string> => {
@@ -318,7 +288,7 @@ export const mapSonarIssueForRepair = (issue: any): SonarRepairIssue => ({
 
 
 
-export const createAnalysisReport = async (projectId: string, analysisId: string): Promise<SonarAnalysisUpload> => {
+export const createAnalysisReport = async (projectId: string, analysisId: string, projectAnalysisId: string): Promise<SonarAnalysisUpload> => {
 
     const projectKey = `${SONAR_ORG}_${projectId}`;
 
@@ -337,6 +307,7 @@ export const createAnalysisReport = async (projectId: string, analysisId: string
     return {
         analysisId,
         projectKey,
+        projectAnalysisId,
         fetchedAt: new Date().toISOString(),
         metrics,
         issues,

@@ -49,6 +49,7 @@ export type SonarAnalysisUpload = {
     analysisId: string
     projectKey: string
     fetchedAt: string
+    projectAnalysisId: string
 
     metrics: {}
 

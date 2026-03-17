@@ -8,7 +8,8 @@ FROM public.ecr.aws/lambda/nodejs:24 AS builder
 # Build service API.
 WORKDIR /usr/app
 COPY package.json package-lock.json ./
-COPY src ./src
+COPY src/ ./src/
+COPY lib/ ./lib/
 RUN npm ci
 RUN npm run build
 
