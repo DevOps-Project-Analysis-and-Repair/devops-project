@@ -30,7 +30,6 @@ import {
 } from "../../../filesystem";
 import { extractSonarMetrics, groupIssuesByPath, mapMetricsForView, type ExtractedSonarMetrics, type IssueItem } from "../../../services/analytics";
 import { ComparisonMetricsView } from "../../../components/partials/ComparisonMetricsView";
-import { Fragment } from "react";
 import { CodeIssuesView } from "../../../components/partials/CodeIssuesView";
 
 export const Route = createFileRoute("/project_/$id/")({
