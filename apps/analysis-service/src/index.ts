@@ -70,8 +70,8 @@ app.post(`/${serviceName}/:projectId`, async ({ params: { projectId } }) => {
     // Start background task that will timeout in the API gateway, but will complete in the background
 
     await Promise.any([
-      async () => await fetch(`${API_SERVICE_URL}/analysis/${projectId}/sonar/${analysisId}`, { method: 'POST' }),
-      async () => await sleep(20000) // essentially wait 20 secs, so the call can be executed by the IO layer
+      await fetch(`${API_SERVICE_URL}/analysis/${projectId}/sonar/${analysisId}`, { method: 'POST' }),
+      await sleep(20000) // essentially wait 20 secs, so the call can be executed by the IO layer
     ]);
 
     return { analysisId }
