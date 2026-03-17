@@ -69,11 +69,17 @@ export async function appendSonarReport(doc: DynamoDBDocument, projectId: string
   const cmd = new UpdateCommand({
     TableName: TABLE_ANALYSIS,
     Key: { projectId },
-    UpdateExpression: "SET analysis.sonar = list_append(if_not_exists(analysis.sonar, :empty), :newReport)",
+    UpdateExpression:
+      "SET #analysis.#sonar = list_append(if_not_exists(#analysis.#sonar, :empty), :newReport)",
+    ExpressionAttributeNames: {
+      "#analysis": "analysis",
+      "#sonar": "sonar",
+    },
     ExpressionAttributeValues: {
-      ":newReport": [sonarReport],
+      ":newReport": [JSON.parse(JSON.stringify(sonarReport))],
       ":empty": [],
     },
+    ReturnValues: "ALL_NEW",
   });
   const res = await doc.send(cmd);
 
