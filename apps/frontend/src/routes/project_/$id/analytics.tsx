@@ -33,7 +33,7 @@ type ExtractedMetric = {
 
 type MetricMap = Record<MetricName, ExtractedMetric>;
 
-type ExtractedSonarMetrics = {
+export type ExtractedSonarMetrics = {
   projectId: string;
   first?: MetricMap;
   last?: MetricMap;

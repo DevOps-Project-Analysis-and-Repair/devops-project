@@ -28,7 +28,7 @@ import {
   uploadFilesToFileSystemTree,
   type FileSystemFile,
 } from "../../../filesystem";
-import { extractSonarMetrics, mapMetricsForView } from "./analytics";
+import { extractSonarMetrics, mapMetricsForView, type ExtractedSonarMetrics } from "./analytics";
 
 export const Route = createFileRoute("/project_/$id/")({
   component: Project,
