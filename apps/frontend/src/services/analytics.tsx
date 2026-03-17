@@ -28,6 +28,7 @@ export type IssueItem = {
   startOffset: number;
   tags: string[];
   type: "CODE_SMELL" | "BUG" | "VULNERABILITY";
+  status?: "OPEN" | "CONFIRMED" | "REOPENED" | "RESOLVED" | "CLOSED";
 };
 
 type SonarReport = {
