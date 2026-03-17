@@ -259,7 +259,7 @@ function Project() {
                     onClick={analyzeProject}
                     startIcon={<TroubleshootIcon />}
                   >
-                    { !sonarMetrics ? <>Waiting for analysis</> : <>Repair & Analyze</>}
+                    { !sonarMetrics ? <>Analyzing</> : <>Repair & Analyze</>}
                   </Button>
 
                   <CodeViewer
