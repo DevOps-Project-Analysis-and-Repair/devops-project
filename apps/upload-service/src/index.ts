@@ -99,7 +99,7 @@ app.post(`/${serviceName}/projects`, async () => {
 
   await doc.put({
     TableName: TABLE_ANALYSIS,
-    Item: { "projectId": projectId, "analysis": {} }
+    Item: item//{ "projectId": projectId, "analysis": {} }
   });
 
   // 2. create jwt to with project id
