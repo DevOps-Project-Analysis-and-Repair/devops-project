@@ -1,5 +1,6 @@
 import {
   Link as ButtonLink,
+  CircularProgress,
   Table,
   TableBody,
   TableCell,
@@ -38,6 +39,8 @@ function RouteComponent() {
       </Link>
       <hr />
       <TableContainer component={Paper}>
+        {isPending && <><CircularProgress color="inherit" /></>}
+
         {!isPending && !error &&  (
           <Table sx={{ minWidth: 650 }} aria-label="Project history">
             <TableHead>
