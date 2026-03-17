@@ -3,7 +3,7 @@ import { Logger } from '@aws-lambda-powertools/logger';
 import { Context } from 'aws-lambda';
 import { v4 as uuidv4 } from 'uuid';
 
-import { downloadProjectFiles } from './project';
+import { createUniqueAnalysisDir, downloadProjectFiles } from './project';
 import { createAnalysisReport, createSonarProject, existsSonarProject, makeSonarProjectPublic, pollSonarCloud, runSonarScanner, uploadAnalysisReport } from './sonar';
 
 const serviceName = 'analysis';
@@ -18,9 +18,9 @@ app.get(`/${serviceName}/health`, async () => {
 
 app.post(`/${serviceName}/:projectId/sonar/:projectAnalysisId`, async ({ params: { projectId, projectAnalysisId } }) => {
   // Download project from S3 bucket.
-  const projectPath = '/tmp/project';
+  const analysisDir = createUniqueAnalysisDir();
   console.log("Downloading project files...");
-  await downloadProjectFiles(projectId, projectPath);
+  await downloadProjectFiles(projectId, analysisDir);
 
   console.log("Downloaded files");
 
@@ -36,7 +36,7 @@ app.post(`/${serviceName}/:projectId/sonar/:projectAnalysisId`, async ({ params:
 
   // Run the Sonar scanner.
   console.log("Scanning files...");
-  const ceTaskUrl = await runSonarScanner(projectPath, projectId);
+  const ceTaskUrl = await runSonarScanner(analysisDir, projectId);
   console.log("ceTaskUrl", ceTaskUrl);
 
   // Poll if the Sonar report is ready.
