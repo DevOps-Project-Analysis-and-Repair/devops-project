@@ -30,7 +30,6 @@ import {
 } from "../../../filesystem";
 import { extractSonarMetrics, groupIssuesByPath, mapMetricsForView, type ExtractedSonarMetrics, type IssueItem } from "../../../services/analytics";
 import { ComparisonMetricsView } from "../../../components/partials/ComparisonMetricsView";
-import { Fragment } from "react";
 import { CodeIssuesView } from "../../../components/partials/CodeIssuesView";
 
 export const Route = createFileRoute("/project_/$id/")({
@@ -279,10 +278,6 @@ function Project() {
 
               <Box sx={{ display: "flex", overflowY: "auto", ...flex110 }}>
                 <Box p={2} sx={{ minWidth: "100%" }}>
-                  { (sonarIssues?.get(fileContent.filepath!) ?? []).length >= 1 &&
-                    <CodeIssuesView issues={sonarIssues?.get(fileContent.filepath!) ?? []} />
-                  }
-
                   <FileIterations
                     iterations={getFileIterations(project, fileContent.id!)}
                     handler={onFileIterationClick}
@@ -294,6 +289,10 @@ function Project() {
                       language={iterationContent.language}
                     />
                   )}
+
+                  {
+                    (sonarIssues?.get(fileContent.filepath!) ?? []).length >= 1 && <CodeIssuesView issues={sonarIssues?.get(fileContent.filepath!) ?? []} />
+                  }
                 </Box>
               </Box>
             </Box>
