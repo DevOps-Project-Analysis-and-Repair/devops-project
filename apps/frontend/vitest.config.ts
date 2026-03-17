@@ -8,7 +8,6 @@ const vitestConfig = defineConfig({
     },
 });
 
-//@ts-ignore
 export default mergeConfig(viteConfig, vitestConfig);
 
 
