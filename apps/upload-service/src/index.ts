@@ -8,8 +8,8 @@ import { Context } from 'aws-lambda';
 import { v4 as uuidv4 } from 'uuid';
 import { createToken, verifyToken } from './auth';
 import { appendFile, appendRepairedFile, getLatestProjectFromDb, getProjectFromDb, appendSonarReport, getProjectAnalysis } from './dynamo';
-import { Project, ProjectFile, SonarAnalysisUpload } from 'shared';
-import { datestring, isUploadCompleted, latest } from './util';
+import { Project, ProjectFile, SonarAnalysisUpload, latest } from 'shared';
+import { datestring, isUploadCompleted } from './util';
 
 const serviceName = 'upload';
 
