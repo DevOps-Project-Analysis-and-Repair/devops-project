@@ -67,7 +67,7 @@ export async function appendRepairedFile(db: DynamoDBClient, projectId: string, 
 
 export async function appendSonarReport(db: DynamoDBClient, projectId: string, sonarReport: SonarAnalysisUpload): Promise<void> {
   await db.send(new UpdateCommand({
-      TableName: TABLE_ANALYSIS,
+      TableName: TABLE_PROJECTS,
       Key: { projectId },
       UpdateExpression: "SET analysis = if_not_exists(analysis, :empty)",
       ExpressionAttributeValues: {
@@ -76,7 +76,7 @@ export async function appendSonarReport(db: DynamoDBClient, projectId: string, s
     }));
   
   await db.send(new UpdateCommand({
-    TableName: TABLE_ANALYSIS,
+    TableName: TABLE_PROJECTS,
     Key: { projectId },
 
     UpdateExpression: "SET analysis.sonar = list_append(if_not_exists(analysis.sonar, :empty), :newReport)",
