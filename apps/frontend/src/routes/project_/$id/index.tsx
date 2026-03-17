@@ -255,11 +255,12 @@ function Project() {
                     <Typography sx={{ mt: 2 }}>No analysis available yet.</Typography>
                   ) : (
                     <>
-                      <Typography sx={{ mt: 2, mb: 1 }}>First analysis</Typography>
-                      {sonarMetrics?.first && <MetricsView metrics={mapMetricsForView(sonarMetrics.first)} />}
+                      <Typography sx={{ mt: 2, mb: 1 }}>Analysis comparison</Typography>
 
-                      <Typography sx={{ mt: 2, mb: 1 }}>Last analysis</Typography>
-                      {sonarMetrics?.last && <MetricsView metrics={mapMetricsForView(sonarMetrics.last)} />}
+                      <ComparisonMetricsView
+                        first={sonarMetrics?.first ? mapMetricsForView(sonarMetrics.first) : []}
+                        last={sonarMetrics?.last ? mapMetricsForView(sonarMetrics.last) : []}
+                      />
                     </>
                   )}
                 </Box>
