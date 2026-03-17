@@ -104,10 +104,8 @@ function Project() {
           
       if (Object.keys(analysisResults).length === 0) { continue; }
 
-      if (analysisResults.sonar[0]) {
-        console.log(analysisResults.sonar[0]);
-
-        setSonarMetrics(extractSonarMetrics(analysisResults.sonar[0]));
+      if (analysisResults.sonar) {
+        setSonarMetrics(extractSonarMetrics(analysisResults));
         return;
       }
     }
@@ -158,8 +156,6 @@ function Project() {
   }
 
   async function onFileIterationClick(fileId: string) {
-    console.log(fileId);
-
     const content = await downloadFile(
       `${API_BASE_URL}/upload/projects/${id}/files/${fileId}`,
     );
@@ -249,8 +245,11 @@ function Project() {
                   >
                     Analyze & Repair
                   </Button>
-                  
-                  { JSON.stringify(sonarMetrics) }
+
+                  <CodeViewer
+                    content={fileContent.content}
+                    language={fileContent.language}
+                  />
 
                   {(!sonarMetrics?.first && !sonarMetrics?.last) ? (
                     <Typography sx={{ mt: 2 }}>No analysis available yet.</Typography>
@@ -263,11 +262,6 @@ function Project() {
                       {sonarMetrics?.last && <MetricsView metrics={mapMetricsForView(sonarMetrics.last)} />}
                     </>
                   )}
-
-                  <CodeViewer
-                    content={fileContent.content}
-                    language={fileContent.language}
-                  />
                 </Box>
               </Box>
 

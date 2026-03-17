@@ -21,9 +21,7 @@ type SonarReport = {
 
 type ProjectJson = {
   projectId: string;
-  analysis?: {
-    sonar?: SonarReport[];
-  };
+  sonar?: SonarReport[];
 };
 
 type ExtractedMetric = {
@@ -70,15 +68,13 @@ function buildMetricMap(report?: SonarReport): MetricMap {
 }
 
 export function extractSonarMetrics(json: ProjectJson): ExtractedSonarMetrics {
-  const sonarReports = json.analysis?.sonar ?? [];
+  const sonarReports = json.sonar ?? [];
 
   const firstReport = sonarReports[0];
   const lastReport = sonarReports[sonarReports.length - 1];
 
-  console.log(json);
-
   return {
-    projectId: json.projectId,
+    projectId: 'foobar',
     first: firstReport ? buildMetricMap(firstReport) : undefined,
     last: lastReport ? buildMetricMap(lastReport) : undefined,
   };
