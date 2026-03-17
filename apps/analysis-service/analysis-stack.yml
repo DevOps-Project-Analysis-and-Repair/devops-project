@@ -88,7 +88,7 @@ Resources:
       PackageType: Image
       Code:
         ImageUri: !Ref AnalysisServiceImageUri
-      Timeout: 120
+      Timeout: 600
       MemorySize: 2048
       VpcConfig:
         SecurityGroupIds:
