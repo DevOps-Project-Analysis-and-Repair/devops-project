@@ -28,7 +28,7 @@ import {
   uploadFilesToFileSystemTree,
   type FileSystemFile,
 } from "../../../filesystem";
-import { extractSonarMetrics, mapMetricsForView, type ExtractedSonarMetrics } from "./analytics";
+import { extractSonarMetrics, mapMetricsForView, type ExtractedSonarMetrics } from "../../../services/analytics";
 import { ComparisonMetricsView } from "../../../components/partials/ComparisonMetricsView";
 
 export const Route = createFileRoute("/project_/$id/")({
@@ -119,8 +119,7 @@ function Project() {
       .then(() => setInitialLoad(false))
       .catch((e) => setError(e));
 
-    downloadAnalytics(new AbortController().signal);
-    
+    downloadAnalytics(abortController.signal);
 
     return () => { abortController.abort(); }
   }, []);
@@ -183,10 +182,11 @@ function Project() {
   async function postAnalyzedProject() {
     setAnalyzeProject(null);
 
-    // Refresh project
-    await downloadProject();
+    await Promise.all([
+      downloadProject(),
+      downloadAnalytics(new AbortController().signal)
+    ]);
   }
-
 
   return (
     <>
