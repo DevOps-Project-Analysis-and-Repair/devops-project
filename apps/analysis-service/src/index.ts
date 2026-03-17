@@ -61,19 +61,18 @@ app.post(`/${serviceName}/:projectId/sonar/:projectAnalysisId`, async ({ params:
   return { ok: true };
 });
 
+const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
+
 // Scan a project with Sonar.
 app.post(`/${serviceName}/:projectId`, async ({ params: { projectId } }) => {
     const analysisId = uuidv4();
 
     // Start background task that will timeout in the API gateway, but will complete in the background
-    // const promise = fetch(`${API_SERVICE_URL}/analysis/${projectId}/sonar/${analysisId}`, { method: 'POST' });
 
-    try {
-      await fetch(`${API_SERVICE_URL}/analysis/${projectId}/sonar/${analysisId}`, { method: 'POST' });
-    } catch (e) {
-      console.log(e);
-      return { analysisId };
-    }
+    await Promise.any([
+      async () => await fetch(`${API_SERVICE_URL}/analysis/${projectId}/sonar/${analysisId}`, { method: 'POST' }),
+      async () => await sleep(20000) // essentially wait 20 secs, so the call can be executed by the IO layer
+    ]);
 
     return { analysisId }
 });
