@@ -57,7 +57,7 @@ Resources:
                 Resource:
                   - !GetAtt S3Bucket.Arn
                   - !Sub '${S3Bucket.Arn}/*'
-        - PolicyName: DynamoDBAccess
+        - PolicyName: DynamoDBProjectAccess
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
@@ -69,7 +69,23 @@ Resources:
                   - dynamodb:DeleteItem
                   - dynamodb:Scan
                   - dynamodb:Query
-                Resource: !GetAtt DynamoDBTable.Arn
+                Resource:
+                  - !GetAtt DynamoDBTable.Arn
+        - PolicyName: DynamoDBAnalysisAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:Scan
+                  - dynamodb:Query
+                Resource:
+                  - arn:aws:dynamodb:eu-west-1:379245767025:table/Analyses-analysis-stack
+
 
   LambdaFunction:
     Type: AWS::Lambda::Function
