@@ -15,12 +15,12 @@ Resources:
   DynamoDBTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub 'Projects-${AWS::StackName}'
+      TableName: !Sub 'Projects-analysis-stack'
       AttributeDefinitions:
-        - AttributeName: id
+        - AttributeName: projectId
           AttributeType: S
       KeySchema:
-        - AttributeName: id
+        - AttributeName: projectId
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
 
