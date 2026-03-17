@@ -75,6 +75,8 @@ export function extractSonarMetrics(json: ProjectJson): ExtractedSonarMetrics {
   const firstReport = sonarReports[0];
   const lastReport = sonarReports[sonarReports.length - 1];
 
+  console.log(json);
+
   return {
     projectId: json.projectId,
     first: firstReport ? buildMetricMap(firstReport) : undefined,

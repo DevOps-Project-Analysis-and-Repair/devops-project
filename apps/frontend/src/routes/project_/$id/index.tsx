@@ -71,26 +71,20 @@ function Project() {
   const { id } = Route.useParams();
 
   async function downloadProject() {
-    const [projectResp, analysisResp] = await Promise.all([
-      fetch(`${API_BASE_URL}/upload/projects/${id}`),
-      fetch(`${API_BASE_URL}/upload/projects/${id}/analysis`),
-    ]);
-
+    const projectResp = await fetch(`${API_BASE_URL}/upload/projects/${id}`);
     const projectJson = await projectResp.json();
-    const analysisJson = await analysisResp.json();
 
     setProject(projectJson);
-    setSonarMetrics(extractSonarMetrics(analysisJson));
   }
 
   async function downloadAnalytics(signal: AbortSignal) {
     const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
-    const resp = await fetch(`${API_BASE_URL}/upload/projects/${id}/analysis`, { signal });
+    const resp = await fetch(`${API_BASE_URL}/upload/projects/${id}/analysis`);
     const result = await resp.json();
 
     if (Object.keys(result).length >= 1) {
-      // TODO: Set metrics
+      setSonarMetrics(extractSonarMetrics(result));
       return;
     }
 
@@ -106,15 +100,14 @@ function Project() {
       if (signal.aborted) { return; }
       await sleep(1000);
     
-      const analysisResults = await (await fetch(`${API_BASE_URL}/upload/projects/${id}/analysis`, { signal })).json();
+      const analysisResults = await (await fetch(`${API_BASE_URL}/upload/projects/${id}/analysis`)).json();
           
       if (Object.keys(analysisResults).length === 0) { continue; }
 
-      const found = analysisResults.sonar[0];
+      if (analysisResults.sonar[0]) {
+        console.log(analysisResults.sonar[0]);
 
-      if (found) {
-        console.log(found);
-        // TODO: Set metrics
+        setSonarMetrics(extractSonarMetrics(analysisResults.sonar[0]));
         return;
       }
     }
@@ -127,7 +120,8 @@ function Project() {
       .then(() => setInitialLoad(false))
       .catch((e) => setError(e));
 
-    downloadAnalytics(abortController.signal);
+    downloadAnalytics(new AbortController().signal);
+    
 
     return () => { abortController.abort(); }
   }, []);
@@ -255,6 +249,8 @@ function Project() {
                   >
                     Analyze & Repair
                   </Button>
+                  
+                  { JSON.stringify(sonarMetrics) }
 
                   {(!sonarMetrics?.first && !sonarMetrics?.last) ? (
                     <Typography sx={{ mt: 2 }}>No analysis available yet.</Typography>
