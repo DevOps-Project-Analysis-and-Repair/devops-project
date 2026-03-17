@@ -74,6 +74,8 @@ export async function appendSonarReport(db: DynamoDBClient, projectId: string, s
     },
     ConditionExpression: "attribute_not_exists(projectId)",
   }));
+
+  console.log("Appending Sonar report...");
   
   await db.send(new UpdateCommand({
     TableName: TABLE_ANALYSIS,
