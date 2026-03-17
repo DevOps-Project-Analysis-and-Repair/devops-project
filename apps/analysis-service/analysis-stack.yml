@@ -15,7 +15,7 @@ Resources:
   DynamoDBTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub 'Projects-analysis-stack'
+      TableName: !Sub 'Analyses-${AWS::StackName}'
       AttributeDefinitions:
         - AttributeName: projectId
           AttributeType: S
