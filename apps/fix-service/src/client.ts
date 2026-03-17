@@ -19,7 +19,12 @@ export async function fixCode(code: string, sonarIssues: SonarRepairIssue[]) {
     apiKey: process.env['OPENAI_API_KEY'], // This is the default and can be omitted
   });
 
+  console.log(code, sonarIssues);
+
   const analysis = sonarIssuesToAnalysisResults(sonarIssues);
+
+  console.log(analysis);
+
   const input = promptInput(analysis, code);
 
   console.log(input);
