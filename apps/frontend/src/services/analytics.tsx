@@ -28,7 +28,7 @@ export type IssueItem = {
   startOffset: number;
   tags: string[];
   type: "CODE_SMELL" | "BUG" | "VULNERABILITY";
-}
+};
 
 type SonarReport = {
   metrics?: MetricItem[];
@@ -36,7 +36,6 @@ type SonarReport = {
 };
 
 type ProjectJson = {
-  projectId: string;
   sonar?: SonarReport[];
 };
 
@@ -48,7 +47,6 @@ type ExtractedMetric = {
 type MetricMap = Record<MetricName, ExtractedMetric>;
 
 export type ExtractedSonarMetrics = {
-  projectId: string;
   first?: MetricMap;
   last?: MetricMap;
 };
@@ -90,7 +88,6 @@ export function extractSonarMetrics(json: ProjectJson): ExtractedSonarMetrics {
   const lastReport = sonarReports[sonarReports.length - 1];
 
   return {
-    projectId: 'foobar',
     first: firstReport ? buildMetricMap(firstReport) : undefined,
     last: lastReport ? buildMetricMap(lastReport) : undefined,
   };
