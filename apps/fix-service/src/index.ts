@@ -66,7 +66,7 @@ app.post(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ params: {
   // Step 2: Download analysis from the upload service
   const analysis = await downloadAnalysis(projectId);
 
-  console.log(analysis);
+  console.log(JSON.stringify(analysis));
 
   const sonarIssues = getLatestSonarIssues(analysis, getFilePathFromProject(project, fileId)!);
 
