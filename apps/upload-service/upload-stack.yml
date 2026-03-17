@@ -106,6 +106,7 @@ Resources:
         Variables:
           S3_BUCKET_NAME: !Ref S3Bucket
           DYNAMODB_TABLE_NAME: !Ref DynamoDBTable
+          ANALYSIS_TABLE_NAME: !ImportValue Analysis-TableName
 
 Outputs:
   FunctionArn:
