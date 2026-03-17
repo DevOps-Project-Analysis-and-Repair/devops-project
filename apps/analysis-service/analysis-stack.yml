@@ -107,8 +107,13 @@ Outputs:
     Value: !GetAtt LambdaFunction.Arn
     Export:
       Name: !Sub "Analysis-FunctionArn"
-  TableName:
-    Description: Name of the DynamoDB table
+  AnalysisTableArn:
+    Description: ARN of the analysis table
+    Value: !GetAtt DynamoDBTable.Arn
+    Export:
+      Name: Analysis-TableArn
+  AnalysisTableName:
+    Description: Name of the analysis table
     Value: !Ref DynamoDBTable
     Export:
-      Name: !Sub "Analysis-TableName"
+      Name: Analysis-TableName

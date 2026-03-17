@@ -84,7 +84,7 @@ Resources:
                   - dynamodb:Scan
                   - dynamodb:Query
                 Resource:
-                  - arn:aws:dynamodb:eu-west-1:379245767025:table/Analyses-analysis-stack
+                  - !ImportValue Analysis-TableArn
 
 
   LambdaFunction:
