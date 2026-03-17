@@ -1,9 +1,8 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocument, GetCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
-import { RepairedFile, Project, ProjectFile, SonarAnalysisUpload, ProjectAnalysis } from "shared";
+import { RepairedFile, Project, ProjectFile, SonarAnalysisUpload, ProjectAnalysis, latest } from "shared";
 import { TABLE_PROJECTS, TABLE_ANALYSIS } from ".";
 import { NotFoundError } from "@aws-lambda-powertools/event-handler/http";
-import { latest } from "./util";
 
 export async function getProjectFromDb(doc: DynamoDBDocument, projectId: string): Promise<Project> {
   const cmd = new GetCommand({ TableName: TABLE_PROJECTS, Key: { id: projectId }});
