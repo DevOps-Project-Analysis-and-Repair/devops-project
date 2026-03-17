@@ -217,6 +217,20 @@ function Project() {
           Project {project.name} ({project.files.length})
         </Typography>
 
+        <Box sx={{ width: "100%", pt: 2 }}>
+          {(!sonarMetrics?.first && !sonarMetrics?.last) ? (
+            <Typography>No analysis available yet.</Typography>
+          ) : (
+            <>
+              <Typography sx={{ mb: 1 }}>Analysis comparison</Typography>
+              <ComparisonMetricsView
+                first={sonarMetrics?.first ? mapMetricsForView(sonarMetrics.first) : []}
+                last={sonarMetrics?.last ? mapMetricsForView(sonarMetrics.last) : []}
+              />
+            </>
+          )}
+        </Box>
+
         <Box sx={{ display: "flex", direction: "row" }} pt={2}>
           {project.files && (
             <FileTree
@@ -251,19 +265,6 @@ function Project() {
                     content={fileContent.content}
                     language={fileContent.language}
                   />
-
-                  {(!sonarMetrics?.first && !sonarMetrics?.last) ? (
-                    <Typography sx={{ mt: 2 }}>No analysis available yet.</Typography>
-                  ) : (
-                    <>
-                      <Typography sx={{ mt: 2, mb: 1 }}>Analysis comparison</Typography>
-
-                      <ComparisonMetricsView
-                        first={sonarMetrics?.first ? mapMetricsForView(sonarMetrics.first) : []}
-                        last={sonarMetrics?.last ? mapMetricsForView(sonarMetrics.last) : []}
-                      />
-                    </>
-                  )}
                 </Box>
               </Box>
 
