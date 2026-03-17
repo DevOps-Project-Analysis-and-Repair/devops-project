@@ -97,10 +97,17 @@ app.post(`/${serviceName}/projects`, async () => {
     Item: item
   });
 
-  await doc.put({
-    TableName: TABLE_ANALYSIS,
-    Item: item//{ "projectId": projectId, "analysis": {} }
-  });
+  try {
+    await doc.put({
+      TableName: TABLE_ANALYSIS,
+      Item: item
+    });
+
+    console.log("put to analysis succeeded");
+  } catch (err) {
+    console.error("put to analysis failed", err);
+    throw err;
+  }
 
   // 2. create jwt to with project id
   // 3. return jwt to user
