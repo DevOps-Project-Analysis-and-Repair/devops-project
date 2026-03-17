@@ -1,4 +1,15 @@
-import { Card, CardContent, Grid, Typography, Box } from "@mui/material";
+import TrendingDownIcon from "@mui/icons-material/TrendingDown";
+import TrendingFlatIcon from "@mui/icons-material/TrendingFlat";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import {
+  Box,
+  Card,
+  CardContent,
+  Chip,
+  Grid,
+  Stack,
+  Typography,
+} from "@mui/material";
 
 interface Metric {
   id: string;
@@ -16,7 +27,9 @@ type Trend = "better" | "worse" | "same" | "unknown";
 
 const higherIsBetterMetricIds = new Set<string>([
   "coverage",
-  "duplicated_lines_density",
+  "line_coverage",
+  "branch_coverage",
+  "test_success_density",
 ]);
 
 const lowerIsBetterMetricIds = new Set<string>([
@@ -28,9 +41,14 @@ const lowerIsBetterMetricIds = new Set<string>([
   "duplicated_blocks",
   "duplicated_files",
   "duplicated_lines",
+  "duplicated_lines_density",
   "ncloc",
   "complexity",
   "cognitive_complexity",
+  "sqale_index",
+  "technical_debt",
+  "reliability_remediation_effort",
+  "security_remediation_effort",
 ]);
 
 function parseNumeric(value?: string): number | undefined {
@@ -63,32 +81,47 @@ function getValueColor(bestValue?: boolean) {
   return "text.primary";
 }
 
-function getDeltaColor(trend: Trend) {
+function getTrendColor(trend: Trend) {
   switch (trend) {
     case "better":
-      return "success.main";
+      return "success";
     case "worse":
-      return "error.main";
+      return "error";
     case "same":
-      return "warning.main";
+      return "default";
     default:
-      return "text.primary";
+      return "default";
   }
 }
 
-function getCardBorderColor(bestValue?: boolean, trend?: Trend) {
-  if (bestValue === true) return "success.main";
-  if (bestValue === false) return "error.main";
+function getDeltaText(diff?: number) {
+  if (diff === undefined) return "??";
+  if (diff > 0) return `+${diff}`;
+  return `${diff}`;
+}
 
+function getTrendLabel(trend: Trend) {
   switch (trend) {
     case "better":
-      return "success.light";
+      return "Improved";
     case "worse":
-      return "error.light";
+      return "Regressed";
     case "same":
-      return "warning.light";
+      return "Unchanged";
     default:
-      return "divider";
+      return "Unknown";
+  }
+}
+
+function getTrendIcon(trend: Trend) {
+  switch (trend) {
+    case "better":
+      return <TrendingUpIcon fontSize="small" />;
+    case "worse":
+      return <TrendingDownIcon fontSize="small" />;
+    case "same":
+    default:
+      return <TrendingFlatIcon fontSize="small" />;
   }
 }
 
@@ -132,67 +165,162 @@ export function ComparisonMetricsView({
   const metrics = Array.from(map.entries());
 
   return (
-    <Grid container spacing={2} mt={2}>
+    <Grid container spacing={{ xs: 1.5, sm: 2 }} mt={1}>
       {metrics.map(([id, metric]) => {
-        const hasFirst = metric.first !== undefined && metric.first !== null;
-        const hasLast = metric.last !== undefined && metric.last !== null;
-
         const firstNum = parseNumeric(metric.first);
         const lastNum = parseNumeric(metric.last);
 
         const diff =
-          hasFirst &&
-          hasLast &&
-          firstNum !== undefined &&
-          lastNum !== undefined
+          firstNum !== undefined && lastNum !== undefined
             ? lastNum - firstNum
             : undefined;
 
         const trend = getTrend(id, metric.first, metric.last);
-        const latestBestValue = metric.lastBestValue ?? metric.firstBestValue;
 
         return (
-          <Grid key={id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+          <Grid key={id} size={{ xs: 12, sm: 6, md: 4, xl: 3 }}>
             <Card
-              elevation={2}
+              elevation={0}
               sx={{
+                height: "100%",
+                borderRadius: 3,
                 border: 1,
-                borderColor: getCardBorderColor(latestBestValue, trend),
+                borderColor: "divider",
+                backgroundColor: "background.paper",
               }}
             >
-              <CardContent>
-                <Typography variant="body2" color="text.secondary">
-                  {metric.name}
-                </Typography>
-
-                <Box display="flex" justifyContent="space-between" mt={1} gap={2}>
-                  <Box>
-                    <Typography variant="caption">First</Typography>
+              <CardContent sx={{ p: 2.25, "&:last-child": { pb: 2.25 } }}>
+                <Stack spacing={1.5}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      justifyContent: "space-between",
+                      gap: 1,
+                    }}
+                  >
                     <Typography
-                      variant="h6"
-                      color={getValueColor(metric.firstBestValue)}
+                      variant="subtitle2"
+                      sx={{
+                        fontWeight: 700,
+                        lineHeight: 1.3,
+                        pr: 1,
+                        minHeight: 40,
+                        display: "flex",
+                        alignItems: "center",
+                      }}
                     >
-                      {metric.first ?? "??"}
+                      {metric.name}
                     </Typography>
+
+                    <Chip
+                      size="small"
+                      icon={getTrendIcon(trend)}
+                      label={getTrendLabel(trend)}
+                      color={getTrendColor(trend)}
+                      variant={trend === "same" || trend === "unknown" ? "outlined" : "filled"}
+                      sx={{ flexShrink: 0 }}
+                    />
                   </Box>
 
-                  <Box>
-                    <Typography variant="caption">Last</Typography>
-                    <Typography
-                      variant="h6"
-                      color={getValueColor(metric.lastBestValue)}
+                  <Box
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr auto 1fr",
+                      alignItems: "center",
+                      gap: 1.5,
+                      py: 0.5,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        textAlign: "center",
+                        px: 1,
+                        py: 1.25,
+                        borderRadius: 2,
+                        backgroundColor: "action.hover",
+                      }}
                     >
-                      {metric.last ?? "??"}
-                    </Typography>
-                  </Box>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ display: "block", mb: 0.5 }}
+                      >
+                        First
+                      </Typography>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          fontWeight: 700,
+                          color: getValueColor(metric.firstBestValue),
+                          lineHeight: 1.2,
+                          wordBreak: "break-word",
+                        }}
+                      >
+                        {metric.first ?? "??"}
+                      </Typography>
+                    </Box>
 
-                  <Box textAlign="right">
-                    <Typography variant="caption">Δ</Typography>
-                    <Typography variant="h6" color={getDeltaColor(trend)}>
-                      {diff === undefined ? "??" : diff > 0 ? `+${diff}` : diff}
-                    </Typography>
+                    <Box
+                      sx={{
+                        minWidth: 72,
+                        textAlign: "center",
+                      }}
+                    >
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ display: "block", mb: 0.5 }}
+                      >
+                        Delta
+                      </Typography>
+                      <Typography
+                        variant="subtitle1"
+                        sx={{
+                          fontWeight: 800,
+                          lineHeight: 1.2,
+                          color:
+                            trend === "better"
+                              ? "success.main"
+                              : trend === "worse"
+                                ? "error.main"
+                                : "text.primary",
+                        }}
+                      >
+                        {getDeltaText(diff)}
+                      </Typography>
+                    </Box>
+
+                    <Box
+                      sx={{
+                        textAlign: "center",
+                        px: 1,
+                        py: 1.25,
+                        borderRadius: 2,
+                        backgroundColor: "action.hover",
+                      }}
+                    >
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ display: "block", mb: 0.5 }}
+                      >
+                        Last
+                      </Typography>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          fontWeight: 700,
+                          color: getValueColor(metric.lastBestValue),
+                          lineHeight: 1.2,
+                          wordBreak: "break-word",
+                        }}
+                      >
+                        {metric.last ?? "??"}
+                      </Typography>
+                    </Box>
                   </Box>
-                </Box>
+                </Stack>
               </CardContent>
             </Card>
           </Grid>
