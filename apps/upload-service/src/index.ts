@@ -13,7 +13,7 @@ import { datestring, isUploadCompleted, latest } from './util';
 
 const serviceName = 'upload';
 
-const logger = new Logger({ serviceName, logLevel: "DEBUG" });
+const logger = new Logger({ serviceName });
 const app = new Router({ logger });
 
 const s3client = new S3Client({});
@@ -218,7 +218,6 @@ app.post(`/${serviceName}/projects/:projectId/analysis/sonar`, async ({ req, par
 });
 
 app.get(`/${serviceName}/projects/:projectId/analysis`, async ({ params: { projectId }}) => {
-  console.log(`list project analysis`, projectId);
   return await getProjectAnalysis(doc, projectId);
 });
 

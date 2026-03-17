@@ -65,13 +65,10 @@ export async function appendRepairedFile(db: DynamoDBClient, projectId: string, 
 }
 
 export async function getProjectAnalysis(doc: DynamoDBClient, projectId: string): Promise<ProjectAnalysis> {
-  const cmd = new GetCommand({ TableName: TABLE_ANALYSIS, Key: { id: projectId }});
+  const cmd = new GetCommand({ TableName: TABLE_ANALYSIS, Key: { projectId }});
   const res = await doc.send(cmd);
 
   if (!res.Item) { throw new NotFoundError(); }
-
-  console.log(res);
-  console.log(res.Item);
 
   return { sonar: res.Item.analysis.sonar };
 }
