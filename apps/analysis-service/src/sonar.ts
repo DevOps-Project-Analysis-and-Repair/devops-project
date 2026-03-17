@@ -267,6 +267,8 @@ export const mapSonarIssueForRepair = (issue: any): SonarRepairIssue => ({
     startOffset: issue.textRange?.startOffset,
     endOffset: issue.textRange?.endOffset,
 
+    status: issue.status,
+
     tags: issue.tags,
 });
 
