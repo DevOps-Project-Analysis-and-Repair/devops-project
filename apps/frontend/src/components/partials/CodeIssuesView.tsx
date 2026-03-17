@@ -218,7 +218,7 @@ export function CodeIssuesView({
           py: 2,
           borderBottom: 1,
           borderColor: "divider",
-          backgroundColor: "background.default",
+          backgroundColor: "#fff",
         }}
       >
         <Stack

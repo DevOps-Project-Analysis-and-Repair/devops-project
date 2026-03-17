@@ -99,7 +99,7 @@ export function groupIssuesByPath(json: ProjectJson): Map<string, IssueItem[]> {
 
   const latest = sonarReports[sonarReports.length - 1];
 
-  if (!latest) return map;
+  if (!latest) { return map; }
 
   for (const issue of latest.issues!) {
     const existing = map.get(issue.filePath) ?? [];

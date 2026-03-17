@@ -279,10 +279,6 @@ function Project() {
 
               <Box sx={{ display: "flex", overflowY: "auto", ...flex110 }}>
                 <Box p={2} sx={{ minWidth: "100%" }}>
-                  { (sonarIssues?.get(fileContent.filepath!) ?? []).length >= 1 &&
-                    <CodeIssuesView issues={sonarIssues?.get(fileContent.filepath!) ?? []} />
-                  }
-
                   <FileIterations
                     iterations={getFileIterations(project, fileContent.id!)}
                     handler={onFileIterationClick}
@@ -294,6 +290,10 @@ function Project() {
                       language={iterationContent.language}
                     />
                   )}
+
+                  {
+                    (sonarIssues?.get(fileContent.filepath!) ?? []).length >= 1 && <CodeIssuesView issues={sonarIssues?.get(fileContent.filepath!) ?? []} />
+                  }
                 </Box>
               </Box>
             </Box>
