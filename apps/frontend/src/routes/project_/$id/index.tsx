@@ -28,8 +28,9 @@ import {
   uploadFilesToFileSystemTree,
   type FileSystemFile,
 } from "../../../filesystem";
-import { extractSonarMetrics, mapMetricsForView, type ExtractedSonarMetrics } from "../../../services/analytics";
+import { extractSonarMetrics, groupIssuesByPath, mapMetricsForView, type ExtractedSonarMetrics, type IssueItem } from "../../../services/analytics";
 import { ComparisonMetricsView } from "../../../components/partials/ComparisonMetricsView";
+import { Fragment } from "react";
 
 export const Route = createFileRoute("/project_/$id/")({
   component: Project,
@@ -57,6 +58,7 @@ function FileIterations(props: {
   );
 }
 
+
 function Project() {
   const [project, setProject] = useState<UploadProject | null>(null);
   const [initialLoad, setInitialLoad] = useState<boolean>(true);
@@ -68,6 +70,7 @@ function Project() {
   const [projectUnderAnalysis, setAnalyzeProject] =
     useState<AnalyzeAndRepairData | null>(null);
   const [sonarMetrics, setSonarMetrics] = useState<ExtractedSonarMetrics | null>(null);
+  const [sonarIssues, setSonarIssues] = useState<Map<string, IssueItem[]> | null>(null);
 
   const { id } = Route.useParams();
 
@@ -86,6 +89,7 @@ function Project() {
 
     if (Object.keys(result).length >= 1) {
       setSonarMetrics(extractSonarMetrics(result));
+      setSonarIssues(groupIssuesByPath(result));
       return;
     }
 
@@ -107,6 +111,7 @@ function Project() {
 
       if (analysisResults.sonar) {
         setSonarMetrics(extractSonarMetrics(analysisResults));
+        setSonarIssues(groupIssuesByPath(analysisResults));
         return;
       }
     }
@@ -141,7 +146,7 @@ function Project() {
       throw "Invalid file name";
     }
 
-    setFileContent({ content, language: fileExtension, id: file.downloadId });
+    setFileContent({ content, language: fileExtension, id: file.downloadId, filepath: file.path });
   }
 
   function getFileIterations(
@@ -273,6 +278,12 @@ function Project() {
 
               <Box sx={{ display: "flex", overflowY: "auto", ...flex110 }}>
                 <Box p={2} sx={{ minWidth: "100%" }}>
+                  {(sonarIssues?.get(fileContent.filepath!) ?? []).map((x, i) =>
+                    <Fragment key={i}>
+                      {JSON.stringify(x)}
+                    </Fragment>
+                  )}
+
                   <FileIterations
                     iterations={getFileIterations(project, fileContent.id!)}
                     handler={onFileIterationClick}

@@ -15,8 +15,24 @@ type MetricItem = {
   bestValue?: boolean;
 };
 
+export type IssueItem = {
+  endLine: number;
+  endOffset: number;
+  filePath: string;
+  issueKey: string;
+  line: number;
+  message: string;
+  rule: string;
+  severity: "INFO" | "MINOR" | "MAJOR" | "CRITICAL" | "BLOCKER";
+  startLine: number;
+  startOffset: number;
+  tags: string[];
+  type: "CODE_SMELL" | "BUG" | "VULNERABILITY";
+}
+
 type SonarReport = {
   metrics?: MetricItem[];
+  issues?: IssueItem[];
 };
 
 type ProjectJson = {
@@ -78,6 +94,23 @@ export function extractSonarMetrics(json: ProjectJson): ExtractedSonarMetrics {
     first: firstReport ? buildMetricMap(firstReport) : undefined,
     last: lastReport ? buildMetricMap(lastReport) : undefined,
   };
+}
+
+export function groupIssuesByPath(json: ProjectJson): Map<string, IssueItem[]> {
+  const sonarReports = json.sonar ?? [];
+  const map = new Map<string, IssueItem[]>();
+
+  const latest = sonarReports[sonarReports.length - 1];
+
+  if (!latest) return map;
+
+  for (const issue of latest.issues!) {
+    const existing = map.get(issue.filePath) ?? [];
+    existing.push(issue);
+    map.set(issue.filePath, existing);
+  }
+
+  return map;
 }
 
 export function mapMetricsForView(metricMap: Record<MetricName, ExtractedMetric>) {
