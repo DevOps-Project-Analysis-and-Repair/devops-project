@@ -11,7 +11,7 @@ function promptInput(analysisResults: string[], code: string): string {
 }
 
 function sonarIssuesToAnalysisResults(issues: SonarRepairIssue[]): string[] {
-  return issues.map(x => `Analysis: ${x.message} at ${x.line}`);
+  return issues.map(x => `Analysis: ${x.message} at line: ${x.line}`);
 }
 
 export async function fixCode(code: string, sonarIssues: SonarRepairIssue[]) {
