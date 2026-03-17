@@ -53,7 +53,7 @@ function getLatestSonarIssues(analysis: ProjectAnalysis, filePath: string): Sona
   if (analysis.sonar.length === 0) { return []; }
   const latest = analysis.sonar[analysis.sonar.length - 1];
 
-  return latest.issues.filter(x => x.filePath === filePath);
+  return latest.issues.filter(x => x.filePath === filePath) ?? [];
 }
 
 app.post(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ params: { projectId, fileId } }) => {
@@ -65,15 +65,10 @@ app.post(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ params: {
 
   // Step 2: Download analysis from the upload service
   const analysis = await downloadAnalysis(projectId);
-
-  console.log(JSON.stringify(analysis));
-
   const sonarIssues = getLatestSonarIssues(analysis, getFilePathFromProject(project, fileId)!);
 
-  console.log(sonarIssues);
-
   // Step 3: Analyze file
-  const response = await fixCode(input);
+  const response = await fixCode(input, sonarIssues);
 
   const lines = response.split('\n');
   const code = lines.slice(1, lines.length - 1).join('\n');
