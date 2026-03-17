@@ -28,6 +28,7 @@ import {
   uploadFilesToFileSystemTree,
   type FileSystemFile,
 } from "../../../filesystem";
+import { extractSonarMetrics, mapMetricsForView, type ExtractedSonarMetrics } from "./analytics";
 
 export const Route = createFileRoute("/project_/$id/")({
   component: Project,
@@ -55,14 +56,6 @@ function FileIterations(props: {
   );
 }
 
-const metrics = [
-  { id: "1", name: "Maintainability", value: "3.2%" },
-  { id: "2", name: "Issues", value: "17" },
-  { id: "3", name: "Quality", value: "4" },
-  { id: "4", name: "CC", value: "55" },
-  { id: "5", name: "R", value: "55%" },
-];
-
 function Project() {
   const [project, setProject] = useState<UploadProject | null>(null);
   const [initialLoad, setInitialLoad] = useState<boolean>(true);
@@ -73,15 +66,21 @@ function Project() {
     useState<CodeViewerProps | null>(null);
   const [projectUnderAnalysis, setAnalyzeProject] =
     useState<AnalyzeAndRepairData | null>(null);
+  const [sonarMetrics, setSonarMetrics] = useState<ExtractedSonarMetrics | null>(null);
 
   const { id } = Route.useParams();
 
   async function downloadProject() {
-    const resp = await fetch(`${API_BASE_URL}/upload/projects/${id}`);
+    const [projectResp, analysisResp] = await Promise.all([
+      fetch(`${API_BASE_URL}/upload/projects/${id}`),
+      fetch(`${API_BASE_URL}/upload/projects/${id}/analysis`),
+    ]);
 
-    console.log(resp);
+    const projectJson = await projectResp.json();
+    const analysisJson = await analysisResp.json();
 
-    setProject(await resp.json());
+    setProject(projectJson);
+    setSonarMetrics(extractSonarMetrics(analysisJson));
   }
 
   async function downloadAnalytics(signal: AbortSignal) {
@@ -197,6 +196,7 @@ function Project() {
     await downloadProject();
   }
 
+
   return (
     <>
       <AnalyzeAndRepairDialog
@@ -256,7 +256,17 @@ function Project() {
                     Analyze & Repair
                   </Button>
 
-                  <MetricsView metrics={metrics} />
+                  {(!sonarMetrics?.first && !sonarMetrics?.last) ? (
+                    <Typography sx={{ mt: 2 }}>No analysis available yet.</Typography>
+                  ) : (
+                    <>
+                      <Typography sx={{ mt: 2, mb: 1 }}>First analysis</Typography>
+                      {sonarMetrics?.first && <MetricsView metrics={mapMetricsForView(sonarMetrics.first)} />}
+
+                      <Typography sx={{ mt: 2, mb: 1 }}>Last analysis</Typography>
+                      {sonarMetrics?.last && <MetricsView metrics={mapMetricsForView(sonarMetrics.last)} />}
+                    </>
+                  )}
 
                   <CodeViewer
                     content={fileContent.content}
