@@ -14,22 +14,7 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
-
-export type IssueItem = {
-  endLine: number;
-  endOffset: number;
-  filePath: string;
-  issueKey: string;
-  line: number;
-  message: string;
-  rule: string;
-  severity: "INFO" | "MINOR" | "MAJOR" | "CRITICAL" | "BLOCKER";
-  startLine: number;
-  startOffset: number;
-  tags: string[];
-  type: "CODE_SMELL" | "BUG" | "VULNERABILITY";
-  status?: "OPEN" | "CONFIRMED" | "REOPENED" | "RESOLVED" | "CLOSED";
-};
+import type { IssueItem } from "../../services/analytics";
 
 interface CodeIssuesViewProps {
   issues?: IssueItem[];
