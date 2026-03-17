@@ -20,7 +20,7 @@ import {
   AnalyzeAndRepairDialog,
   type AnalyzeAndRepairData,
 } from "../../../components/partials/AnalyzeAndRepairDialog";
-import { MetricsView } from "../../../components/partials/MetricsView";
+// import { MetricsView } from "../../../components/partials/MetricsView";
 import { Container } from "../../../components/ui/Container";
 import {
   downloadFile,
@@ -29,6 +29,7 @@ import {
   type FileSystemFile,
 } from "../../../filesystem";
 import { extractSonarMetrics, mapMetricsForView, type ExtractedSonarMetrics } from "./analytics";
+import { ComparisonMetricsView } from "../../../components/partials/ComparisonMetricsView";
 
 export const Route = createFileRoute("/project_/$id/")({
   component: Project,
