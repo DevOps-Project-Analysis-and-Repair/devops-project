@@ -2,7 +2,7 @@ import { BadRequestError, InternalServerError, NotFoundError, Router, Unauthoriz
 import { Logger } from '@aws-lambda-powertools/logger';
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { DynamoDBDocument, paginateScan } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocument, paginateScan, DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { Upload } from "@aws-sdk/lib-storage";
 import { Context } from 'aws-lambda';
 import { v4 as uuidv4 } from 'uuid';
@@ -20,7 +20,8 @@ const logger = new Logger({ serviceName });
 const app = new Router({ logger });
 
 const s3client = new S3Client({});
-const db = new DynamoDBClient({});
+const dynamoDBClient = new DynamoDBClient({});
+const db = DynamoDBDocumentClient.from(dynamoDBClient);
 const doc = DynamoDBDocument.from(db);
 
 export const TABLE_PROJECTS = "Projects-upload-stack";
