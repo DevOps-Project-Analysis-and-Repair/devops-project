@@ -31,10 +31,12 @@ type ExtractedMetric = {
   bestValue?: boolean;
 };
 
+type MetricMap = Record<MetricName, ExtractedMetric>;
+
 type ExtractedSonarMetrics = {
   projectId: string;
-  first?: Record<MetricName, ExtractedMetric>;
-  latest?: Record<MetricName, ExtractedMetric>;
+  first?: MetricMap;
+  last?: MetricMap;
 };
 
 const TARGET_METRICS: MetricName[] = [
@@ -49,10 +51,10 @@ const TARGET_METRICS: MetricName[] = [
   "sqale_rating",
 ];
 
-function buildMetricMap(report?: SonarReport) {
+function buildMetricMap(report?: SonarReport): MetricMap {
   const metricMap = Object.fromEntries(
     TARGET_METRICS.map((name) => [name, { value: null }])
-  ) as Record<MetricName, ExtractedMetric>;
+  ) as MetricMap;
 
   for (const metricItem of report?.metrics ?? []) {
     if (TARGET_METRICS.includes(metricItem.metric as MetricName)) {
@@ -70,14 +72,26 @@ function buildMetricMap(report?: SonarReport) {
 export function extractSonarMetrics(json: ProjectJson): ExtractedSonarMetrics {
   const sonarReports = json.analysis?.sonar ?? [];
 
+  const firstReport = sonarReports[0];
+  const lastReport = sonarReports[sonarReports.length - 1];
+
   return {
     projectId: json.projectId,
-    first: sonarReports[0] ? buildMetricMap(sonarReports[0]) : undefined,
-    latest:
-      sonarReports.length > 1
-        ? buildMetricMap(sonarReports[sonarReports.length - 1])
-        : sonarReports[0]
-        ? buildMetricMap(sonarReports[0])
-        : undefined,
+    first: firstReport ? buildMetricMap(firstReport) : undefined,
+    last: lastReport ? buildMetricMap(lastReport) : undefined,
   };
+}
+
+export function mapMetricsForView(metricMap: Record<MetricName, ExtractedMetric>) {
+  return [
+    { id: "coverage", name: "Coverage", value: String(metricMap.coverage.value ?? "-") },
+    { id: "bugs", name: "Bugs", value: String(metricMap.bugs.value ?? "-") },
+    { id: "reliability_rating", name: "Reliability", value: String(metricMap.reliability_rating.value ?? "-") },
+    { id: "code_smells", name: "Code Smells", value: String(metricMap.code_smells.value ?? "-") },
+    { id: "duplicated_lines_density", name: "Duplicated Lines %", value: String(metricMap.duplicated_lines_density.value ?? "-") },
+    { id: "security_rating", name: "Security", value: String(metricMap.security_rating.value ?? "-") },
+    { id: "ncloc", name: "NCLOC", value: String(metricMap.ncloc.value ?? "-") },
+    { id: "vulnerabilities", name: "Vulnerabilities", value: String(metricMap.vulnerabilities.value ?? "-") },
+    { id: "sqale_rating", name: "Maintainability", value: String(metricMap.sqale_rating.value ?? "-") },
+  ];
 }
