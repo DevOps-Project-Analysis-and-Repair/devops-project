@@ -100,7 +100,7 @@ app.post(`/${serviceName}/projects`, async () => {
   try {
     await doc.put({
       TableName: TABLE_ANALYSIS,
-      Item: item
+      Item: { "projectId": projectId, "analysis": {} }
     });
 
     console.log("put to analysis succeeded");
