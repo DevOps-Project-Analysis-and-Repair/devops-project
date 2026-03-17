@@ -1,17 +1,34 @@
 
 import OpenAI from 'openai';
 import { prompt_instructions } from './prompt';
+import { SonarRepairIssue } from 'shared';
 
-export async function fixCode(code: string) {
-    const client = new OpenAI({
-        apiKey: process.env['OPENAI_API_KEY'], // This is the default and can be omitted
-    });
+function promptInput(analysisResults: string[], code: string): string {
+  const analysisInstructions = `Analysis:\n${analysisResults.join('\n')}`;
+  const codeInstructions = 'Code:\n```'+ code + '```'
 
-    const response = await client.responses.create({
-        model: 'gpt-5.2',
-        instructions: prompt_instructions,
-        input: code,
-    });
+  return `${analysisInstructions}\n${codeInstructions}`;
+}
 
-    return response.output_text;
+function sonarIssuesToAnalysisResults(issues: SonarRepairIssue[]): string[] {
+  return issues.map(x => `Analysis: ${x.message} at ${x.line}`);
+}
+
+export async function fixCode(code: string, sonarIssues: SonarRepairIssue[]) {
+  const client = new OpenAI({
+    apiKey: process.env['OPENAI_API_KEY'], // This is the default and can be omitted
+  });
+
+  const analysis = sonarIssuesToAnalysisResults(sonarIssues);
+  const input = promptInput(analysis, code);
+
+  console.log(input);
+
+  const response = await client.responses.create({
+    model: 'gpt-5.2',
+    instructions: prompt_instructions,
+    input
+  });
+
+  return response.output_text;
 }
