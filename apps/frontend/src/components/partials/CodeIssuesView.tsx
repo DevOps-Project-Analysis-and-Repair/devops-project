@@ -1,15 +1,18 @@
 import BugReportOutlinedIcon from "@mui/icons-material/BugReportOutlined";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import GppMaybeOutlinedIcon from "@mui/icons-material/GppMaybeOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import TipsAndUpdatesOutlinedIcon from "@mui/icons-material/TipsAndUpdatesOutlined";
 import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
 import {
+  alpha,
   Box,
   Card,
   Chip,
   Divider,
   Stack,
   Typography,
+  useTheme,
 } from "@mui/material";
 
 export type IssueItem = {
@@ -25,6 +28,7 @@ export type IssueItem = {
   startOffset: number;
   tags: string[];
   type: "CODE_SMELL" | "BUG" | "VULNERABILITY";
+  status?: "OPEN" | "CONFIRMED" | "REOPENED" | "RESOLVED" | "CLOSED";
 };
 
 interface CodeIssuesViewProps {
@@ -39,6 +43,10 @@ const severityOrder: Record<IssueItem["severity"], number> = {
   MINOR: 3,
   INFO: 4,
 };
+
+function isClosedIssue(issue: IssueItem) {
+  return issue.status === "CLOSED" || issue.status === "RESOLVED";
+}
 
 function getSeverityColor(severity: IssueItem["severity"]) {
   switch (severity) {
@@ -142,6 +150,23 @@ function formatSeverity(severity: IssueItem["severity"]) {
   }
 }
 
+function formatStatus(status?: IssueItem["status"]) {
+  switch (status) {
+    case "OPEN":
+      return "Open";
+    case "CONFIRMED":
+      return "Confirmed";
+    case "REOPENED":
+      return "Reopened";
+    case "RESOLVED":
+      return "Resolved";
+    case "CLOSED":
+      return "Closed";
+    default:
+      return "Unknown";
+  }
+}
+
 function formatRule(rule: string) {
   const [, shortRule] = rule.split(":");
   return shortRule ?? rule;
@@ -149,6 +174,10 @@ function formatRule(rule: string) {
 
 function sortIssues(issues: IssueItem[]) {
   return [...issues].sort((a, b) => {
+    const aClosed = isClosedIssue(a) ? 1 : 0;
+    const bClosed = isClosedIssue(b) ? 1 : 0;
+    if (aClosed !== bClosed) return aClosed - bClosed;
+
     const lineDiff = a.line - b.line;
     if (lineDiff !== 0) return lineDiff;
 
@@ -161,11 +190,12 @@ function sortIssues(issues: IssueItem[]) {
 
 function getIssueSummary(issues: IssueItem[]) {
   return {
-    blocker: issues.filter((x) => x.severity === "BLOCKER").length,
-    critical: issues.filter((x) => x.severity === "CRITICAL").length,
-    major: issues.filter((x) => x.severity === "MAJOR").length,
-    minor: issues.filter((x) => x.severity === "MINOR").length,
-    info: issues.filter((x) => x.severity === "INFO").length,
+    blocker: issues.filter((x) => x.severity === "BLOCKER" && !isClosedIssue(x)).length,
+    critical: issues.filter((x) => x.severity === "CRITICAL" && !isClosedIssue(x)).length,
+    major: issues.filter((x) => x.severity === "MAJOR" && !isClosedIssue(x)).length,
+    minor: issues.filter((x) => x.severity === "MINOR" && !isClosedIssue(x)).length,
+    info: issues.filter((x) => x.severity === "INFO" && !isClosedIssue(x)).length,
+    closed: issues.filter(isClosedIssue).length,
   };
 }
 
@@ -173,6 +203,8 @@ export function CodeIssuesView({
   issues = [],
   title = "Code issues",
 }: CodeIssuesViewProps) {
+  const theme = useTheme();
+
   if (issues.length === 0) {
     return (
       <Card
@@ -241,16 +273,35 @@ export function CodeIssuesView({
               <Chip size="small" color="error" label={`${summary.blocker} blocker`} />
             )}
             {summary.critical > 0 && (
-              <Chip size="small" color="error" variant="outlined" label={`${summary.critical} critical`} />
+              <Chip
+                size="small"
+                color="error"
+                variant="outlined"
+                label={`${summary.critical} critical`}
+              />
             )}
             {summary.major > 0 && (
               <Chip size="small" color="warning" label={`${summary.major} major`} />
             )}
             {summary.minor > 0 && (
-              <Chip size="small" color="warning" variant="outlined" label={`${summary.minor} minor`} />
+              <Chip
+                size="small"
+                color="warning"
+                variant="outlined"
+                label={`${summary.minor} minor`}
+              />
             )}
             {summary.info > 0 && (
               <Chip size="small" color="info" variant="outlined" label={`${summary.info} info`} />
+            )}
+            {summary.closed > 0 && (
+              <Chip
+                size="small"
+                color="success"
+                variant="outlined"
+                icon={<CheckCircleOutlineIcon />}
+                label={`${summary.closed} closed`}
+              />
             )}
           </Stack>
         </Stack>
@@ -259,6 +310,7 @@ export function CodeIssuesView({
       <Stack divider={<Divider flexItem />}>
         {sortedIssues.map((issue) => {
           const colors = getSeverityColor(issue.severity);
+          const closed = isClosedIssue(issue);
 
           return (
             <Box
@@ -267,6 +319,10 @@ export function CodeIssuesView({
                 display: "grid",
                 gridTemplateColumns: { xs: "1fr", sm: "84px 1fr" },
                 alignItems: "stretch",
+                opacity: closed ? 0.78 : 1,
+                backgroundColor: closed
+                  ? alpha(theme.palette.success.main, 0.04)
+                  : "transparent",
               }}
             >
               <Box
@@ -275,8 +331,8 @@ export function CodeIssuesView({
                   py: 1.75,
                   borderRight: { xs: 0, sm: 1 },
                   borderBottom: { xs: 1, sm: 0 },
-                  borderColor: "divider",
-                  backgroundColor: colors.background,
+                  borderColor: closed ? "success.light" : "divider",
+                  backgroundColor: closed ? alpha(theme.palette.success.main, 0.08) : colors.background,
                   display: "flex",
                   flexDirection: { xs: "row", sm: "column" },
                   alignItems: "center",
@@ -299,7 +355,7 @@ export function CodeIssuesView({
                   variant="h6"
                   sx={{
                     fontWeight: 800,
-                    color: colors.text,
+                    color: closed ? "success.dark" : colors.text,
                     lineHeight: 1,
                   }}
                 >
@@ -321,6 +377,7 @@ export function CodeIssuesView({
                         fontWeight: 700,
                         lineHeight: 1.4,
                         flex: 1,
+                        color: closed ? "text.secondary" : "text.primary",
                       }}
                     >
                       {issue.message}
@@ -329,9 +386,9 @@ export function CodeIssuesView({
                     <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap>
                       <Chip
                         size="small"
-                        icon={getSeverityIcon(issue.severity)}
-                        label={formatSeverity(issue.severity)}
-                        color={colors.chip}
+                        icon={closed ? <CheckCircleOutlineIcon fontSize="small" /> : getSeverityIcon(issue.severity)}
+                        label={closed ? formatStatus(issue.status) : formatSeverity(issue.severity)}
+                        color={closed ? "success" : colors.chip}
                       />
                       <Chip
                         size="small"
@@ -340,6 +397,13 @@ export function CodeIssuesView({
                         color={getTypeColor(issue.type)}
                         variant="outlined"
                       />
+                      {issue.status && !closed && (
+                        <Chip
+                          size="small"
+                          label={formatStatus(issue.status)}
+                          variant="outlined"
+                        />
+                      )}
                     </Stack>
                   </Stack>
 
@@ -348,12 +412,14 @@ export function CodeIssuesView({
                       size="small"
                       label={`Rule: ${formatRule(issue.rule)}`}
                       variant="outlined"
+                      color={closed ? "success" : "default"}
                     />
                     {issue.startLine > 0 && issue.endLine > issue.startLine && (
                       <Chip
                         size="small"
                         label={`Lines ${issue.startLine}-${issue.endLine}`}
                         variant="outlined"
+                        color={closed ? "success" : "default"}
                       />
                     )}
                     {issue.tags.slice(0, 6).map((tag) => (

@@ -1,4 +1,3 @@
-/* eslint-disable  @typescript-eslint/no-explicit-any */
 import { spawn } from "child_process";
 import { once } from "events";
 import fs from "fs/promises";
@@ -225,7 +224,7 @@ export const getAllSonarIssues = async (projectId: string): Promise<any[]> => {
 
     while (true) {
         const result = await fetch(
-            `https://sonarcloud.io/api/issues/search?componentKeys=${SONAR_ORG}_${projectId}&statuses=OPEN&p=${page}&ps=${pageSize}`,
+            `https://sonarcloud.io/api/issues/search?componentKeys=${SONAR_ORG}_${projectId}&p=${page}&ps=${pageSize}`,
             {
                 method: "GET",
                 headers: {
