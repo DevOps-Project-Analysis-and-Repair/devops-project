@@ -86,7 +86,7 @@ jobs:
           parameter-overrides: |
             "JwtPrivateKey=${{ secrets.JWT_PRIVATE_KEY }}" \
             "JwtPublicKey=${{ secrets.JWT_PUBLIC_KEY }}" \
-            "SonarToken=${{ secrets.SONAR_ORG }}"
+            "SonarToken=${{ secrets.SONAR_ORG }}" \
             "AnalysisServiceImageUri=${{ env.ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/analysis-service:${{ env.GIT_HASH }}"
 
   deploy_fix_stack:
