@@ -44,10 +44,7 @@ export function filesToFileSystemTree(files: File[]): FileSystemDirectory | null
         const newCwd = dir(part, id++);
         cwd.children.push(newCwd);
         cwd = newCwd;
-        continue;
-      }
-
-      if (result.kind === "directory") {
+      } else if (result.kind === "directory") {
         cwd = result;
       }
     }
