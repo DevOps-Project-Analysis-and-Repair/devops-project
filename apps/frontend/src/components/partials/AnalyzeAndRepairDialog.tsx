@@ -28,6 +28,39 @@ type AnalyzeAction = {
   state: AnalyzeActionState;
 };
 
+async function doAnalysis(data: AnalyzeAndRepairData) {
+  const resp = await fetch(`${API_BASE_URL}/analysis/${data.projectId}`, {
+    method: "POST",
+  });
+
+  const result = await resp.json();
+
+  if (!result.analysisId) { throw new Error("Unable to get analysis id"); }
+
+  let found = false;
+
+  while (!found) {
+    await sleep(1000);
+
+    const analysisResults = await (await fetch(`${API_BASE_URL}/upload/projects/${data.projectId}/analysis`)).json();
+
+    if (Object.keys(analysisResults).length === 0) { continue; }
+
+    found = analysisResults.sonar.some((x: { projectAnalysisId: string }) => x.projectAnalysisId === result.analysisId);
+  }
+}
+
+async function fixFile(data: AnalyzeAndRepairData) {
+  await fetch(
+    `${API_BASE_URL}/fix/projects/${data.projectId}/files/${data.fileId}`,
+    {
+      method: "POST",
+    },
+  );
+}
+
+const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
+
 function AvatarOnState(props: { readonly state: AnalyzeActionState }) {
   const sx = { width: 64, height: 64 };
 
@@ -52,45 +85,12 @@ function TextOnState(props: { readonly state: AnalyzeActionState; readonly text:
   }
 }
 
-const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
-
 export function AnalyzeAndRepairDialog({
   data,
   onComplete,
 }: AnalyzeAndRepairDialogProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [actions, setActions] = useState<AnalyzeAction[]>([]);
-
-  async function doAnalysis(data: AnalyzeAndRepairData) {
-    const resp = await fetch(`${API_BASE_URL}/analysis/${data.projectId}`, {
-      method: "POST",
-    });
-
-    const result = await resp.json();
-
-    if (!result.analysisId) { throw new Error("Unable to get analysis id"); }
-
-    let found = false;
-
-    while (!found) {
-      await sleep(1000);
-
-      const analysisResults = await (await fetch(`${API_BASE_URL}/upload/projects/${data.projectId}/analysis`)).json();
-
-      if (Object.keys(analysisResults).length === 0) { continue; }
-
-      found = analysisResults.sonar.some((x: { projectAnalysisId: string }) => x.projectAnalysisId === result.analysisId);
-    }
-  }
-
-  async function fixFile(data: AnalyzeAndRepairData) {
-    await fetch(
-      `${API_BASE_URL}/fix/projects/${data.projectId}/files/${data.fileId}`,
-      {
-        method: "POST",
-      },
-    );
-  }
 
   function isComplete(actions: AnalyzeAction[]): boolean {
     if (actions.length === 0) {
