@@ -6,17 +6,20 @@ import { v4 as uuidv4 } from 'uuid';
 import { createUniqueAnalysisDir, downloadProjectFiles } from './project';
 import { createAnalysisReport, createSonarProject, existsSonarProject, makeSonarProjectPublic, pollSonarCloud, runSonarScanner, uploadAnalysisReport } from './sonar';
 
-const serviceName = 'analysis';
-const logger = new Logger({ serviceName });
-const app = new Router({ logger });
+export const SERVICE_NAME = process.env.SERVICE_NAME
+const LOGGER = new Logger({ SERVICE_NAME });
+const APP = new Router({ logger: LOGGER });
+
+export const FILES_BUCKET = process.env.S3_BUCKET_NAME
+export const TABLE_PROJECTS = process.env.UPLOAD_TABLE_NAME
 
 const API_SERVICE_URL = "https://1wk9q92xx1.execute-api.eu-west-1.amazonaws.com";
 
-app.get(`/${serviceName}/health`, async () => {
+APP.get(`/${SERVICE_NAME}/health`, async () => {
     return true;
 });
 
-app.post(`/${serviceName}/:projectId/sonar/:projectAnalysisId`, async ({ params: { projectId, projectAnalysisId } }) => {
+APP.post(`/${SERVICE_NAME}/:projectId/sonar/:projectAnalysisId`, async ({ params: { projectId, projectAnalysisId } }) => {
   // Download project from S3 bucket.
   const analysisDir = createUniqueAnalysisDir();
   console.log("Downloading project files...");
@@ -64,7 +67,7 @@ app.post(`/${serviceName}/:projectId/sonar/:projectAnalysisId`, async ({ params:
 const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
 // Scan a project with Sonar.
-app.post(`/${serviceName}/:projectId`, async ({ params: { projectId } }) => {
+APP.post(`/${SERVICE_NAME}/:projectId`, async ({ params: { projectId } }) => {
     const analysisId = uuidv4();
 
     // Start background task that will timeout in the API gateway, but will complete in the background
@@ -77,4 +80,4 @@ app.post(`/${serviceName}/:projectId`, async ({ params: { projectId } }) => {
     return { analysisId }
 });
 
-export const handler = async (event: unknown, context: Context) => app.resolve(event, context);
+export const handler = async (event: unknown, context: Context) => APP.resolve(event, context);

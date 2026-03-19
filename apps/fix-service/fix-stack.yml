@@ -3,6 +3,10 @@ Description: >
   This template deploys a Lambda function using a Docker image.
 
 Parameters:
+  ServiceName:
+    Description: Name of the service
+    Type: String
+    Default: upload
   FixServiceImageUri:
     Description: Uri to the image
     Type: String
@@ -46,7 +50,11 @@ Resources:
           - !ImportValue PrivateSubnet
       Environment:
         Variables:
+          SERVICE_NAME: !Ref ServiceName
           OPENAI_API_KEY: !Ref OpenAIApiKey
+          S3_BUCKET_NAME: !ImportValue Upload-BucketName
+          UPLOAD_TABLE_NAME: !ImportValue Upload-TableName
+          ANALYSIS_TABLE_NAME: !ImportValue Analysis-TableName
 
 Outputs:
   FunctionArn:

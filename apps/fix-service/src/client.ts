@@ -1,6 +1,6 @@
 
 import OpenAI from 'openai';
-import { prompt_instructions } from './prompt';
+import { PROMPT_INSTRUCTIONS } from './prompt';
 import { SonarRepairIssue } from 'shared';
 
 function promptInput(analysisResults: string[], code: string): string {
@@ -16,7 +16,7 @@ function sonarIssuesToAnalysisResults(issues: SonarRepairIssue[]): string[] {
 
 export async function fixCode(code: string, sonarIssues: SonarRepairIssue[]) {
   const client = new OpenAI({
-    apiKey: process.env['OPENAI_API_KEY'], // This is the default and can be omitted
+    apiKey: process.env.OPENAI_API_KEY, // This is the default and can be omitted
   });
 
   console.log(sonarIssues);
@@ -32,7 +32,7 @@ export async function fixCode(code: string, sonarIssues: SonarRepairIssue[]) {
 
   const response = await client.responses.create({
     model: 'gpt-5.2',
-    instructions: prompt_instructions,
+    instructions: PROMPT_INSTRUCTIONS,
     input
   });
 

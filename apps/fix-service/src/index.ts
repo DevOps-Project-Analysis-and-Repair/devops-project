@@ -4,10 +4,9 @@ import { Context } from 'aws-lambda';
 import { fixCode } from './client';
 import { Project, ProjectAnalysis, SonarRepairIssue, findFile } from 'shared';
 
-export const serviceName = 'fix';
-
-const logger = new Logger({ serviceName });
-const app = new Router({ logger });
+export const SERVICE_NAME = process.env.SERVICE_NAME
+const LOGGER = new Logger({ SERVICE_NAME });
+const APP = new Router({ logger: LOGGER });
 
 const API_SERVICE_URL = "https://1wk9q92xx1.execute-api.eu-west-1.amazonaws.com";
 
@@ -56,7 +55,7 @@ function getLatestSonarIssues(analysis: ProjectAnalysis, filePath: string): Sona
   return latest.issues.filter(x => x.filePath === filePath) ?? [];
 }
 
-app.post(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ params: { projectId, fileId } }) => {
+APP.post(`/${SERVICE_NAME}/projects/:projectId/files/:fileId`, async ({ params: { projectId, fileId } }) => {
   // Step 1: Download file
   const input = await downloadFile(projectId, fileId);
   const project = await downloadProject(projectId);
@@ -80,12 +79,12 @@ app.post(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ params: {
   return { ok: true };
 });
 
-app.get(`/${serviceName}/health`, async () => {
+APP.get(`/${SERVICE_NAME}/health`, async () => {
   return { ok: true };
 });
 
-app.errorHandler(Error, async (error, reqCtx) => {
-  logger.error('error occurred:', error);
+APP.errorHandler(Error, async (error, reqCtx) => {
+  LOGGER.error('error occurred:', error);
 
   return {
     statusCode: HttpStatusCodes.BAD_REQUEST,
@@ -93,4 +92,4 @@ app.errorHandler(Error, async (error, reqCtx) => {
   };
 });
 
-export const handler = async (event: unknown, context: Context) => app.resolve(event, context);
+export const handler = async (event: unknown, context: Context) => APP.resolve(event, context);

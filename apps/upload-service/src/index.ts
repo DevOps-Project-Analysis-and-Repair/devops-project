@@ -11,15 +11,14 @@ import { appendFile, appendRepairedFile, getLatestProjectFromDb, getProjectFromD
 import { Project, ProjectFile, SonarAnalysisUpload, latest } from 'shared';
 import { datestring, isUploadCompleted } from './util';
 
-const serviceName = 'upload';
+export const SERVICE_NAME = process.env.SERVICE_NAME
+const LOGGER = new Logger({ SERVICE_NAME });
+const APP = new Router({ logger: LOGGER });
 
-const logger = new Logger({ serviceName });
-const app = new Router({ logger });
-
-const s3client = new S3Client({});
-const dynamoDBClient = new DynamoDBClient({});
-const db = DynamoDBDocumentClient.from(dynamoDBClient);
-const doc = DynamoDBDocument.from(db);
+const S3_CLIENT = new S3Client({});
+const DB_CLIENT = new DynamoDBClient({});
+const DB = DynamoDBDocumentClient.from(DB_CLIENT);
+const DOC = DynamoDBDocument.from(DB);
 
 export const TABLE_PROJECTS = "Projects-upload-stack";
 export const FILES_BUCKET = "files-upload-stack";
@@ -51,12 +50,12 @@ function findFile(fileId: string, project: Project): ProjectFile | null {
   return null;
 }
 
-app.get(`/${serviceName}/health`, () => {
+APP.get(`/${SERVICE_NAME}/health`, () => {
   return true;
 });
 
-app.get(`/${serviceName}/projects`, async () => {
-  const paginationConfig = { client: doc };
+APP.get(`/${SERVICE_NAME}/projects`, async () => {
+  const paginationConfig = { client: DOC };
   const tableConfig = {
     TableName: TABLE_PROJECTS,
     Limit: 100
@@ -77,7 +76,7 @@ app.get(`/${serviceName}/projects`, async () => {
   return projects;
 });
 
-app.post(`/${serviceName}/projects`, async () => {
+APP.post(`/${SERVICE_NAME}/projects`, async () => {
   // 1. create new project in db
   const projectId: string = uuidv4();
 
@@ -89,12 +88,12 @@ app.post(`/${serviceName}/projects`, async () => {
     repairedFiles: {}
   };
 
-  await doc.put({
+  await DOC.put({
     TableName: TABLE_PROJECTS,
     Item: item
   });
 
-  await doc.put({
+  await DOC.put({
       TableName: TABLE_ANALYSIS,
       Item: { "projectId": projectId, "analysis": {} }
   });
@@ -104,20 +103,20 @@ app.post(`/${serviceName}/projects`, async () => {
   return { projectId, token: createToken(projectId) };
 });
 
-app.get(`/${serviceName}/projects/:projectId`, async ({ params: { projectId } }) => {
+APP.get(`/${SERVICE_NAME}/projects/:projectId`, async ({ params: { projectId } }) => {
   // 1. get project from db
   // 2. return project object, including file names
-  return await getProjectFromDb(doc, projectId);
+  return await getProjectFromDb(DOC, projectId);
 });
 
-app.get(`/${serviceName}/projects/:projectId/latest`, async ({ params: { projectId } }) => {
+APP.get(`/${SERVICE_NAME}/projects/:projectId/latest`, async ({ params: { projectId } }) => {
   // 1. get project from db
   // 2. return project object, including file names
   // 3. replace all the file references with the latest entry of the repaired file
-  return await getLatestProjectFromDb(doc, projectId);
+  return await getLatestProjectFromDb(DOC, projectId);
 });
 
-app.post(`/${serviceName}/projects/:projectId/files`, async ({ req, params: { projectId } }) => {
+APP.post(`/${SERVICE_NAME}/projects/:projectId/files`, async ({ req, params: { projectId } }) => {
   // Note: Body should be send in binary
   // Other values have to be send via the headers/params
   const token = req.headers.get('X-Project-Token');
@@ -130,13 +129,13 @@ app.post(`/${serviceName}/projects/:projectId/files`, async ({ req, params: { pr
   if (!verifyToken(token, projectId)) { throw new UnauthorizedError(); }
 
   // 2. fetch project from project id, or fail
-  const project = await getProjectFromDb(doc, projectId);
+  const project = await getProjectFromDb(DOC, projectId);
 
   // 3. write file to s3
   const fileId = uuidv4();
 
   const upload = new Upload({
-    client: s3client,
+    client: S3_CLIENT,
     params: {
       Bucket: FILES_BUCKET,
       Key: fileId,
@@ -149,7 +148,7 @@ app.post(`/${serviceName}/projects/:projectId/files`, async ({ req, params: { pr
   if (!isUploadCompleted(result)) { throw new InternalServerError(); }
 
   // 4. add file to project
-  await appendFile(db, project.id, {
+  await appendFile(DB, project.id, {
     id: fileId,
     filename, // do we need to clean filename?
     url: result.Location ?? "",
@@ -159,11 +158,11 @@ app.post(`/${serviceName}/projects/:projectId/files`, async ({ req, params: { pr
   return { ok: true };
 });
 
-app.post(`/${serviceName}/projects/:projectId/files/:fileId/repaired`, async ({ req, params: { projectId, fileId } }) => {
+APP.post(`/${SERVICE_NAME}/projects/:projectId/files/:fileId/repaired`, async ({ req, params: { projectId, fileId } }) => {
   // Note: Body should be send in binary
 
   // 1. fetch project from project id, or fail
-  const project = await getProjectFromDb(doc, projectId);
+  const project = await getProjectFromDb(DOC, projectId);
 
   // 2. get file from project
   const file = findFile(fileId, project);
@@ -173,7 +172,7 @@ app.post(`/${serviceName}/projects/:projectId/files/:fileId/repaired`, async ({ 
 
   // 3. write file to s3
   const upload = new Upload({
-    client: s3client,
+    client: S3_CLIENT,
     params: {
       Bucket: FILES_BUCKET,
       Key: repairedFileId,
@@ -194,7 +193,7 @@ app.post(`/${serviceName}/projects/:projectId/files/:fileId/repaired`, async ({ 
   }
 
   // 4. add file to repaired files
-  await appendRepairedFile(db, project.id, file.id, {
+  await appendRepairedFile(DB, project.id, file.id, {
     ...file,
     id: repairedFileId,
     iteration: getCurrentIteration(file.id),
@@ -204,33 +203,33 @@ app.post(`/${serviceName}/projects/:projectId/files/:fileId/repaired`, async ({ 
   return { ok: true };
 });
 
-app.post(`/${serviceName}/projects/:projectId/analysis/sonar`, async ({ req, params: { projectId } }) => {
+APP.post(`/${SERVICE_NAME}/projects/:projectId/analysis/sonar`, async ({ req, params: { projectId } }) => {
   const json = await req.json();
   const sonarReport = json as SonarAnalysisUpload;
 
   console.log("Uploading Sonar report...");
 
-  await appendSonarReport(db, projectId, sonarReport);
+  await appendSonarReport(DB, projectId, sonarReport);
   
   console.log("Uploaded Sonar report.");
 
   return { ok: true };
 });
 
-app.get(`/${serviceName}/projects/:projectId/analysis`, async ({ params: { projectId }}) => {
-  return await getProjectAnalysis(doc, projectId);
+APP.get(`/${SERVICE_NAME}/projects/:projectId/analysis`, async ({ params: { projectId }}) => {
+  return await getProjectAnalysis(DOC, projectId);
 });
 
-app.get(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ res, params: { projectId, fileId } }) => {
+APP.get(`/${SERVICE_NAME}/projects/:projectId/files/:fileId`, async ({ res, params: { projectId, fileId } }) => {
   // 1. get project
-  const project = await getProjectFromDb(doc, projectId);
+  const project = await getProjectFromDb(DOC, projectId);
 
   // 2. get file from project
   const file = findFile(fileId, project);
   if (!file) { throw new NotFoundError(); }
 
   // 3. return file contents
-  const result = await s3client.send(new GetObjectCommand({ Bucket: FILES_BUCKET, Key: file.id }));
+  const result = await S3_CLIENT.send(new GetObjectCommand({ Bucket: FILES_BUCKET, Key: file.id }));
 
   res.headers.set('Content-Type', file.mimetype || 'text/plain');
   res.headers.set('Content-Disposition', `inline; filename="${file.filename}"`);
@@ -238,16 +237,16 @@ app.get(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ res, param
   return result.Body?.transformToWebStream();
 });
 
-app.get(`/${serviceName}/projects/:projectId/files/:fileId/latest`, async ({ res, params: { projectId, fileId } }) => {
+APP.get(`/${SERVICE_NAME}/projects/:projectId/files/:fileId/latest`, async ({ res, params: { projectId, fileId } }) => {
   // 1. get project
-  const project = await getProjectFromDb(doc, projectId);
+  const project = await getProjectFromDb(DOC, projectId);
 
   // 2. get file from project
   const file = latestVersionOfFile(fileId, project);
   if (!file) { throw new NotFoundError(); }
 
   // 3. return file contents
-  const result = await s3client.send(new GetObjectCommand({ Bucket: FILES_BUCKET, Key: file.id }));
+  const result = await S3_CLIENT.send(new GetObjectCommand({ Bucket: FILES_BUCKET, Key: file.id }));
 
   res.headers.set('Content-Type', file.mimetype || 'text/plain');
   res.headers.set('Content-Disposition', `inline; filename="${file.filename}"`);
@@ -255,8 +254,8 @@ app.get(`/${serviceName}/projects/:projectId/files/:fileId/latest`, async ({ res
   return result.Body?.transformToWebStream();
 });
 
-app.errorHandler(Error, async (error, reqCtx) => {
-  logger.error('error occurred:', error);
+APP.errorHandler(Error, async (error, reqCtx) => {
+  LOGGER.error('error occurred:', error);
 
   return {
     statusCode: HttpStatusCodes.BAD_REQUEST,
@@ -265,5 +264,5 @@ app.errorHandler(Error, async (error, reqCtx) => {
 });
 
 export const handler = async (event: unknown, context: Context) => {
-  return app.resolve(event, context);
+  return APP.resolve(event, context);
 };

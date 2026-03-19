@@ -3,6 +3,25 @@ Description: >
   This template deploys a Lambda function using a Docker image, with S3 and DynamoDB access.
 
 Parameters:
+  ServiceName:
+    Description: Name of the service
+    Type: String
+    Default: upload
+  JwtPrivateKey:
+    Description: Private key for the JWT
+    Type: String
+  JwtPublicKey:
+    Description: Public key for the JWT
+    Type: String
+  SonarOrg:
+    Description: Sonar organization name
+    Type: String
+    Default: devops-software-engineering
+  SonarToken:
+    Description: Access token to the sonar host 
+  SonarHost:
+    Type: String
+    Default: https://sonarcloud.io
   AnalysisServiceImageUri:
     Description: Uri to the image
     Type: String
@@ -97,9 +116,15 @@ Resources:
           - !ImportValue PrivateSubnet
       Environment:
         Variables:
+          SERVICE_NAME: !Ref ServiceName
+          JWT_PRIVATE_KEY: !Ref JwtPrivateKey
+          JWT_PUBLIC_KEY: !Ref JwtPublicKey
+          SONAR_ORG: !Ref SonarOrg
+          SONAR_TOKEN: !Ref SonarToken
+          SONAR_HOST: !Ref SonarHost
           S3_BUCKET_NAME: !ImportValue Upload-BucketName
-          DYNAMODB_TABLE_NAME: !ImportValue Upload-TableName
-          DYNAMODB_TABLE_NAME_ANALYSIS: !Ref DynamoDBTable
+          UPLOAD_TABLE_NAME: !ImportValue Upload-TableName
+          ANALYSIS_TABLE_NAME: !Ref DynamoDBTable
 
 Outputs:
   AnalysisArn:
