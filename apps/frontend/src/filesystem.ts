@@ -49,7 +49,7 @@ export function filesToFileSystemTree(files: File[]): FileSystemDirectory | null
       }
     }
 
-    cwd.children.push(file(pathFile, path, id++, entry));
+    cwd.children.push(file(pathFile || "", path, id++, entry));
   }
 
   // Remove the root in case a single directory is uploaded  
@@ -118,7 +118,7 @@ export function flattenFileSystem(root: FileSystemDirectory): FileSystemFile[] {
 export function getFileExtension(filepath: string): string {
   const extensionRegExp = /\.([^.]+)$/;
   const res = extensionRegExp.exec(filepath);
-  return res?.[1];
+  return res?.[1] || "";
 }
 
 
