@@ -29,12 +29,11 @@ app.post(`/${SERVICE_NAME}/:projectId/sonar/:projectAnalysisId`, async ({ params
 
   // Ensure that there is a Sonar project to store the analysis report.
   const exists = await existsSonarProject(projectId);
-  if(!exists) {
+  if (exists) {
+    console.log("Sonar project exists already.");
+  } else {
     console.log("Creating Sonar project...");
     await createSonarProject(projectId);
-  }
-  else {
-    console.log("Sonar project exists already.");
   }
 
   // Run the Sonar scanner.
