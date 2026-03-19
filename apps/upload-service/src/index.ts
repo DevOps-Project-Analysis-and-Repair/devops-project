@@ -15,10 +15,10 @@ export const SERVICE_NAME = process.env.SERVICE_NAME
 const logger = new Logger({ serviceName: SERVICE_NAME });
 const app = new Router({ logger: logger });
 
-const S3_CLIENT = new S3Client({});
-const DB_CLIENT = new DynamoDBClient({});
-const DB = DynamoDBDocumentClient.from(DB_CLIENT);
-const DOC = DynamoDBDocument.from(DB);
+const s3Client = new S3Client({});
+const dbClient = new DynamoDBClient({});
+const db = DynamoDBDocumentClient.from(dbClient);
+const doc = DynamoDBDocument.from(db);
 
 export const TABLE_PROJECTS = "Projects-upload-stack";
 export const FILES_BUCKET = "files-upload-stack";
@@ -55,7 +55,7 @@ app.get(`/${SERVICE_NAME}/health`, () => {
 });
 
 app.get(`/${SERVICE_NAME}/projects`, async () => {
-  const paginationConfig = { client: DOC };
+  const paginationConfig = { client: doc };
   const tableConfig = {
     TableName: TABLE_PROJECTS,
     Limit: 100
@@ -88,12 +88,12 @@ app.post(`/${SERVICE_NAME}/projects`, async () => {
     repairedFiles: {}
   };
 
-  await DOC.put({
+  await doc.put({
     TableName: TABLE_PROJECTS,
     Item: item
   });
 
-  await DOC.put({
+  await doc.put({
       TableName: TABLE_ANALYSIS,
       Item: { "projectId": projectId, "analysis": {} }
   });
@@ -106,14 +106,14 @@ app.post(`/${SERVICE_NAME}/projects`, async () => {
 app.get(`/${SERVICE_NAME}/projects/:projectId`, async ({ params: { projectId } }) => {
   // 1. get project from db
   // 2. return project object, including file names
-  return await getProjectFromDb(DOC, projectId);
+  return await getProjectFromDb(doc, projectId);
 });
 
 app.get(`/${SERVICE_NAME}/projects/:projectId/latest`, async ({ params: { projectId } }) => {
   // 1. get project from db
   // 2. return project object, including file names
   // 3. replace all the file references with the latest entry of the repaired file
-  return await getLatestProjectFromDb(DOC, projectId);
+  return await getLatestProjectFromDb(doc, projectId);
 });
 
 app.post(`/${SERVICE_NAME}/projects/:projectId/files`, async ({ req, params: { projectId } }) => {
@@ -129,13 +129,13 @@ app.post(`/${SERVICE_NAME}/projects/:projectId/files`, async ({ req, params: { p
   if (!verifyToken(token, projectId)) { throw new UnauthorizedError(); }
 
   // 2. fetch project from project id, or fail
-  const project = await getProjectFromDb(DOC, projectId);
+  const project = await getProjectFromDb(doc, projectId);
 
   // 3. write file to s3
   const fileId = uuidv4();
 
   const upload = new Upload({
-    client: S3_CLIENT,
+    client: s3Client,
     params: {
       Bucket: FILES_BUCKET,
       Key: fileId,
@@ -148,7 +148,7 @@ app.post(`/${SERVICE_NAME}/projects/:projectId/files`, async ({ req, params: { p
   if (!isUploadCompleted(result)) { throw new InternalServerError(); }
 
   // 4. add file to project
-  await appendFile(DB, project.id, {
+  await appendFile(db, project.id, {
     id: fileId,
     filename, // do we need to clean filename?
     url: result.Location ?? "",
@@ -162,7 +162,7 @@ app.post(`/${SERVICE_NAME}/projects/:projectId/files/:fileId/repaired`, async ({
   // Note: Body should be send in binary
 
   // 1. fetch project from project id, or fail
-  const project = await getProjectFromDb(DOC, projectId);
+  const project = await getProjectFromDb(doc, projectId);
 
   // 2. get file from project
   const file = findFile(fileId, project);
@@ -172,7 +172,7 @@ app.post(`/${SERVICE_NAME}/projects/:projectId/files/:fileId/repaired`, async ({
 
   // 3. write file to s3
   const upload = new Upload({
-    client: S3_CLIENT,
+    client: s3Client,
     params: {
       Bucket: FILES_BUCKET,
       Key: repairedFileId,
@@ -193,7 +193,7 @@ app.post(`/${SERVICE_NAME}/projects/:projectId/files/:fileId/repaired`, async ({
   }
 
   // 4. add file to repaired files
-  await appendRepairedFile(DB, project.id, file.id, {
+  await appendRepairedFile(db, project.id, file.id, {
     ...file,
     id: repairedFileId,
     iteration: getCurrentIteration(file.id),
@@ -209,7 +209,7 @@ app.post(`/${SERVICE_NAME}/projects/:projectId/analysis/sonar`, async ({ req, pa
 
   console.log("Uploading Sonar report...");
 
-  await appendSonarReport(DB, projectId, sonarReport);
+  await appendSonarReport(db, projectId, sonarReport);
   
   console.log("Uploaded Sonar report.");
 
@@ -217,19 +217,19 @@ app.post(`/${SERVICE_NAME}/projects/:projectId/analysis/sonar`, async ({ req, pa
 });
 
 app.get(`/${SERVICE_NAME}/projects/:projectId/analysis`, async ({ params: { projectId }}) => {
-  return await getProjectAnalysis(DOC, projectId);
+  return await getProjectAnalysis(doc, projectId);
 });
 
 app.get(`/${SERVICE_NAME}/projects/:projectId/files/:fileId`, async ({ res, params: { projectId, fileId } }) => {
   // 1. get project
-  const project = await getProjectFromDb(DOC, projectId);
+  const project = await getProjectFromDb(doc, projectId);
 
   // 2. get file from project
   const file = findFile(fileId, project);
   if (!file) { throw new NotFoundError(); }
 
   // 3. return file contents
-  const result = await S3_CLIENT.send(new GetObjectCommand({ Bucket: FILES_BUCKET, Key: file.id }));
+  const result = await s3Client.send(new GetObjectCommand({ Bucket: FILES_BUCKET, Key: file.id }));
 
   res.headers.set('Content-Type', file.mimetype || 'text/plain');
   res.headers.set('Content-Disposition', `inline; filename="${file.filename}"`);
@@ -239,14 +239,14 @@ app.get(`/${SERVICE_NAME}/projects/:projectId/files/:fileId`, async ({ res, para
 
 app.get(`/${SERVICE_NAME}/projects/:projectId/files/:fileId/latest`, async ({ res, params: { projectId, fileId } }) => {
   // 1. get project
-  const project = await getProjectFromDb(DOC, projectId);
+  const project = await getProjectFromDb(doc, projectId);
 
   // 2. get file from project
   const file = latestVersionOfFile(fileId, project);
   if (!file) { throw new NotFoundError(); }
 
   // 3. return file contents
-  const result = await S3_CLIENT.send(new GetObjectCommand({ Bucket: FILES_BUCKET, Key: file.id }));
+  const result = await s3Client.send(new GetObjectCommand({ Bucket: FILES_BUCKET, Key: file.id }));
 
   res.headers.set('Content-Type', file.mimetype || 'text/plain');
   res.headers.set('Content-Disposition', `inline; filename="${file.filename}"`);
