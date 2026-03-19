@@ -16,8 +16,8 @@ import { API_BASE_URL } from "../../api";
 export type AnalyzeAndRepairData = { projectId: string; fileId: string };
 
 export type AnalyzeAndRepairDialogProps = {
-  data: AnalyzeAndRepairData | null;
-  onComplete: () => void;
+  readonly data: AnalyzeAndRepairData | null;
+  readonly onComplete: () => void;
 };
 
 type AnalyzeActionState = "pending" | "running" | "complete";
@@ -28,7 +28,7 @@ type AnalyzeAction = {
   state: AnalyzeActionState;
 };
 
-function AvatarOnState(props: { state: AnalyzeActionState }) {
+function AvatarOnState(props: { readonly state: AnalyzeActionState }) {
   const sx = { width: 64, height: 64 };
 
   switch (props.state) {
@@ -41,7 +41,7 @@ function AvatarOnState(props: { state: AnalyzeActionState }) {
   }
 }
 
-function TextOnState(props: { state: AnalyzeActionState; text: string }) {
+function TextOnState(props: { readonly state: AnalyzeActionState; readonly text: string }) {
   switch (props.state) {
     case "pending":
       return <span style={{ color: "#7a7a7a" }}>{props.text}</span>;
@@ -76,7 +76,7 @@ export function AnalyzeAndRepairDialog({
       await sleep(1000);
 
       const analysisResults = await (await fetch(`${API_BASE_URL}/upload/projects/${data.projectId}/analysis`)).json();
-      
+
       if (Object.keys(analysisResults).length === 0) { continue; }
 
       found = analysisResults.sonar.some((x: { projectAnalysisId: string }) => x.projectAnalysisId === result.analysisId);
@@ -128,9 +128,6 @@ export function AnalyzeAndRepairDialog({
     onComplete();
   }
 
-  // I am aware that using useEffect with a dependency can lead to an infinite loop.
-  // However, that is not the case here and fixing the it cleanly will take hours
-  // It also goes against what I am trying to do, as I want the re-render to occur
   useEffect(() => {
     setIsOpen(data !== null); // eslint-disable-line react-hooks/set-state-in-effect
     if (data === null) {
