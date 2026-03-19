@@ -58,10 +58,8 @@ function Project() {
   const [error, setError] = useState<Error | null>(null);
 
   const [fileContent, setFileContent] = useState<Readonly<CodeViewerProps> | null>(null);
-  const [iterationContent, setIterationContent] =
-    useState<Readonly<CodeViewerProps> | null>(null);
-  const [projectUnderAnalysis, setAnalyzeProject] =
-    useState<Readonly<AnalyzeAndRepairData> | null>(null);
+  const [iterationContent, setIterationContent] = useState<Readonly<CodeViewerProps> | null>(null);
+  const [projectUnderAnalysis, setProjectUnderAnalysis] = useState<Readonly<AnalyzeAndRepairData> | null>(null);
   const [sonarMetrics, setSonarMetrics] = useState<Readonly<ExtractedSonarMetrics> | null>(null);
   const [sonarIssues, setSonarIssues] = useState<Readonly<Map<string, IssueItem[]>> | null>(null);
 
@@ -174,11 +172,11 @@ function Project() {
       return;
     }
 
-    setAnalyzeProject({ projectId: project.id, fileId: fileContent.id });
+    setProjectUnderAnalysis({ projectId: project.id, fileId: fileContent.id });
   }
 
   async function postAnalyzedProject() {
-    setAnalyzeProject(null);
+    setProjectUnderAnalysis(null);
 
     await Promise.all([
       downloadProject(),
