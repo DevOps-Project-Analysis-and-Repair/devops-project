@@ -115,7 +115,7 @@ export function flattenFileSystem(root: FileSystemDirectory): FileSystemFile[] {
   return root.children.flatMap(node => node.kind === 'file' ? [node] : flattenFileSystem(node));
 }
 
-export function getFileExtension(filepath: string): string | undefined {
+export function getFileExtension(filepath: string): string {
   const extensionRegExp = /\.([^.]+)$/;
   const res = extensionRegExp.exec(filepath);
   return res?.[1];

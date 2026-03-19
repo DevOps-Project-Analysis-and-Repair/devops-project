@@ -162,8 +162,11 @@ export function ComparisonMetricsView({
   last.forEach((m) => {
     const existing = map.get(m.id);
     if (existing) {
-      existing.last = m.value;
-      existing.lastBestValue = m.bestValue;
+      map.set(m.id, {
+        ...existing,
+        last: m.value,
+        lastBestValue: m.bestValue,
+      });
     } else {
       map.set(m.id, {
         name: m.name,
