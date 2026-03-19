@@ -86,6 +86,7 @@ describe("AnalyzeAndRepairDialog", () => {
 
   it("handles polling loop correctly", async () => {
     // simulate delayed analysis appearance
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (getAnalysis as any)
       .mockResolvedValueOnce({ sonar: [] })
       .mockResolvedValueOnce({ sonar: [] })
