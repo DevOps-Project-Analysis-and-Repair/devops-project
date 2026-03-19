@@ -12,8 +12,8 @@ import { Project, ProjectFile, SonarAnalysisUpload, latest } from 'shared';
 import { datestring, isUploadCompleted } from './util';
 
 export const SERVICE_NAME = process.env.SERVICE_NAME
-const LOGGER = new Logger({ SERVICE_NAME });
-const APP = new Router({ logger: LOGGER });
+const logger = new Logger({ SERVICE_NAME });
+const app = new Router({ logger: logger });
 
 const S3_CLIENT = new S3Client({});
 const DB_CLIENT = new DynamoDBClient({});
@@ -50,11 +50,11 @@ function findFile(fileId: string, project: Project): ProjectFile | null {
   return null;
 }
 
-APP.get(`/${SERVICE_NAME}/health`, () => {
+app.get(`/${SERVICE_NAME}/health`, () => {
   return true;
 });
 
-APP.get(`/${SERVICE_NAME}/projects`, async () => {
+app.get(`/${SERVICE_NAME}/projects`, async () => {
   const paginationConfig = { client: DOC };
   const tableConfig = {
     TableName: TABLE_PROJECTS,
@@ -76,7 +76,7 @@ APP.get(`/${SERVICE_NAME}/projects`, async () => {
   return projects;
 });
 
-APP.post(`/${SERVICE_NAME}/projects`, async () => {
+app.post(`/${SERVICE_NAME}/projects`, async () => {
   // 1. create new project in db
   const projectId: string = uuidv4();
 
@@ -103,20 +103,20 @@ APP.post(`/${SERVICE_NAME}/projects`, async () => {
   return { projectId, token: createToken(projectId) };
 });
 
-APP.get(`/${SERVICE_NAME}/projects/:projectId`, async ({ params: { projectId } }) => {
+app.get(`/${SERVICE_NAME}/projects/:projectId`, async ({ params: { projectId } }) => {
   // 1. get project from db
   // 2. return project object, including file names
   return await getProjectFromDb(DOC, projectId);
 });
 
-APP.get(`/${SERVICE_NAME}/projects/:projectId/latest`, async ({ params: { projectId } }) => {
+app.get(`/${SERVICE_NAME}/projects/:projectId/latest`, async ({ params: { projectId } }) => {
   // 1. get project from db
   // 2. return project object, including file names
   // 3. replace all the file references with the latest entry of the repaired file
   return await getLatestProjectFromDb(DOC, projectId);
 });
 
-APP.post(`/${SERVICE_NAME}/projects/:projectId/files`, async ({ req, params: { projectId } }) => {
+app.post(`/${SERVICE_NAME}/projects/:projectId/files`, async ({ req, params: { projectId } }) => {
   // Note: Body should be send in binary
   // Other values have to be send via the headers/params
   const token = req.headers.get('X-Project-Token');
@@ -158,7 +158,7 @@ APP.post(`/${SERVICE_NAME}/projects/:projectId/files`, async ({ req, params: { p
   return { ok: true };
 });
 
-APP.post(`/${SERVICE_NAME}/projects/:projectId/files/:fileId/repaired`, async ({ req, params: { projectId, fileId } }) => {
+app.post(`/${SERVICE_NAME}/projects/:projectId/files/:fileId/repaired`, async ({ req, params: { projectId, fileId } }) => {
   // Note: Body should be send in binary
 
   // 1. fetch project from project id, or fail
@@ -203,7 +203,7 @@ APP.post(`/${SERVICE_NAME}/projects/:projectId/files/:fileId/repaired`, async ({
   return { ok: true };
 });
 
-APP.post(`/${SERVICE_NAME}/projects/:projectId/analysis/sonar`, async ({ req, params: { projectId } }) => {
+app.post(`/${SERVICE_NAME}/projects/:projectId/analysis/sonar`, async ({ req, params: { projectId } }) => {
   const json = await req.json();
   const sonarReport = json as SonarAnalysisUpload;
 
@@ -216,11 +216,11 @@ APP.post(`/${SERVICE_NAME}/projects/:projectId/analysis/sonar`, async ({ req, pa
   return { ok: true };
 });
 
-APP.get(`/${SERVICE_NAME}/projects/:projectId/analysis`, async ({ params: { projectId }}) => {
+app.get(`/${SERVICE_NAME}/projects/:projectId/analysis`, async ({ params: { projectId }}) => {
   return await getProjectAnalysis(DOC, projectId);
 });
 
-APP.get(`/${SERVICE_NAME}/projects/:projectId/files/:fileId`, async ({ res, params: { projectId, fileId } }) => {
+app.get(`/${SERVICE_NAME}/projects/:projectId/files/:fileId`, async ({ res, params: { projectId, fileId } }) => {
   // 1. get project
   const project = await getProjectFromDb(DOC, projectId);
 
@@ -237,7 +237,7 @@ APP.get(`/${SERVICE_NAME}/projects/:projectId/files/:fileId`, async ({ res, para
   return result.Body?.transformToWebStream();
 });
 
-APP.get(`/${SERVICE_NAME}/projects/:projectId/files/:fileId/latest`, async ({ res, params: { projectId, fileId } }) => {
+app.get(`/${SERVICE_NAME}/projects/:projectId/files/:fileId/latest`, async ({ res, params: { projectId, fileId } }) => {
   // 1. get project
   const project = await getProjectFromDb(DOC, projectId);
 
@@ -254,8 +254,8 @@ APP.get(`/${SERVICE_NAME}/projects/:projectId/files/:fileId/latest`, async ({ re
   return result.Body?.transformToWebStream();
 });
 
-APP.errorHandler(Error, async (error, reqCtx) => {
-  LOGGER.error('error occurred:', error);
+app.errorHandler(Error, async (error, reqCtx) => {
+  logger.error('error occurred:', error);
 
   return {
     statusCode: HttpStatusCodes.BAD_REQUEST,
@@ -264,5 +264,5 @@ APP.errorHandler(Error, async (error, reqCtx) => {
 });
 
 export const handler = async (event: unknown, context: Context) => {
-  return APP.resolve(event, context);
+  return app.resolve(event, context);
 };

@@ -5,8 +5,8 @@ import { fixCode } from './client';
 import { Project, ProjectAnalysis, SonarRepairIssue, findFile } from 'shared';
 
 export const SERVICE_NAME = process.env.SERVICE_NAME
-const LOGGER = new Logger({ SERVICE_NAME });
-const APP = new Router({ logger: LOGGER });
+const logger = new Logger({ SERVICE_NAME });
+const app = new Router({ logger: logger });
 
 const API_SERVICE_URL = "https://1wk9q92xx1.execute-api.eu-west-1.amazonaws.com";
 
@@ -55,7 +55,7 @@ function getLatestSonarIssues(analysis: ProjectAnalysis, filePath: string): Sona
   return latest.issues.filter(x => x.filePath === filePath) ?? [];
 }
 
-APP.post(`/${SERVICE_NAME}/projects/:projectId/files/:fileId`, async ({ params: { projectId, fileId } }) => {
+app.post(`/${SERVICE_NAME}/projects/:projectId/files/:fileId`, async ({ params: { projectId, fileId } }) => {
   // Step 1: Download file
   const input = await downloadFile(projectId, fileId);
   const project = await downloadProject(projectId);
@@ -79,12 +79,12 @@ APP.post(`/${SERVICE_NAME}/projects/:projectId/files/:fileId`, async ({ params: 
   return { ok: true };
 });
 
-APP.get(`/${SERVICE_NAME}/health`, async () => {
+app.get(`/${SERVICE_NAME}/health`, async () => {
   return { ok: true };
 });
 
-APP.errorHandler(Error, async (error, reqCtx) => {
-  LOGGER.error('error occurred:', error);
+app.errorHandler(Error, async (error, reqCtx) => {
+  logger.error('error occurred:', error);
 
   return {
     statusCode: HttpStatusCodes.BAD_REQUEST,
@@ -92,4 +92,4 @@ APP.errorHandler(Error, async (error, reqCtx) => {
   };
 });
 
-export const handler = async (event: unknown, context: Context) => APP.resolve(event, context);
+export const handler = async (event: unknown, context: Context) => app.resolve(event, context);
