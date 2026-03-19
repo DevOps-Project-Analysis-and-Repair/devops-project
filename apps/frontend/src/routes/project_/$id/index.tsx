@@ -20,7 +20,6 @@ import {
   AnalyzeAndRepairDialog,
   type AnalyzeAndRepairData,
 } from "../../../components/partials/AnalyzeAndRepairDialog";
-// import { MetricsView } from "../../../components/partials/MetricsView";
 import { Container } from "../../../components/ui/Container";
 import {
   downloadFile,
@@ -57,7 +56,6 @@ function FileIterations(props: {
     </>
   );
 }
-
 
 function Project() {
   const [project, setProject] = useState<UploadProject | null>(null);
