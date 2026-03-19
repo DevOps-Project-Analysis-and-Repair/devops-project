@@ -133,7 +133,6 @@ function Project() {
   async function onFileIterationClick(fileId: string) {
     const content = await downloadFile(id, fileId);
     
-    // using filecontent here is the biggest hack of 2k26
     setIterationContent({
       content,
       language: fileContent!.language,
