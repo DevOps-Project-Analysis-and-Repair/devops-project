@@ -6,6 +6,7 @@ import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from "fs";
 import { tmpdir } from "os";
 import { latest, Project} from "shared";
 import path from "path";
+import { TABLE_PROJECTS, FILES_BUCKET } from '.';
 
 const s3Client = new S3Client({});
 const dbClient = new DynamoDBClient({});
