@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { spawn } from "child_process";
+import { spawn } from "node:child_process";
 import { once } from "events";
 import fs from "fs/promises";
 import path from "node:path";
