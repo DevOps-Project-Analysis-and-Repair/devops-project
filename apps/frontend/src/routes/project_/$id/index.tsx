@@ -21,16 +21,16 @@ import {
   type AnalyzeAndRepairData,
 } from "../../../components/partials/AnalyzeAndRepairDialog";
 // import { MetricsView } from "../../../components/partials/MetricsView";
+import { CodeIssuesView } from "../../../components/partials/CodeIssuesView";
+import { ComparisonMetricsView } from "../../../components/partials/ComparisonMetricsView";
 import { Container } from "../../../components/ui/Container";
 import {
-  downloadFile,
   getFileExtension,
   uploadFilesToFileSystemTree,
   type FileSystemFile,
 } from "../../../filesystem";
 import { extractSonarMetrics, groupIssuesByPath, mapMetricsForView, type ExtractedSonarMetrics, type IssueItem } from "../../../services/analytics";
-import { ComparisonMetricsView } from "../../../components/partials/ComparisonMetricsView";
-import { CodeIssuesView } from "../../../components/partials/CodeIssuesView";
+import { downloadFile } from "../../../services/uploadService";
 
 export const Route = createFileRoute("/project_/$id/")({
   component: Project,
@@ -118,10 +118,9 @@ function Project() {
   async function onFileClick(file: FileSystemFile) {
     setFileContent(null);
     setIterationContent(null);
-
-    const content = await downloadFile(
-      `${API_BASE_URL}/upload/projects/${id}/files/${file.downloadId}`,
-    );
+    
+    const content = await downloadFile(id, file?.downloadId!); 
+    
     const fileExtension = getFileExtension(file.name);
 
     if (!fileExtension) {

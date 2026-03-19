@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "../api";
+import { API_BASE_URL, type UploadProject } from "../api";
 import { flattenFileSystem, type FileSystemDirectory, type FileSystemFile } from "../filesystem";
 import { chunk } from "../util";
 
@@ -6,13 +6,14 @@ type ProjectUploadResponse = { projectId: string, token: string };
 
 const UPLOAD_SERVICE_URL = `${API_BASE_URL}/upload`;
 
-export async function listAllProjects(): Promise<Response> {
+export async function listAllProjects(): Promise<UploadProject[]> {
   const resp = await fetch(`${UPLOAD_SERVICE_URL}/projects`, { method: 'GET' });
 
   if (!resp.ok) { throw new Error("Failed listing projects from Upload Service"); }
 
-  return resp;
+  return await resp.json();
 }
+
 
 async function createUploadServiceProject(): Promise<ProjectUploadResponse> {
   const resp = await fetch(`${UPLOAD_SERVICE_URL}/projects`, { method: 'POST' });
@@ -67,4 +68,10 @@ export async function createProject(fileTree: FileSystemDirectory, progress: ((x
   }
 
   return project.projectId;
+}
+
+export async function downloadFile(projectId: string, fileId: string): Promise<string> {
+  const response = await fetch(`${API_BASE_URL}/upload/projects/${projectId}/files/${fileId}`);
+
+  return await response.text();
 }
