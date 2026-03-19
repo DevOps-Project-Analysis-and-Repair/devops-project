@@ -13,7 +13,7 @@ const baseIssue: IssueItem = {
   message: "Something is wrong",
   severity: "MAJOR",
   type: "BUG",
-  status: "OPEN" as IssueItem['status'],
+  status: "OPEN",
   line: 10,
   rule: "typescript:S123",
   tags: ["bug"],
@@ -122,8 +122,8 @@ describe("CodeIssuesView", () => {
   });
 
   it("sorts open issues before closed ones", () => {
-    const openIssue = { ...baseIssue, issueKey: "1", line: 1, status: "OPEN" };
-    const closedIssue = {
+    const openIssue : IssueItem = { ...baseIssue, issueKey: "1", line: 1, status: "OPEN" };
+    const closedIssue: IssueItem = {
       ...baseIssue,
       issueKey: "2",
       line: 1,
