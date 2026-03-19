@@ -13,7 +13,7 @@ const baseIssue: IssueItem = {
   message: "Something is wrong",
   severity: "MAJOR",
   type: "BUG",
-  status: "OPEN",
+  status: "OPEN" as IssueItem['status'],
   line: 10,
   rule: "typescript:S123",
   tags: ["bug"],

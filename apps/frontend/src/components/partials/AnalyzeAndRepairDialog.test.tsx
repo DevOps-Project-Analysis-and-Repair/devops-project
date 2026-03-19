@@ -16,7 +16,7 @@ vi.mock("../../services/analysisService", () => ({
     fixFile: vi.fn(),
   }));
   
-  vi.mock("../../util", () => ({
+  vi.mock("../../utils", () => ({
     sleep: vi.fn(),
   }));
   
