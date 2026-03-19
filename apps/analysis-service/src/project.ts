@@ -3,7 +3,7 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { DynamoDBDocument, GetCommand } from "@aws-sdk/lib-dynamodb";
 import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
-import { tmpdir } from "os";
+import { tmpdir } from "node:os";
 import { latest, Project} from "shared";
 import path from "path";
 
