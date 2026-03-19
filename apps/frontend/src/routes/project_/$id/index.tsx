@@ -35,25 +35,20 @@ export const Route = createFileRoute("/project_/$id/")({
   component: Project,
 });
 
-type FileIterationData = { id: string; iteration: number };
+type FileIterationData = Readonly<{ id: string; iteration: number }>;
 const flex110 = { flexGrow: 1, flexShrink: 1, flexBasis: 0 };
 
-function FileIterations(props: {
-  iterations: FileIterationData[];
-  handler: (id: string) => void;
-}) {
+function FileIterations(props: Readonly<{ iterations: FileIterationData[]; handler: (id: string) => void }>) {
   const { iterations, handler } = props;
 
   return (
-    <>
-      <ButtonGroup variant="outlined">
-        {iterations.map((x) => (
-          <Button key={x.id} onClick={() => handler(x.id)}>
-            {x.iteration}
-          </Button>
-        ))}
-      </ButtonGroup>
-    </>
+    <ButtonGroup variant="outlined">
+      {iterations.map((x) => (
+        <Button key={x.id} onClick={() => handler(x.id)}>
+          {x.iteration}
+        </Button>
+      ))}
+    </ButtonGroup>
   );
 }
 
@@ -62,13 +57,13 @@ function Project() {
   const [initialLoad, setInitialLoad] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const [fileContent, setFileContent] = useState<CodeViewerProps | null>(null);
+  const [fileContent, setFileContent] = useState<Readonly<CodeViewerProps> | null>(null);
   const [iterationContent, setIterationContent] =
-    useState<CodeViewerProps | null>(null);
+    useState<Readonly<CodeViewerProps> | null>(null);
   const [projectUnderAnalysis, setAnalyzeProject] =
-    useState<AnalyzeAndRepairData | null>(null);
-  const [sonarMetrics, setSonarMetrics] = useState<ExtractedSonarMetrics | null>(null);
-  const [sonarIssues, setSonarIssues] = useState<Map<string, IssueItem[]> | null>(null);
+    useState<Readonly<AnalyzeAndRepairData> | null>(null);
+  const [sonarMetrics, setSonarMetrics] = useState<Readonly<ExtractedSonarMetrics> | null>(null);
+  const [sonarIssues, setSonarIssues] = useState<Readonly<Map<string, IssueItem[]>> | null>(null);
 
   const { id } = Route.useParams();
 
@@ -98,13 +93,13 @@ function Project() {
     const analyticsResult = await analyticsResp.json();
 
     if (!analyticsResult.analysisId) { throw new Error("Unable to get analysis id"); }
-    
+
     while (true) {
       if (signal.aborted) { return; }
       await sleep(1000);
-    
+
       const analysisResults = await (await fetch(`${API_BASE_URL}/upload/projects/${id}/analysis`)).json();
-          
+
       if (Object.keys(analysisResults).length === 0) { continue; }
 
       if (analysisResults.sonar) {
@@ -131,7 +126,7 @@ function Project() {
 
   if (error || !project) return <div> An error occured {error?.message} </div>;
 
-  async function onFileClick(file: FileSystemFile) {
+  async function onFileClick(file: Readonly<FileSystemFile>) {
     setFileContent(null);
     setIterationContent(null);
 
@@ -148,7 +143,7 @@ function Project() {
   }
 
   function getFileIterations(
-    project: UploadProject,
+    project: Readonly<UploadProject>,
     fileId: string,
   ): FileIterationData[] {
     const iterations = (project.repairedFiles[fileId] ??= []);
