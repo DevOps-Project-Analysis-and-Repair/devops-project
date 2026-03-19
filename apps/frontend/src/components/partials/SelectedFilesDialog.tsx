@@ -43,7 +43,7 @@ export function SelectedFilesDialog({
     const fileExtension = getFileExtension(file.name);
 
     if (!fileExtension) {
-      throw "Invalid file name";
+      throw new Error("Invalid file name: no extension found");
     }
 
     setFileContent({ content, language: fileExtension });
