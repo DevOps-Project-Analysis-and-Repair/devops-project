@@ -16,7 +16,7 @@ RUN npm run build
 ####################################
 # Stage 2: Get sonar-scanner CLI.  #
 ####################################
-FROM sonarsource/sonar-scanner-cli:latest AS scanner
+FROM sonarsource/sonar-scanner-cli:12.0.0.3214_8.0.1 AS scanner
 
 ####################################
 # Stage 3: Build the Lambda image. #
