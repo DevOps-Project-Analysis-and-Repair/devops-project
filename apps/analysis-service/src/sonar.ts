@@ -37,7 +37,7 @@ export const runSonarScanner = async (projectPath: string, projectId: string): P
     const [code] = await once(proc, "close");
 
     if (code != 0) {
-        throw new Error();
+        throw new Error(`SonarScanner failed with exit code ${code}`);
     }
 
     const reportPath = path.join(projectPath, ".scannerwork", "report-task.txt");
