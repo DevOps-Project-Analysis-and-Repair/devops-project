@@ -1,7 +1,6 @@
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import TroubleshootIcon from "@mui/icons-material/Troubleshoot";
 import {
-  Avatar,
   Box,
   Button,
   ButtonGroup,
