@@ -70,7 +70,7 @@ app.post(`/${SERVICE_NAME}/projects/:projectId/files/:fileId`, async ({ params: 
   const response = await fixCode(input, sonarIssues);
 
   const lines = response.split('\n');
-  const code = lines.slice(1, lines.length - 1).join('\n');
+  const code = lines.slice(1, -1).join('\n');
 
   // Step 4: Upload the code back to the upload service
   await uploadRepair(projectId, fileId, code);
