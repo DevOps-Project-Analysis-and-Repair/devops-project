@@ -1,6 +1,6 @@
 import { API_BASE_URL, type UploadProject } from "../api";
 import { flattenFileSystem, type FileSystemDirectory, type FileSystemFile } from "../filesystem";
-import { chunk } from "../util";
+import { chunk } from "../utils";
 
 type ProjectUploadResponse = { projectId: string, token: string };
 

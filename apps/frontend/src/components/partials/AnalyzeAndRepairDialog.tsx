@@ -13,7 +13,7 @@ import {
 import { useEffect, useState } from "react";
 import { getAnalysis, performAnalysis } from "../../services/analysisService";
 import { fixFile } from "../../services/fixService";
-import { sleep } from "../../util";
+import { sleep } from "../../utils";
 
 export type AnalyzeAndRepairData = { projectId: string; fileId: string };
 

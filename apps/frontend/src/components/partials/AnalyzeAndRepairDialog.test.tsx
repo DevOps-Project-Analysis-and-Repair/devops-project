@@ -5,7 +5,7 @@ import { AnalyzeAndRepairDialog } from "./AnalyzeAndRepairDialog";
 
 import { getAnalysis, performAnalysis } from "../../services/analysisService";
 import { fixFile } from "../../services/fixService";
-import { sleep } from "../../util";
+import { sleep } from "../../utils";
 
 vi.mock("../../services/analysisService", () => ({
     performAnalysis: vi.fn(),
