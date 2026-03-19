@@ -6,6 +6,7 @@ export type CodeViewerProps = {
   content: string;
   language: string;
   id?: string;
+  filepath?: string;
 };
 
 export function CodeViewer(params: CodeViewerProps): JSX.Element {

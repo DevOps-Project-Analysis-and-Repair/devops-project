@@ -20,7 +20,7 @@ import {
   AnalyzeAndRepairDialog,
   type AnalyzeAndRepairData,
 } from "../../../components/partials/AnalyzeAndRepairDialog";
-import { MetricsView } from "../../../components/partials/MetricsView";
+// import { MetricsView } from "../../../components/partials/MetricsView";
 import { Container } from "../../../components/ui/Container";
 import {
   downloadFile,
@@ -28,6 +28,9 @@ import {
   uploadFilesToFileSystemTree,
   type FileSystemFile,
 } from "../../../filesystem";
+import { extractSonarMetrics, groupIssuesByPath, mapMetricsForView, type ExtractedSonarMetrics, type IssueItem } from "../../../services/analytics";
+import { ComparisonMetricsView } from "../../../components/partials/ComparisonMetricsView";
+import { CodeIssuesView } from "../../../components/partials/CodeIssuesView";
 
 export const Route = createFileRoute("/project_/$id/")({
   component: Project,
@@ -55,13 +58,6 @@ function FileIterations(props: {
   );
 }
 
-const metrics = [
-  { id: "1", name: "Maintainability", value: "3.2%" },
-  { id: "2", name: "Issues", value: "17" },
-  { id: "3", name: "Quality", value: "4" },
-  { id: "4", name: "CC", value: "55" },
-  { id: "5", name: "R", value: "55%" },
-];
 
 function Project() {
   const [project, setProject] = useState<UploadProject | null>(null);
@@ -73,21 +69,64 @@ function Project() {
     useState<CodeViewerProps | null>(null);
   const [projectUnderAnalysis, setAnalyzeProject] =
     useState<AnalyzeAndRepairData | null>(null);
+  const [sonarMetrics, setSonarMetrics] = useState<ExtractedSonarMetrics | null>(null);
+  const [sonarIssues, setSonarIssues] = useState<Map<string, IssueItem[]> | null>(null);
 
   const { id } = Route.useParams();
 
   async function downloadProject() {
-    const resp = await fetch(`${API_BASE_URL}/upload/projects/${id}`);
+    const projectResp = await fetch(`${API_BASE_URL}/upload/projects/${id}`);
+    const projectJson = await projectResp.json();
 
-    console.log(resp);
+    setProject(projectJson);
+  }
 
-    setProject(await resp.json());
+  async function downloadAnalytics(signal: AbortSignal) {
+    const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
+
+    const resp = await fetch(`${API_BASE_URL}/upload/projects/${id}/analysis`);
+    const result = await resp.json();
+
+    if (Object.keys(result).length >= 1) {
+      setSonarMetrics(extractSonarMetrics(result));
+      setSonarIssues(groupIssuesByPath(result));
+      return;
+    }
+
+    const analyticsResp = await fetch(`${API_BASE_URL}/analysis/${id}`, {
+      method: "POST",
+    });
+
+    const analyticsResult = await analyticsResp.json();
+
+    if (!analyticsResult.analysisId) { throw new Error("Unable to get analysis id"); }
+    
+    while (true) {
+      if (signal.aborted) { return; }
+      await sleep(1000);
+    
+      const analysisResults = await (await fetch(`${API_BASE_URL}/upload/projects/${id}/analysis`)).json();
+          
+      if (Object.keys(analysisResults).length === 0) { continue; }
+
+      if (analysisResults.sonar) {
+        setSonarMetrics(extractSonarMetrics(analysisResults));
+        setSonarIssues(groupIssuesByPath(analysisResults));
+        return;
+      }
+    }
   }
 
   useEffect(() => {
+    const abortController = new AbortController();
+
     downloadProject()
       .then(() => setInitialLoad(false))
       .catch((e) => setError(e));
+
+    downloadAnalytics(abortController.signal);
+
+    return () => { abortController.abort(); }
   }, []);
 
   if (initialLoad) return <CircularProgress />;
@@ -107,7 +146,7 @@ function Project() {
       throw "Invalid file name";
     }
 
-    setFileContent({ content, language: fileExtension, id: file.downloadId });
+    setFileContent({ content, language: fileExtension, id: file.downloadId, filepath: file.path });
   }
 
   function getFileIterations(
@@ -122,8 +161,6 @@ function Project() {
   }
 
   async function onFileIterationClick(fileId: string) {
-    console.log(fileId);
-
     const content = await downloadFile(
       `${API_BASE_URL}/upload/projects/${id}/files/${fileId}`,
     );
@@ -150,8 +187,10 @@ function Project() {
   async function postAnalyzedProject() {
     setAnalyzeProject(null);
 
-    // Refresh project
-    await downloadProject();
+    await Promise.all([
+      downloadProject(),
+      downloadAnalytics(new AbortController().signal)
+    ]);
   }
 
   return (
@@ -183,6 +222,20 @@ function Project() {
           Project {project.name} ({project.files.length})
         </Typography>
 
+        <Box sx={{ width: "100%", pt: 2 }}>
+          {(!sonarMetrics?.first && !sonarMetrics?.last) ? (
+            <Typography>No analysis available yet.</Typography>
+          ) : (
+            <>
+              <Typography sx={{ mb: 1 }}>Analysis comparison</Typography>
+              <ComparisonMetricsView
+                first={sonarMetrics?.first ? mapMetricsForView(sonarMetrics.first) : []}
+                last={sonarMetrics?.last ? mapMetricsForView(sonarMetrics.last) : []}
+              />
+            </>
+          )}
+        </Box>
+
         <Box sx={{ display: "flex", direction: "row" }} pt={2}>
           {project.files && (
             <FileTree
@@ -203,6 +256,7 @@ function Project() {
               <Box sx={{ display: "flex", overflowY: "auto", ...flex110 }}>
                 <Box p={2} sx={{ minWidth: "100%" }}>
                   <Button
+                    disabled={!sonarMetrics}
                     component="label"
                     role={undefined}
                     variant="contained"
@@ -210,10 +264,8 @@ function Project() {
                     onClick={analyzeProject}
                     startIcon={<TroubleshootIcon />}
                   >
-                    Analyze & Repair
+                    { !sonarMetrics ? <>Analyzing</> : <>Repair & Analyze</>}
                   </Button>
-
-                  <MetricsView metrics={metrics} />
 
                   <CodeViewer
                     content={fileContent.content}
@@ -237,6 +289,10 @@ function Project() {
                       language={iterationContent.language}
                     />
                   )}
+
+                  {
+                    (sonarIssues?.get(fileContent.filepath!) ?? []).length >= 1 && <CodeIssuesView issues={sonarIssues?.get(fileContent.filepath!) ?? []} />
+                  }
                 </Box>
               </Box>
             </Box>
