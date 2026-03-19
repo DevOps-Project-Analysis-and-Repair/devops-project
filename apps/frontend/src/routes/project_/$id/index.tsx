@@ -3,12 +3,11 @@ import TroubleshootIcon from "@mui/icons-material/Troubleshoot";
 import {
   Box,
   Button,
-  ButtonGroup,
   CircularProgress,
   Divider,
-  Typography,
+  Typography
 } from "@mui/material";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { API_BASE_URL, type UploadProject } from "../../../api";
 import {
@@ -16,6 +15,7 @@ import {
   type CodeViewerProps,
 } from "../../../components/CodeViewer";
 import { FileTree } from "../../../components/FileTree";
+import { MenuButtonGroup, type MenuButtonItem } from "../../../components/MenuButtonGroup";
 import {
   AnalyzeAndRepairDialog,
   type AnalyzeAndRepairData,
@@ -33,27 +33,9 @@ export const Route = createFileRoute("/project_/$id/")({
   component: Project,
 });
 
-type FileIterationData = { id: string; iteration: number };
+
 const flex110 = { flexGrow: 1, flexShrink: 1, flexBasis: 0 };
 
-function FileIterations(props: {
-  iterations: FileIterationData[];
-  handler: (id: string) => void;
-}) {
-  const { iterations, handler } = props;
-
-  return (
-    <>
-      <ButtonGroup variant="outlined">
-        {iterations.map((x) => (
-          <Button key={x.id} onClick={() => handler(x.id)}>
-            {x.iteration}
-          </Button>
-        ))}
-      </ButtonGroup>
-    </>
-  );
-}
 
 const metrics = [
   { id: "1", name: "Maintainability", value: "3.2%" },
@@ -110,14 +92,11 @@ function Project() {
     setFileContent({ content, language: fileExtension, id: file.downloadId });
   }
 
-  function getFileIterations(
-    project: UploadProject,
-    fileId: string,
-  ): FileIterationData[] {
+  function getFileIterations(project: UploadProject, fileId: string): MenuButtonItem[] {
     const iterations = (project.repairedFiles[fileId] ??= []);
 
     return iterations.map((x) => {
-      return { id: x.id, iteration: x.iteration };
+      return { id: x.id, label: x.iteration };
     });
   }
 
@@ -226,9 +205,9 @@ function Project() {
 
               <Box sx={{ display: "flex", overflowY: "auto", ...flex110 }}>
                 <Box p={2} sx={{ minWidth: "100%" }}>
-                  <FileIterations
-                    iterations={getFileIterations(project, fileContent.id!)}
-                    handler={onFileIterationClick}
+                  <MenuButtonGroup
+                    items={getFileIterations(project, fileContent.id!)}
+                    onItemClick={onFileIterationClick}
                   />
 
                   {iterationContent && (
