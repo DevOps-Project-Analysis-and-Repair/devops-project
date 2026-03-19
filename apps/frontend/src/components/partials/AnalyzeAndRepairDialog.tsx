@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { API_BASE_URL } from "../../api";
+import { performAnalysis } from "../../services/analysisService";
 
 export type AnalyzeAndRepairData = { projectId: string; fileId: string };
 
@@ -52,12 +53,8 @@ export function AnalyzeAndRepairDialog({
   const [actions, setActions] = useState<AnalyzeAction[]>([]);
 
   async function doAnalysis(data: AnalyzeAndRepairData) {
-    const resp = await fetch(`${API_BASE_URL}/analysis/${data.projectId}`, {
-      method: "POST",
-    });
-
-    const result = await resp.json();
-
+    const result = performAnalysis(data.projectId);
+    
     if (!result.analysisId) { throw new Error("Unable to get analysis id"); }
 
     let found = false;
