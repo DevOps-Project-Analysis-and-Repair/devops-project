@@ -282,7 +282,7 @@ function Project() {
                   )}
 
                   {
-                    (sonarIssues?.get(fileContent.filepath!) ?? []).length >= 1 && <CodeIssuesView issues={sonarIssues?.get(fileContent.filepath!) ?? []} />
+                    (sonarIssues?.get(fileContent.filepath) ?? []).length >= 1 && <CodeIssuesView issues={sonarIssues?.get(fileContent.filepath) ?? []} />
                   }
                 </Box>
               </Box>
