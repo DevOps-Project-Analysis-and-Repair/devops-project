@@ -77,8 +77,36 @@ export function AnalyzeAndRepairDialog({
     return actions.every((x) => x.state === "complete");
   }
 
+  async function processActions(
+    data: AnalyzeAndRepairData,
+    actions: AnalyzeAction[],
+  ) {
+    const workingActions = [...actions];
+
+    function firstActiveActionIndex(actions: AnalyzeAction[]): number {
+      return actions.findIndex((x) => x.state === "pending");
+    }
+
+    while (!isComplete(workingActions)) {
+      const index = firstActiveActionIndex(workingActions);
+      const action = workingActions[index];
+
+      workingActions[index].state = "running";
+      setActions([...workingActions]);
+
+      await action.handler(data);
+
+      workingActions[index].state = "complete";
+      setActions([...workingActions]);
+    }
+  }
+
+  function handleComplete() {
+    onComplete();
+  }
+
   useEffect(() => {
-    setIsOpen(data !== null);
+    setIsOpen(data !== null); // eslint-disable-line react-hooks/set-state-in-effect
     if (data === null) {
       return;
     }
@@ -89,67 +117,40 @@ export function AnalyzeAndRepairDialog({
     ];
 
     setActions(initialActions);
-
-    async function processActions(
-      data: AnalyzeAndRepairData,
-      actions: AnalyzeAction[],
-    ) {
-      const workingActions = [...actions];
-
-      function firstActiveActionIndex(actions: AnalyzeAction[]): number {
-        return actions.findIndex((x) => x.state === "pending");
-      }
-
-      while (!isComplete(workingActions)) {
-        const index = firstActiveActionIndex(workingActions);
-        const action = workingActions[index];
-
-        workingActions[index].state = "running";
-        setActions([...workingActions]);
-
-        await action.handler(data);
-
-        workingActions[index].state = "complete";
-        setActions([...workingActions]);
-      }
-    }
-
     processActions(structuredClone(data), initialActions);
   }, [data]);
 
-  function handleComplete() {
-    onComplete();
-  }
-
   return (
-    <Dialog open={isOpen} maxWidth="lg" fullWidth>
-      <DialogTitle>Analyze and Repair Dialog</DialogTitle>
+    <>
+      <Dialog open={isOpen} maxWidth="lg" fullWidth>
+        <DialogTitle>Analyze and Repair Dialog</DialogTitle>
 
-      <DialogContent>
-        <List sx={{ width: "100%" }}>
-          {actions.map((action) => {
-            const actionState = ACTION_STATE[action.state];
-            const defaultState = ACTION_STATE['pending'];
+        <DialogContent>
+          <List sx={{ width: "100%" }}>
+            {actions.map((action) => {
+              const actionState = ACTION_STATE[action.state];
+              const defaultState = ACTION_STATE['pending'];
 
-            return (
-              <ListItem key={action.id}>
-                <ListItemAvatar sx={{ minWidth: "72px" }}>
-                  <Avatar sx={{ width: 64, height: 64 }} src={actionState.src || defaultState.src} />
-                </ListItemAvatar>
-                <ListItemText>
-                  <span style={{ color: actionState.color || defaultState.color }}>{action.name}</span>
-                </ListItemText>
-              </ListItem>
-            );
-          })}
-        </List>
-      </DialogContent>
+              return (
+                <ListItem key={action.id}>
+                  <ListItemAvatar sx={{ minWidth: "72px" }}>
+                    <Avatar sx={{ width: 64, height: 64 }} src={actionState.src || defaultState.src} />
+                  </ListItemAvatar>
+                  <ListItemText>
+                    <span style={{ color: actionState.color || defaultState.color }}>{action.name}</span>
+                  </ListItemText>
+                </ListItem>
+              );
+            })}
+          </List>
+        </DialogContent>
 
-      <DialogActions>
-        <Button disabled={!isComplete(actions)} onClick={handleComplete}>
-          Complete
-        </Button>
-      </DialogActions>
-    </Dialog>
+        <DialogActions>
+          <Button disabled={!isComplete(actions)} onClick={handleComplete}>
+            Complete
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }
