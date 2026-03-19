@@ -4,11 +4,9 @@ import { createRootRoute, Outlet } from "@tanstack/react-router";
 const RootLayout = () => {
   const queryClient = new QueryClient();
   return (
-    <>
-      <QueryClientProvider client={queryClient}>
-        <Outlet />
-      </QueryClientProvider>
-    </>
+    <QueryClientProvider client={queryClient}>
+      <Outlet />
+    </QueryClientProvider>
   );
 };
 
