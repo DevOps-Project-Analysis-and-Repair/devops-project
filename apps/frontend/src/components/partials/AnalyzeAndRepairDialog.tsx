@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { API_BASE_URL } from "../../api";
+import { fixFile } from "../../services/fixService";
 
 export type AnalyzeAndRepairData = { projectId: string; fileId: string };
 
@@ -65,14 +66,7 @@ export function AnalyzeAndRepairDialog({
     });
   }
 
-  async function fixFile(data: AnalyzeAndRepairData) {
-    await fetch(
-      `${API_BASE_URL}/fix/projects/${data.projectId}/files/${data.fileId}`,
-      {
-        method: "POST",
-      },
-    );
-  }
+ 
 
   function isComplete(actions: AnalyzeAction[]): boolean {
     if (actions.length === 0) {
@@ -125,13 +119,13 @@ export function AnalyzeAndRepairDialog({
         handler: doAnalysis,
         state: "pending",
       },
-      { name: "Fix file (2/4)", handler: fixFile, state: "pending" },
+      { name: "Fix file (2/4)", handler: (data) => fixFile(data.projectId,data.fileId), state: "pending" },
       {
         name: "Analyze updated project (3/4)",
         handler: doAnalysis,
         state: "pending",
       },
-      { name: "Fix file (4/4)", handler: fixFile, state: "pending" },
+      { name: "Fix file (4/4)", handler: (data) => fixFile(data.projectId,data.fileId), state: "pending" },
     ];
 
     setActions(initialActions);
