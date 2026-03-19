@@ -11,8 +11,8 @@ import {
   ListItemText,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import { API_BASE_URL } from "../../api";
-import { performAnalysis } from "../../services/analysisService";
+import { getAnalysis, performAnalysis } from "../../services/analysisService";
+import { fixFile } from "../../services/fixService";
 
 export type AnalyzeAndRepairData = { projectId: string; fileId: string };
 
@@ -21,7 +21,7 @@ export type AnalyzeAndRepairDialogProps = {
   onComplete: () => void;
 };
 
-interface AnalyzeAction {
+type AnalyzeAction = {
   name: string;
   handler: (data: AnalyzeAndRepairData) => Promise<void>;
   state: "pending" | "running" | "complete";
@@ -42,7 +42,6 @@ const ACTION_STATE = {
   },
 } as const;
 
-
 const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
 export function AnalyzeAndRepairDialog({
@@ -53,8 +52,8 @@ export function AnalyzeAndRepairDialog({
   const [actions, setActions] = useState<AnalyzeAction[]>([]);
 
   async function doAnalysis(data: AnalyzeAndRepairData) {
-    const result = performAnalysis(data.projectId);
-    
+    const result = await performAnalysis(data.projectId);
+
     if (!result.analysisId) { throw new Error("Unable to get analysis id"); }
 
     let found = false;
@@ -62,21 +61,12 @@ export function AnalyzeAndRepairDialog({
     while (!found) {
       await sleep(1000);
 
-      const analysisResults = await (await fetch(`${API_BASE_URL}/upload/projects/${data.projectId}/analysis`)).json();
+      const analysisResults = await getAnalysis(data.projectId);
       
       if (Object.keys(analysisResults).length === 0) { continue; }
 
       found = analysisResults.sonar.some((x: { projectAnalysisId: string }) => x.projectAnalysisId === result.analysisId);
     }
-  }
-
-  async function fixFile(data: AnalyzeAndRepairData) {
-    await fetch(
-      `${API_BASE_URL}/fix/projects/${data.projectId}/files/${data.fileId}`,
-      {
-        method: "POST",
-      },
-    );
   }
 
   function isComplete(actions: AnalyzeAction[]): boolean {
@@ -125,7 +115,7 @@ export function AnalyzeAndRepairDialog({
     }
 
     const initialActions: AnalyzeAction[] = [
-      { name: "Fix file (1/2)", handler: fixFile, state: "pending" },
+      { name: "Fix file (1/2)", handler: (data) => fixFile(data.projectId,data.fileId), state: "pending" },
       {
         name: "Analyze updated project (2/2)",
         handler: doAnalysis,
@@ -143,20 +133,20 @@ export function AnalyzeAndRepairDialog({
 
       <DialogContent>
         <List sx={{ width: "100%" }}>
-          
-          {actions.map((x, i) => {
-            const actionState = ACTION_STATE[x.state]; 
+          {actions.map((action, i) => {
+            const actionState = ACTION_STATE[action.state]; 
             const defaultState =  ACTION_STATE['pending'];
+            
             return (
             <ListItem key={i}>
               <ListItemAvatar sx={{ minWidth: "72px" }}>
-               <Avatar sx={{ width: 64, height: 64 }} src={actionState.src || defaultState.src} />;
+                  <Avatar sx={{ width: 64, height: 64 }} src={actionState.src || defaultState.src} />;
               </ListItemAvatar>
               <ListItemText>
-                <span style={{ color: actionState.color || defaultState.color }}>{x.name}</span>;
+                  <span style={{ color: actionState.color || defaultState.color }}>{action.name}</span>;
               </ListItemText>
             </ListItem>
-          )})}
+)})}
         </List>
       </DialogContent>
 
