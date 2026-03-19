@@ -12,7 +12,7 @@ import { Project, ProjectFile, SonarAnalysisUpload, latest } from 'shared';
 import { datestring, isUploadCompleted } from './util';
 
 export const SERVICE_NAME = process.env.SERVICE_NAME
-const logger = new Logger({ SERVICE_NAME });
+const logger = new Logger({ serviceName: SERVICE_NAME });
 const app = new Router({ logger: logger });
 
 const S3_CLIENT = new S3Client({});

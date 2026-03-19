@@ -7,7 +7,7 @@ import { createUniqueAnalysisDir, downloadProjectFiles } from './project';
 import { createAnalysisReport, createSonarProject, existsSonarProject, makeSonarProjectPublic, pollSonarCloud, runSonarScanner, uploadAnalysisReport } from './sonar';
 
 export const SERVICE_NAME = process.env.SERVICE_NAME
-const logger = new Logger({ SERVICE_NAME });
+const logger = new Logger({ serviceName: SERVICE_NAME });
 const app = new Router({ logger: logger });
 
 export const FILES_BUCKET = process.env.S3_BUCKET_NAME
