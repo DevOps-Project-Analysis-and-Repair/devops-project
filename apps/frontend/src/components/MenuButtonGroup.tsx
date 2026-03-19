@@ -14,14 +14,12 @@ export interface MenuButtonGroupProps {
 export function MenuButtonGroup ({ items, onItemClick }: MenuButtonGroupProps) {
 
   return (
-    <>
-      <ButtonGroup variant="outlined">
-        {items.map((item) => (
-          <Button key={item.id} onClick={() => onItemClick(item.id)}>
-            {item.label}
-          </Button>
-        ))}
-      </ButtonGroup>
-    </>
+    <ButtonGroup variant="outlined">
+      {items.map((item) => (
+        <Button key={item.id} onClick={() => onItemClick(item.id)}>
+          {item.label}
+        </Button>
+      ))}
+    </ButtonGroup>
   );
 }
