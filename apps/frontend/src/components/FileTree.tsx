@@ -5,13 +5,13 @@ import type { JSX } from "react";
 import type { FileSystemDirectory, FileSystemFile } from "../filesystem";
 
 export interface FileTreeProps {
-  directory: FileSystemDirectory;
-  onFileClick: (file: FileSystemFile) => void;
+  readonly directory: FileSystemDirectory;
+  readonly onFileClick: (file: FileSystemFile) => void;
 }
 
 export interface FileTreeItemProps {
-  item: FileSystemDirectory | FileSystemFile;
-  onFileClick: (file: FileSystemFile) => void;
+  readonly item: FileSystemDirectory | FileSystemFile;
+  readonly onFileClick: (file: FileSystemFile) => void;
 }
 
 const FileTreeContainer = styled("div")({

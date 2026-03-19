@@ -53,7 +53,7 @@ function Index() {
   const navigate = useNavigate();
 
   function onChange(
-    event: ChangeEvent<HTMLInputElement, HTMLInputElement>,
+    event: ChangeEvent<HTMLInputElement>,
   ): void {
     // TODO: Filter files, only keep text based files (utf-8, ascii)
     const files: File[] = [...(event.target.files ?? [])];
@@ -110,7 +110,7 @@ function Index() {
             style={{ display: "none" }}
             multiple
             onChange={onChange}
-          ></input>
+          />
         </Button>
 
         <Button
@@ -126,7 +126,7 @@ function Index() {
             style={{ display: "none" }}
             webkitdirectory="true"
             onChange={onChange}
-          ></input>
+          />
         </Button>
         <Link to="/history">
           <ButtonLink

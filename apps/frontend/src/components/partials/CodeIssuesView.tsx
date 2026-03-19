@@ -17,11 +17,11 @@ import {
 import type { IssueItem } from "../../services/analytics";
 
 interface CodeIssuesViewProps {
-  issues?: IssueItem[];
+  issues?: ReadonlyArray<IssueItem>;
   title?: string;
 }
 
-const severityOrder: Record<IssueItem["severity"], number> = {
+const severityOrder: Readonly<Record<IssueItem["severity"], number>> = {
   BLOCKER: 0,
   CRITICAL: 1,
   MAJOR: 2,
@@ -29,7 +29,7 @@ const severityOrder: Record<IssueItem["severity"], number> = {
   INFO: 4,
 };
 
-function isClosedIssue(issue: IssueItem) {
+function isClosedIssue(issue: Readonly<IssueItem>) {
   return issue.status === "CLOSED" || issue.status === "RESOLVED";
 }
 
@@ -157,7 +157,7 @@ function formatRule(rule: string) {
   return shortRule ?? rule;
 }
 
-function sortIssues(issues: IssueItem[]) {
+function sortIssues(issues: ReadonlyArray<IssueItem>) {
   return [...issues].sort((a, b) => {
     const aClosed = isClosedIssue(a) ? 1 : 0;
     const bClosed = isClosedIssue(b) ? 1 : 0;
@@ -173,7 +173,7 @@ function sortIssues(issues: IssueItem[]) {
   });
 }
 
-function getIssueSummary(issues: IssueItem[]) {
+function getIssueSummary(issues: ReadonlyArray<IssueItem>) {
   return {
     blocker: issues.filter((x) => x.severity === "BLOCKER" && !isClosedIssue(x)).length,
     critical: issues.filter((x) => x.severity === "CRITICAL" && !isClosedIssue(x)).length,
@@ -187,7 +187,7 @@ function getIssueSummary(issues: IssueItem[]) {
 export function CodeIssuesView({
   issues = [],
   title = "Code issues",
-}: CodeIssuesViewProps) {
+}: Readonly<CodeIssuesViewProps>) {
   const theme = useTheme();
 
   if (issues.length === 0) {

@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { spawn } from "child_process";
-import { once } from "events";
-import fs from "fs/promises";
-import path from "path";
+import { spawn } from "node:child_process";
+import { once } from "node:events";
+import fs from "node:fs/promises";
+import path from "node:path";
 import { SonarAnalysisUpload, SonarRepairIssue } from "shared";
 
 const SONAR_ORG = process.env.SONARORG;
@@ -37,7 +37,7 @@ export const runSonarScanner = async (projectPath: string, projectId: string): P
     const [code] = await once(proc, "close");
 
     if (code != 0) {
-        throw new Error();
+        throw new Error(`SonarScanner failed with exit code ${code}`);
     }
 
     const reportPath = path.join(projectPath, ".scannerwork", "report-task.txt");
@@ -109,7 +109,7 @@ export const existsSonarProject = async (projectId: string): Promise<boolean> =>
     const json = await result.json();
     console.log(json);
 
-    return json.paging?.total ?? 0 > 0;
+   return json.paging?.total ?? false;
 }
 
 export const pollSonarCloud = async (ceTaskUrl: string, intervalMs: number = 2000): Promise<string> => {

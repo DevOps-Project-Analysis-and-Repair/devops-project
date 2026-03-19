@@ -2,10 +2,10 @@ import { NotFoundError } from '@aws-lambda-powertools/event-handler/http';
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { DynamoDBDocument, GetCommand } from "@aws-sdk/lib-dynamodb";
-import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from "fs";
-import { tmpdir } from "os";
+import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { latest, Project} from "shared";
-import path from "path";
+import path from "node:path";
 import { TABLE_PROJECTS, FILES_BUCKET } from '.';
 
 const s3Client = new S3Client({});

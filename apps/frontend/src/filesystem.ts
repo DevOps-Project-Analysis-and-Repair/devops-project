@@ -33,7 +33,7 @@ export function filesToFileSystemTree(files: File[]): FileSystemDirectory | null
     const pathParts = path.split('/');
 
     const pathDirectories = pathParts.slice(0, -1);
-    const pathFile = pathParts.slice(-1)[0];
+    const pathFile = pathParts.at(-1);
 
     let cwd = root;
 
@@ -44,16 +44,12 @@ export function filesToFileSystemTree(files: File[]): FileSystemDirectory | null
         const newCwd = dir(part, id++);
         cwd.children.push(newCwd);
         cwd = newCwd;
-        continue;
-      }
-
-      if (result.kind === "directory") {
+      } else if (result.kind === "directory") {
         cwd = result;
-        continue;
       }
     }
 
-    cwd.children.push(file(pathFile, path, id++, entry));
+    cwd.children.push(file(pathFile || "", path, id++, entry));
   }
 
   // Remove the root in case a single directory is uploaded  
@@ -119,10 +115,10 @@ export function flattenFileSystem(root: FileSystemDirectory): FileSystemFile[] {
   return root.children.flatMap(node => node.kind === 'file' ? [node] : flattenFileSystem(node));
 }
 
-export function getFileExtension(filepath: string): string | undefined {
-  const extensionRegExp = new RegExp(".([^.]+)$");
+export function getFileExtension(filepath: string): string {
+  const extensionRegExp = /\.([^.]+)$/;
   const res = extensionRegExp.exec(filepath);
-  return res?.[1];
+  return res?.[1] || "";
 }
 
 

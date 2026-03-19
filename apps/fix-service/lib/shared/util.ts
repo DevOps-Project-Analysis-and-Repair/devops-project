@@ -6,8 +6,8 @@ export function findFile(fileId: string, project: Project): ProjectFile | null {
     if (file.id === fileId) { return file };
   }
 
-  // Flatmap all the repaired for easy searching
-  const repairedFiles = Object.values(project.repairedFiles).flatMap(x => x);
+  // Flatten all the repaired for easy searching
+  const repairedFiles = Object.values(project.repairedFiles).flat();
 
   for (const file of repairedFiles) {
     if (file.id === fileId) { return file };

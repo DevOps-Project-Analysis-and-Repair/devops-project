@@ -5,3 +5,4 @@ env.json
 dist
 .DS_Store
 */.DS_Store
+sonar.sh

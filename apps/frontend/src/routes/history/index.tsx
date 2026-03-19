@@ -39,7 +39,7 @@ function RouteComponent() {
       </Link>
       <hr />
       <TableContainer component={Paper}>
-        {isPending && <><CircularProgress color="inherit" /></>}
+        {isPending && <CircularProgress color="inherit" />}
 
         {!isPending && !error &&  (
           <Table sx={{ minWidth: 650 }} aria-label="Project history">
