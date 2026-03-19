@@ -1,16 +1,16 @@
 import { Card, CardContent, Grid, Typography } from "@mui/material";
 
 export interface MetricsViewProps {
-  metrics: Metric[];
+  readonly metrics: ReadonlyArray<Metric>;
 }
 
 export interface Metric {
-  id: string;
-  name: string;
-  value: string;
+  readonly id: string;
+  readonly name: string;
+  readonly value: string;
 }
 
-export function MetricsView({ metrics }: MetricsViewProps) {
+export function MetricsView({ metrics }: Readonly<MetricsViewProps>) {
   return (
     <Grid container spacing={2} marginTop={3}>
       {metrics.map((metric) => (
