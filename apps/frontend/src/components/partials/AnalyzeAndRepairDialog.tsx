@@ -153,8 +153,8 @@ export function AnalyzeAndRepairDialog({
 
       <DialogContent>
         <List sx={{ width: "100%" }}>
-          {actions.map((x, i) => (
-            <ListItem key={i}>
+          {actions.map((x) => (
+            <ListItem key={x.name}>
               <ListItemAvatar sx={{ minWidth: "72px" }}>
                 <AvatarOnState state={x.state} />
               </ListItemAvatar>
