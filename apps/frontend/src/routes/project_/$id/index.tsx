@@ -168,7 +168,7 @@ function Project() {
     if (!project) {
       return;
     }
-    if (!fileContent || !fileContent.id) {
+    if (!fileContent?.id) {
       return;
     }
 
