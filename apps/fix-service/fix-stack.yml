@@ -6,7 +6,7 @@ Parameters:
   ServiceName:
     Description: Name of the service
     Type: String
-    Default: upload
+    Default: fix
   FixServiceImageUri:
     Description: Uri to the image
     Type: String

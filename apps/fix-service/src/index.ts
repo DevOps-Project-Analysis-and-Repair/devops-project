@@ -5,7 +5,7 @@ import { fixCode } from './client';
 import { Project, ProjectAnalysis, SonarRepairIssue, findFile } from 'shared';
 
 export const SERVICE_NAME = process.env.SERVICE_NAME
-const logger = new Logger({ SERVICE_NAME });
+const logger = new Logger({ serviceName: SERVICE_NAME });
 const app = new Router({ logger: logger });
 
 const API_SERVICE_URL = "https://1wk9q92xx1.execute-api.eu-west-1.amazonaws.com";

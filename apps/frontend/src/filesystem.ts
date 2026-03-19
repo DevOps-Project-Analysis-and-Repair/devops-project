@@ -121,8 +121,4 @@ export function getFileExtension(filepath: string): string | undefined {
   return res?.[1];
 }
 
-export async function downloadFile(url: string): Promise<string> {
-  const response = await fetch(url);
 
-  return await response.text();
-}

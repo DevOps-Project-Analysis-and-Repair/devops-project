@@ -3,14 +3,13 @@ import TroubleshootIcon from "@mui/icons-material/Troubleshoot";
 import {
   Box,
   Button,
-  ButtonGroup,
   CircularProgress,
   Divider,
-  Typography,
+  Typography
 } from "@mui/material";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { API_BASE_URL, type UploadProject } from "../../../api";
+import { type UploadProject } from "../../../api";
 import {
   CodeViewer,
   type CodeViewerProps,
@@ -20,25 +19,30 @@ import {
   AnalyzeAndRepairDialog,
   type AnalyzeAndRepairData,
 } from "../../../components/partials/AnalyzeAndRepairDialog";
+import { CodeIssuesView } from "../../../components/partials/CodeIssuesView";
+import { ComparisonMetricsView } from "../../../components/partials/ComparisonMetricsView";
 import { Container } from "../../../components/ui/Container";
 import {
-  downloadFile,
   getFileExtension,
   uploadFilesToFileSystemTree,
   type FileSystemFile,
 } from "../../../filesystem";
+import { getAnalysisResults } from "../../../services/analysisService";
 import { extractSonarMetrics, groupIssuesByPath, mapMetricsForView, type ExtractedSonarMetrics, type IssueItem } from "../../../services/analytics";
-import { ComparisonMetricsView } from "../../../components/partials/ComparisonMetricsView";
-import { CodeIssuesView } from "../../../components/partials/CodeIssuesView";
+import { downloadFile, getProject, getProjectAnalysis } from "../../../services/uploadService";
+import { sleep } from "../../../util";
 
 export const Route = createFileRoute("/project_/$id/")({
   component: Project,
 });
 
-type FileIterationData = Readonly<{ id: string; iteration: number }>;
+type FileIterationData = { id: string; iteration: number };
 const flex110 = { flexGrow: 1, flexShrink: 1, flexBasis: 0 };
 
-function FileIterations(props: Readonly<{ iterations: FileIterationData[]; handler: (id: string) => void }>) {
+function FileIterations(props: {
+  iterations: FileIterationData[];
+  handler: (id: string) => void;
+}) {
   const { iterations, handler } = props;
 
   return (
@@ -66,38 +70,29 @@ function Project() {
   const { id } = Route.useParams();
 
   async function downloadProject() {
-    const projectResp = await fetch(`${API_BASE_URL}/upload/projects/${id}`);
-    const projectJson = await projectResp.json();
-
-    setProject(projectJson);
+    const project = await getProject(id);
+    setProject(project);
   }
 
   async function downloadAnalytics(signal: AbortSignal) {
-    const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
-
-    const resp = await fetch(`${API_BASE_URL}/upload/projects/${id}/analysis`);
-    const result = await resp.json();
-
+    const result = await getProjectAnalysis(id);
+    
     if (Object.keys(result).length >= 1) {
       setSonarMetrics(extractSonarMetrics(result));
       setSonarIssues(groupIssuesByPath(result));
       return;
     }
-
-    const analyticsResp = await fetch(`${API_BASE_URL}/analysis/${id}`, {
-      method: "POST",
-    });
-
-    const analyticsResult = await analyticsResp.json();
+    
+    const analyticsResult = await getAnalysisResults(id);
 
     if (!analyticsResult.analysisId) { throw new Error("Unable to get analysis id"); }
 
     while (true) {
       if (signal.aborted) { return; }
       await sleep(1000);
-
+    
       const analysisResults = await (await fetch(`${API_BASE_URL}/upload/projects/${id}/analysis`)).json();
-
+          
       if (Object.keys(analysisResults).length === 0) { continue; }
 
       if (analysisResults.sonar) {
@@ -128,9 +123,8 @@ function Project() {
     setFileContent(null);
     setIterationContent(null);
 
-    const content = await downloadFile(
-      `${API_BASE_URL}/upload/projects/${id}/files/${file.downloadId}`,
-    );
+    const content = await downloadFile(id, file?.downloadId || ''); 
+    
     const fileExtension = getFileExtension(file.name);
 
     if (!fileExtension) {
@@ -141,22 +135,19 @@ function Project() {
   }
 
   function getFileIterations(
-    project: Readonly<UploadProject>,
+    project: UploadProject,
     fileId: string,
   ): FileIterationData[] {
     const iterations = (project.repairedFiles[fileId] ??= []);
 
     return iterations.map((x) => {
-      return { id: x.id, iteration: x.iteration };
+      return { id: x.id, label: x.iteration };
     });
   }
 
   async function onFileIterationClick(fileId: string) {
-    const content = await downloadFile(
-      `${API_BASE_URL}/upload/projects/${id}/files/${fileId}`,
-    );
-
-    // using filecontent here is the biggest hack of 2k26
+    const content = await downloadFile(id, fileId);
+    
     setIterationContent({
       content,
       language: fileContent!.language,
@@ -168,11 +159,11 @@ function Project() {
     if (!project) {
       return;
     }
-    if (!fileContent?.id) {
+    if (!fileContent || !fileContent.id) {
       return;
     }
 
-    setProjectUnderAnalysis({ projectId: project.id, fileId: fileContent.id });
+    setAnalyzeProject({ projectId: project.id, fileId: fileContent.id });
   }
 
   async function postAnalyzedProject() {
@@ -185,121 +176,119 @@ function Project() {
   }
 
   return (
-    <>
-      <AnalyzeAndRepairDialog
-        data={projectUnderAnalysis}
-        onComplete={postAnalyzedProject}
-      />
-      <Container direction="column" overflow="auto">
-        <Button
-          component={Link}
-          to={`/`}
-          startIcon={<ArrowBackIcon />}
-          variant="outlined"
-          sx={{
-            mb: 3,
-            borderRadius: 2,
-            textTransform: "none",
-            fontWeight: 500,
-          }}
-        >
-          Back to home screen
-        </Button>
-        <Typography
-          component="h1"
-          variant="h4"
-          sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
-        >
-          Project {project.name} ({project.files.length})
-        </Typography>
+    <AnalyzeAndRepairDialog
+      data={projectUnderAnalysis}
+      onComplete={postAnalyzedProject}
+    />
+    <Container direction="column" overflow="auto">
+      <Button
+        component={Link}
+        to={`/`}
+        startIcon={<ArrowBackIcon />}
+        variant="outlined"
+        sx={{
+          mb: 3,
+          borderRadius: 2,
+          textTransform: "none",
+          fontWeight: 500,
+        }}
+      >
+        Back to home screen
+      </Button>
+      <Typography
+        component="h1"
+        variant="h4"
+        sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
+      >
+        Project {project.name} ({project.files.length})
+      </Typography>
 
-        <Box sx={{ width: "100%", pt: 2 }}>
-          {(!sonarMetrics?.first && !sonarMetrics?.last) ? (
-            <Typography>No analysis available yet.</Typography>
-          ) : (
-            <>
-              <Typography sx={{ mb: 1 }}>Analysis comparison</Typography>
-              <ComparisonMetricsView
-                first={sonarMetrics?.first ? mapMetricsForView(sonarMetrics.first) : []}
-                last={sonarMetrics?.last ? mapMetricsForView(sonarMetrics.last) : []}
-              />
-            </>
-          )}
-        </Box>
-
-        <Box sx={{ display: "flex", direction: "row" }} pt={2}>
-          {project.files && (
-            <FileTree
-              directory={uploadFilesToFileSystemTree(project.files)}
-              onFileClick={onFileClick}
+      <Box sx={{ width: "100%", pt: 2 }}>
+        {(!sonarMetrics?.first && !sonarMetrics?.last) ? (
+          <Typography>No analysis available yet.</Typography>
+        ) : (
+          <>
+            <Typography sx={{ mb: 1 }}>Analysis comparison</Typography>
+            <ComparisonMetricsView
+              first={sonarMetrics?.first ? mapMetricsForView(sonarMetrics.first) : []}
+              last={sonarMetrics?.last ? mapMetricsForView(sonarMetrics.last) : []}
             />
-          )}
+          </>
+        )}
+      </Box>
 
-          {fileContent && (
-            <Box
-              sx={{
-                display: "flex",
-                direction: "row",
-                overflow: "auto",
-                ...flex110,
-              }}
-            >
-              <Box sx={{ display: "flex", overflowY: "auto", ...flex110 }}>
-                <Box p={2} sx={{ minWidth: "100%" }}>
-                  <Button
-                    disabled={!sonarMetrics}
-                    component="label"
-                    role={undefined}
-                    variant="contained"
-                    tabIndex={-1}
-                    onClick={analyzeProject}
-                    startIcon={<TroubleshootIcon />}
-                  >
-                    { sonarMetrics ? <>Repair & Analyze</> : <>Analyzing</> }
-                  </Button>
+      <Box sx={{ display: "flex", direction: "row" }} pt={2}>
+        {project.files && (
+          <FileTree
+            directory={uploadFilesToFileSystemTree(project.files)}
+            onFileClick={onFileClick}
+          />
+        )}
 
-                  <CodeViewer
-                    content={fileContent.content}
-                    language={fileContent.language}
-                  />
-                </Box>
-              </Box>
+        {fileContent && (
+          <Box
+            sx={{
+              display: "flex",
+              direction: "row",
+              overflow: "auto",
+              ...flex110,
+            }}
+          >
+            <Box sx={{ display: "flex", overflowY: "auto", ...flex110 }}>
+              <Box p={2} sx={{ minWidth: "100%" }}>
+                <Button
+                  disabled={!sonarMetrics}
+                  component="label"
+                  role={undefined}
+                  variant="contained"
+                  tabIndex={-1}
+                  onClick={analyzeProject}
+                  startIcon={<TroubleshootIcon />}
+                >
+                  { sonarMetrics ? <>Repair & Analyze</> : <>Analyzing</> }
+                </Button>
 
-              <Divider orientation="vertical" flexItem />
-
-              <Box sx={{ display: "flex", overflowY: "auto", ...flex110 }}>
-                <Box p={2} sx={{ minWidth: "100%" }}>
-                  <FileIterations
-                    iterations={getFileIterations(project, fileContent.id)}
-                    handler={onFileIterationClick}
-                  />
-
-                  {iterationContent && (
-                    <CodeViewer
-                      content={iterationContent.content}
-                      language={iterationContent.language}
-                    />
-                  )}
-
-                  {
-                    (sonarIssues?.get(fileContent.filepath) ?? []).length >= 1 && <CodeIssuesView issues={sonarIssues?.get(fileContent.filepath) ?? []} />
-                  }
-                </Box>
+                <CodeViewer
+                  content={fileContent.content}
+                  language={fileContent.language}
+                />
               </Box>
             </Box>
-          )}
-        </Box>
-        {project && (
-          <div>
-            <h3>Sonarcube results</h3>
-            <a
-              href={`https://sonarcloud.io/project/overview?id=devops-software-engineering_${project.id}`}
-            >
-              Sonarcube project
-            </a>
-          </div>
+
+            <Divider orientation="vertical" flexItem />
+
+            <Box sx={{ display: "flex", overflowY: "auto", ...flex110 }}>
+              <Box p={2} sx={{ minWidth: "100%" }}>
+                <FileIterations
+                  iterations={getFileIterations(project, fileContent.id!)}
+                  handler={onFileIterationClick}
+                />
+
+                {iterationContent && (
+                  <CodeViewer
+                    content={iterationContent.content}
+                    language={iterationContent.language}
+                  />
+                )}
+
+                {
+                  (sonarIssues?.get(fileContent.filepath) ?? []).length >= 1 && <CodeIssuesView issues={sonarIssues?.get(fileContent.filepath) ?? []} />
+                }
+              </Box>
+            </Box>
+          </Box>
         )}
-      </Container>
-    </>
+      </Box>
+      {project && (
+        <div>
+          <h3>Sonarcube results</h3>
+          <a
+            href={`https://sonarcloud.io/project/overview?id=devops-software-engineering_${project.id}`}
+          >
+            Sonarcube project
+          </a>
+        </div>
+      )}
+    </Container>
   );
 }

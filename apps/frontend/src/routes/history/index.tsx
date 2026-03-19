@@ -11,18 +11,18 @@ import {
 import Paper from "@mui/material/Paper";
 import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { API_BASE_URL, type UploadProject } from "../../api";
 import { Container } from "../../components/ui/Container";
+import { listAllProjects } from "../../services/uploadService";
+
 export const Route = createFileRoute("/history/")({
   component: RouteComponent,
 });
 
-
 function RouteComponent() {
 
-  const { data: projects, isPending, error } = useQuery<UploadProject[]>({
+  const { data: projects, isPending, error } = useQuery({
     queryKey: ["projects"],
-    queryFn: () => fetch(`${API_BASE_URL}/upload/projects`).then((r) => r.json()),
+    queryFn: listAllProjects,
   });
 
   return (

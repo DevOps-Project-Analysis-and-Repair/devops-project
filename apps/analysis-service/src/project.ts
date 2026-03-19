@@ -6,10 +6,11 @@ import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { latest, Project} from "shared";
 import path from "node:path";
+import { TABLE_PROJECTS, FILES_BUCKET } from '.';
 
-const S3_CLIENT = new S3Client({});
-const DB_CLIENT = new DynamoDBClient({});
-const DOC = DynamoDBDocument.from(DB_CLIENT);
+const s3Client = new S3Client({});
+const dbClient = new DynamoDBClient({});
+const doc = DynamoDBDocument.from(dbClient);
 
 export function createUniqueAnalysisDir(): string {
     const prefix = path.join(tmpdir(), "analysis-");
@@ -19,7 +20,7 @@ export function createUniqueAnalysisDir(): string {
 // Fetch project from project ID, or fail.
 export async function getProjectFromDb(projectId: string): Promise<Project> {
     const cmd = new GetCommand({ TableName: TABLE_PROJECTS, Key: { id: projectId } });
-    const res = await DOC.send(cmd);
+    const res = await doc.send(cmd);
 
     if (!res.Item) { throw new NotFoundError(); }
 
@@ -59,7 +60,7 @@ export async function downloadProjectFiles(projectId: string, targetProjectLocat
     // Write each file to the target directory.
     for (const file of project.files) {
 
-        const fileContents = await S3_CLIENT.send(new GetObjectCommand({ Bucket: FILES_BUCKET, Key: file.id }));
+        const fileContents = await s3Client.send(new GetObjectCommand({ Bucket: FILES_BUCKET, Key: file.id }));
 
         if (!fileContents.Body) throw new NotFoundError;
 
