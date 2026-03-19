@@ -49,7 +49,6 @@ export function filesToFileSystemTree(files: File[]): FileSystemDirectory | null
 
       if (result.kind === "directory") {
         cwd = result;
-        continue;
       }
     }
 
