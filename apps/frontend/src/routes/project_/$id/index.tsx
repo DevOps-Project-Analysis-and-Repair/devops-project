@@ -111,7 +111,7 @@ function Project() {
     setFileContent(null);
     setIterationContent(null);
 
-    const content = await downloadFile(id, file?.downloadId!); 
+    const content = await downloadFile(id, file?.downloadId || ''); 
     
     const fileExtension = getFileExtension(file.name);
 

@@ -134,7 +134,7 @@ export function AnalyzeAndRepairDialog({
         <List sx={{ width: "100%" }}>
           {actions.map((action, i) => {
             const actionState = ACTION_STATE[action.state]; 
-            const defaultState =  ACTION_STATE['pending'];
+            const defaultState = ACTION_STATE['pending'];
             
             return (
             <ListItem key={i}>
