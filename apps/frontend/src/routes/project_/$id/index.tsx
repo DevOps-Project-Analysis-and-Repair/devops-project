@@ -3,7 +3,6 @@ import TroubleshootIcon from "@mui/icons-material/Troubleshoot";
 import {
   Box,
   Button,
-  ButtonGroup,
   CircularProgress,
   Divider,
   Typography
@@ -16,6 +15,7 @@ import {
   type CodeViewerProps,
 } from "../../../components/CodeViewer";
 import { FileTree } from "../../../components/FileTree";
+import { MenuButtonGroup, type MenuButtonItem } from "../../../components/MenuButtonGroup";
 import {
   AnalyzeAndRepairDialog,
   type AnalyzeAndRepairData,
@@ -28,14 +28,8 @@ import {
   uploadFilesToFileSystemTree,
   type FileSystemFile,
 } from "../../../filesystem";
-import { getAnalysisResults } from "../../../services/analysisService";
-import {
-  extractSonarMetrics,
-  groupIssuesByPath,
-  mapMetricsForView,
-  type ExtractedSonarMetrics,
-  type IssueItem,
-} from "../../../services/analytics";
+import { getAnalysis, getAnalysisResults } from "../../../services/analysisService";
+import { extractSonarMetrics, groupIssuesByPath, mapMetricsForView, type ExtractedSonarMetrics, type IssueItem } from "../../../services/analytics";
 import { downloadFile, getProject, getProjectAnalysis } from "../../../services/uploadService";
 import { sleep } from "../../../util";
 
@@ -43,36 +37,23 @@ export const Route = createFileRoute("/project_/$id/")({
   component: Project,
 });
 
-type FileIterationData = { id: string; iteration: number };
+
 const flex110 = { flexGrow: 1, flexShrink: 1, flexBasis: 0 };
 
-function FileIterations(props: {
-  iterations: FileIterationData[];
-  handler: (id: string) => void;
-}) {
-  const { iterations, handler } = props;
 
-  return (
-    <ButtonGroup variant="outlined">
-      {iterations.map((x) => (
-        <Button key={x.id} onClick={() => handler(x.id)}>
-          {x.iteration}
-        </Button>
-      ))}
-    </ButtonGroup>
-  );
-}
 
 function Project() {
   const [project, setProject] = useState<UploadProject | null>(null);
   const [initialLoad, setInitialLoad] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const [fileContent, setFileContent] = useState<Readonly<CodeViewerProps> | null>(null);
-  const [iterationContent, setIterationContent] = useState<Readonly<CodeViewerProps> | null>(null);
-  const [projectUnderAnalysis, setProjectUnderAnalysis] = useState<Readonly<AnalyzeAndRepairData> | null>(null);
-  const [sonarMetrics, setSonarMetrics] = useState<Readonly<ExtractedSonarMetrics> | null>(null);
-  const [sonarIssues, setSonarIssues] = useState<Readonly<Map<string, IssueItem[]>> | null>(null);
+  const [fileContent, setFileContent] = useState<CodeViewerProps | null>(null);
+  const [iterationContent, setIterationContent] =
+    useState<CodeViewerProps | null>(null);
+  const [projectUnderAnalysis, setAnalyzeProject] =
+    useState<AnalyzeAndRepairData | null>(null);
+  const [sonarMetrics, setSonarMetrics] = useState<ExtractedSonarMetrics | null>(null);
+  const [sonarIssues, setSonarIssues] = useState<Map<string, IssueItem[]> | null>(null);
 
   const { id } = Route.useParams();
 
@@ -83,23 +64,23 @@ function Project() {
 
   async function downloadAnalytics(signal: AbortSignal) {
     const result = await getProjectAnalysis(id);
-
+    
     if (Object.keys(result).length >= 1) {
       setSonarMetrics(extractSonarMetrics(result));
       setSonarIssues(groupIssuesByPath(result));
       return;
     }
-
+    
     const analyticsResult = await getAnalysisResults(id);
 
     if (!analyticsResult.analysisId) { throw new Error("Unable to get analysis id"); }
-
+    
     while (true) {
       if (signal.aborted) { return; }
       await sleep(1000);
-
-      const analysisResults = await (await fetch(`${import.meta.env.VITE_API_BASE_URL}/upload/projects/${id}/analysis`)).json();
-
+    
+      const analysisResults = await getAnalysis(id);
+    
       if (Object.keys(analysisResults).length === 0) { continue; }
 
       if (analysisResults.sonar) {
@@ -124,37 +105,34 @@ function Project() {
 
   if (initialLoad) return <CircularProgress />;
 
-  if (error || !project) return <div>An error occurred: {error?.message}</div>;
+  if (error || !project) return <div> An error occured {error?.message} </div>;
 
-  async function onFileClick(file: Readonly<FileSystemFile>) {
+  async function onFileClick(file: FileSystemFile) {
     setFileContent(null);
     setIterationContent(null);
 
-    const content = await downloadFile(id, file?.downloadId || '');
-
+    const content = await downloadFile(id, file?.downloadId || ''); 
+    
     const fileExtension = getFileExtension(file.name);
 
     if (!fileExtension) {
-      throw new Error("Invalid file name");
+      throw "Invalid file name";
     }
 
     setFileContent({ content, language: fileExtension, id: file.downloadId, filepath: file.path });
   }
 
-  function getFileIterations(
-    project: UploadProject,
-    fileId: string,
-  ): FileIterationData[] {
+  function getFileIterations(project: UploadProject, fileId: string): MenuButtonItem[] {
     const iterations = (project.repairedFiles[fileId] ??= []);
 
     return iterations.map((x) => {
-      return { id: x.id, iteration: x.iteration };
+      return { id: x.id, label: x.iteration };
     });
   }
 
   async function onFileIterationClick(fileId: string) {
     const content = await downloadFile(id, fileId);
-
+    
     setIterationContent({
       content,
       language: fileContent!.language,
@@ -163,18 +141,15 @@ function Project() {
   }
 
   async function analyzeProject() {
-    if (!project) {
+    if (!project || !fileContent || !fileContent.id) {
       return;
     }
-    if (!fileContent || !fileContent.id) {
-      return;
-    }
-
-    setProjectUnderAnalysis({ projectId: project.id, fileId: fileContent.id });
+    
+    setAnalyzeProject({ projectId: project.id, fileId: fileContent.id });
   }
 
   async function postAnalyzedProject() {
-    setProjectUnderAnalysis(null);
+    setAnalyzeProject(null);
 
     await Promise.all([
       downloadProject(),
@@ -225,7 +200,7 @@ function Project() {
           )}
         </Box>
 
-        <Box sx={{ display: "flex", flexDirection: "row", pt: 2 }}>
+        <Box sx={{ display: "flex", direction: "row" }} pt={2}>
           {project.files && (
             <FileTree
               directory={uploadFilesToFileSystemTree(project.files)}
@@ -237,7 +212,7 @@ function Project() {
             <Box
               sx={{
                 display: "flex",
-                flexDirection: "row",
+                direction: "row",
                 overflow: "auto",
                 ...flex110,
               }}
@@ -253,7 +228,7 @@ function Project() {
                     onClick={analyzeProject}
                     startIcon={<TroubleshootIcon />}
                   >
-                    { sonarMetrics ? <>Repair & Analyze</> : <>Analyzing</> }
+                    { !sonarMetrics ? <>Analyzing</> : <>Repair & Analyze</>}
                   </Button>
 
                   <CodeViewer
@@ -267,9 +242,9 @@ function Project() {
 
               <Box sx={{ display: "flex", overflowY: "auto", ...flex110 }}>
                 <Box p={2} sx={{ minWidth: "100%" }}>
-                  <FileIterations
-                    iterations={getFileIterations(project, fileContent.id!)}
-                    handler={onFileIterationClick}
+                  <MenuButtonGroup
+                    items={getFileIterations(project, fileContent.id!)}
+                    onItemClick={onFileIterationClick}
                   />
 
                   {iterationContent && (
@@ -280,7 +255,7 @@ function Project() {
                   )}
 
                   {
-                    (sonarIssues?.get(fileContent.filepath) ?? []).length >= 1 && <CodeIssuesView issues={sonarIssues?.get(fileContent.filepath) ?? []} />
+                    (sonarIssues?.get(fileContent.filepath!) ?? []).length >= 1 && <CodeIssuesView issues={sonarIssues?.get(fileContent.filepath!) ?? []} />
                   }
                 </Box>
               </Box>
