@@ -110,6 +110,7 @@ export const existsSonarProject = async (projectId: string): Promise<boolean> =>
     console.log(json);
 
     // TODO: Correct one of the identical sub-expressions on both sides of the operator ">"
+    // Shouldn't this be `return (json.paging?.total ?? 0) > 0;`?
     return json.paging?.total ?? 0 > 0;
 }
 
