@@ -2,7 +2,7 @@ import { ThemeProvider, createTheme } from "@mui/material";
 import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import type { IssueItem } from "../../services/analytics";
+import type { IssueItem } from "../../utils/analytics";
 import { CodeIssuesView } from "./CodeIssuesView";
 
 const renderWithTheme = (ui: React.ReactNode) =>

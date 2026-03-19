@@ -29,9 +29,9 @@ import {
   type FileSystemFile,
 } from "../../../filesystem";
 import { getAnalysis, getAnalysisResults } from "../../../services/analysisService";
-import { extractSonarMetrics, groupIssuesByPath, mapMetricsForView, type ExtractedSonarMetrics, type IssueItem } from "../../../services/analytics";
 import { downloadFile, getProject, getProjectAnalysis } from "../../../services/uploadService";
 import { sleep } from "../../../utils";
+import { extractSonarMetrics, groupIssuesByPath, mapMetricsForView, type ExtractedSonarMetrics, type IssueItem } from "../../../utils/analytics";
 
 export const Route = createFileRoute("/project_/$id/")({
   component: Project,
