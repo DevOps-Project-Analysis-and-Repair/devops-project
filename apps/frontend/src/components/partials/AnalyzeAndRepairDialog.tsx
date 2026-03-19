@@ -21,37 +21,27 @@ export type AnalyzeAndRepairDialogProps = {
   onComplete: () => void;
 };
 
-type AnalyzeActionState = "pending" | "running" | "complete";
-
-type AnalyzeAction = {
+interface AnalyzeAction {
   name: string;
   handler: (data: AnalyzeAndRepairData) => Promise<void>;
-  state: AnalyzeActionState;
+  state: "pending" | "running" | "complete";
 };
 
-function AvatarOnState(props: { state: AnalyzeActionState }) {
-  const sx = { width: 64, height: 64 };
+const ACTION_STATE = {
+  pending: {
+    src: "/icons/viktor_pending.png",
+    color: "#7a7a7a",
+  },
+  running: {
+    src: "/icons/viktor_running.png",
+    color: "#ffb71c",
+  },
+  complete: {
+    src: "/icons/viktor_complete.png",
+    color: "#0bb81c",
+  },
+} as const;
 
-  switch (props.state) {
-    case "pending":
-      return <Avatar sx={sx} src="/icons/viktor_pending.png" />;
-    case "running":
-      return <Avatar sx={sx} src="/icons/viktor_running.png" />;
-    case "complete":
-      return <Avatar sx={sx} src="/icons/viktor_complete.png" />;
-  }
-}
-
-function TextOnState(props: { state: AnalyzeActionState; text: string }) {
-  switch (props.state) {
-    case "pending":
-      return <span style={{ color: "#7a7a7a" }}>{props.text}</span>;
-    case "running":
-      return <span style={{ color: "#ffb71c" }}>{props.text}</span>;
-    case "complete":
-      return <span style={{ color: "#0bb81c" }}>{props.text}</span>;
-  }
-}
 
 export function AnalyzeAndRepairDialog({
   data,
@@ -59,8 +49,6 @@ export function AnalyzeAndRepairDialog({
 }: AnalyzeAndRepairDialogProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [actions, setActions] = useState<AnalyzeAction[]>([]);
-
-  
 
   function isComplete(actions: AnalyzeAction[]): boolean {
     if (actions.length === 0) {
@@ -132,16 +120,20 @@ export function AnalyzeAndRepairDialog({
 
       <DialogContent>
         <List sx={{ width: "100%" }}>
-          {actions.map((x, i) => (
+          
+          {actions.map((x, i) => {
+            const actionState = ACTION_STATE[x.state]; 
+            const defaultState =  ACTION_STATE['pending'];
+            return (
             <ListItem key={i}>
               <ListItemAvatar sx={{ minWidth: "72px" }}>
-                <AvatarOnState state={x.state} />
+               <Avatar sx={{ width: 64, height: 64 }} src={actionState.src || defaultState.src} />;
               </ListItemAvatar>
               <ListItemText>
-                <TextOnState state={x.state} text={x.name} />
+                <span style={{ color: actionState.color || defaultState.color }}>{x.name}</span>;
               </ListItemText>
             </ListItem>
-          ))}
+          )})}
         </List>
       </DialogContent>
 
