@@ -125,6 +125,17 @@ function getTrendIcon(trend: Trend) {
   }
 }
 
+function getDeltaColor(trend: Trend) {
+  switch (trend) {
+    case "better":
+      return "success.main";
+    case "worse":
+      return "error.main";
+    default:
+      return "text.primary";
+  }
+}
+
 export function ComparisonMetricsView({
   first = [],
   last = [],
@@ -279,12 +290,7 @@ export function ComparisonMetricsView({
                         sx={{
                           fontWeight: 800,
                           lineHeight: 1.2,
-                          color:
-                            trend === "better"
-                              ? "success.main"
-                              : trend === "worse"
-                                ? "error.main"
-                                : "text.primary",
+                          color: getDeltaColor(trend),
                         }}
                       >
                         {getDeltaText(diff)}
