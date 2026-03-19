@@ -13,6 +13,7 @@ import {
 import { useEffect, useState } from "react";
 import { getAnalysis, performAnalysis } from "../../services/analysisService";
 import { fixFile } from "../../services/fixService";
+import { sleep } from "../../util";
 
 export type AnalyzeAndRepairData = { projectId: string; fileId: string };
 
@@ -41,8 +42,6 @@ const ACTION_STATE = {
     color: "#0bb81c",
   },
 } as const;
-
-const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
 export function AnalyzeAndRepairDialog({
   data,
