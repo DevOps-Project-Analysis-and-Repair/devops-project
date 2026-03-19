@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { spawn } from "node:child_process";
-import { once } from "events";
+import { once } from "node:events";
 import fs from "fs/promises";
 import path from "node:path";
 import { SonarAnalysisUpload, SonarRepairIssue } from "shared";
