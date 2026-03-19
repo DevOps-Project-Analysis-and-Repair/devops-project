@@ -5,7 +5,7 @@ import { DynamoDBDocument, GetCommand } from "@aws-sdk/lib-dynamodb";
 import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { latest, Project} from "shared";
-import path from "path";
+import path from "node:path";
 
 const S3_CLIENT = new S3Client({});
 const DB_CLIENT = new DynamoDBClient({});

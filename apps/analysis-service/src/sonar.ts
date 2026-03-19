@@ -2,7 +2,7 @@
 import { spawn } from "child_process";
 import { once } from "events";
 import fs from "fs/promises";
-import path from "path";
+import path from "node:path";
 import { SonarAnalysisUpload, SonarRepairIssue } from "shared";
 
 const SONAR_ORG = process.env.SONARORG;
