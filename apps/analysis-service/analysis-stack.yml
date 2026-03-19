@@ -12,6 +12,18 @@ Parameters:
     Default: analysis-service
 
 Resources:
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'Analyses-${AWS::StackName}'
+      AttributeDefinitions:
+        - AttributeName: projectId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: projectId
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -39,7 +51,7 @@ Resources:
                 Resource:
                   - 'arn:aws:s3:::files-upload-stack'
                   - 'arn:aws:s3:::files-upload-stack/*'
-        - PolicyName: DynamoDBAccess
+        - PolicyName: DynamoDBUploadAccess
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
@@ -53,6 +65,20 @@ Resources:
                   - dynamodb:Query
                 Resource:
                   - arn:aws:dynamodb:eu-west-1:379245767025:table/Projects-upload-stack
+        - PolicyName: DynamoDBAnalysisAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:Scan
+                  - dynamodb:Query
+                Resource:
+                  - !GetAtt DynamoDBTable.Arn
 
   LambdaFunction:
     Type: AWS::Lambda::Function
@@ -62,8 +88,8 @@ Resources:
       PackageType: Image
       Code:
         ImageUri: !Ref AnalysisServiceImageUri
-      Timeout: 120
-      MemorySize: 2048
+      Timeout: 800
+      MemorySize: 3000
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue LambdaSecurityGroup
@@ -73,6 +99,7 @@ Resources:
         Variables:
           S3_BUCKET_NAME: !ImportValue Upload-BucketName
           DYNAMODB_TABLE_NAME: !ImportValue Upload-TableName
+          DYNAMODB_TABLE_NAME_ANALYSIS: !Ref DynamoDBTable
 
 Outputs:
   AnalysisArn:
@@ -80,3 +107,13 @@ Outputs:
     Value: !GetAtt LambdaFunction.Arn
     Export:
       Name: !Sub "Analysis-FunctionArn"
+  AnalysisTableArn:
+    Description: ARN of the analysis table
+    Value: !GetAtt DynamoDBTable.Arn
+    Export:
+      Name: Analysis-TableArn
+  AnalysisTableName:
+    Description: Name of the analysis table
+    Value: !Ref DynamoDBTable
+    Export:
+      Name: Analysis-TableName

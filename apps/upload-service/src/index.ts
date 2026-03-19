@@ -1,16 +1,15 @@
-import { BadRequestError, InternalServerError, NotFoundError, Router, UnauthorizedError } from '@aws-lambda-powertools/event-handler/http';
+import { BadRequestError, HttpStatusCodes, InternalServerError, NotFoundError, Router, UnauthorizedError } from '@aws-lambda-powertools/event-handler/http';
 import { Logger } from '@aws-lambda-powertools/logger';
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { DynamoDBDocument, paginateScan } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocument, paginateScan, DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { Upload } from "@aws-sdk/lib-storage";
 import { Context } from 'aws-lambda';
 import { v4 as uuidv4 } from 'uuid';
-
 import { createToken, verifyToken } from './auth';
-import { appendFile, appendRepairedFile, getLatestProjectFromDb, getProjectFromDb } from './dynamo';
-import { Project, ProjectFile } from './types';
-import { datestring, isUploadCompleted, latest } from './util';
+import { appendFile, appendRepairedFile, getLatestProjectFromDb, getProjectFromDb, appendSonarReport, getProjectAnalysis } from './dynamo';
+import { Project, ProjectFile, SonarAnalysisUpload, latest } from 'shared';
+import { datestring, isUploadCompleted } from './util';
 
 const serviceName = 'upload';
 
@@ -18,11 +17,13 @@ const logger = new Logger({ serviceName });
 const app = new Router({ logger });
 
 const s3client = new S3Client({});
-const db = new DynamoDBClient({});
+const dynamoDBClient = new DynamoDBClient({});
+const db = DynamoDBDocumentClient.from(dynamoDBClient);
 const doc = DynamoDBDocument.from(db);
 
 export const TABLE_PROJECTS = "Projects-upload-stack";
 export const FILES_BUCKET = "files-upload-stack";
+export const TABLE_ANALYSIS = "Analyses-analysis-stack";
 
 function latestVersionOfFile(fileId: string, project: Project): ProjectFile | null {
   // Small note, if the file is not the original file, it will never give the latest version.
@@ -85,13 +86,17 @@ app.post(`/${serviceName}/projects`, async () => {
     name: `Upload ${datestring()}`,
     files: [],
     createdAt: Date.now(),
-    repairedFiles: {},
-    analysis: { sonarIds: [] }
+    repairedFiles: {}
   };
 
   await doc.put({
     TableName: TABLE_PROJECTS,
     Item: item
+  });
+
+  await doc.put({
+      TableName: TABLE_ANALYSIS,
+      Item: { "projectId": projectId, "analysis": {} }
   });
 
   // 2. create jwt to with project id
@@ -200,23 +205,20 @@ app.post(`/${serviceName}/projects/:projectId/files/:fileId/repaired`, async ({ 
 });
 
 app.post(`/${serviceName}/projects/:projectId/analysis/sonar`, async ({ req, params: { projectId } }) => {
-  // 1. get project
-  const project = await getProjectFromDb(doc, projectId);
+  const json = await req.json();
+  const sonarReport = json as SonarAnalysisUpload;
 
-  // 2. add sonar id to list
-  const body = await req.json();
+  console.log("Uploading Sonar report...");
 
-  if (!('analysisId' in body)) { throw new BadRequestError(); }
-
-  // 3. add analysisId to analysis results
-  const analysisId = body.analysisId;
-
-  project.analysis.sonarIds.push(analysisId);
-
-  // 4. store complete document (this introduces a race-condition but w.e.)
-  await doc.put({ TableName: TABLE_PROJECTS, Item: project });
+  await appendSonarReport(db, projectId, sonarReport);
+  
+  console.log("Uploaded Sonar report.");
 
   return { ok: true };
+});
+
+app.get(`/${serviceName}/projects/:projectId/analysis`, async ({ params: { projectId }}) => {
+  return await getProjectAnalysis(doc, projectId);
 });
 
 app.get(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ res, params: { projectId, fileId } }) => {
@@ -251,6 +253,15 @@ app.get(`/${serviceName}/projects/:projectId/files/:fileId/latest`, async ({ res
   res.headers.set('Content-Disposition', `inline; filename="${file.filename}"`);
 
   return result.Body?.transformToWebStream();
+});
+
+app.errorHandler(Error, async (error, reqCtx) => {
+  logger.error('error occurred:', error);
+
+  return {
+    statusCode: HttpStatusCodes.BAD_REQUEST,
+    message: `Bad request: ${error.message} - ${reqCtx.req.headers.get('x-correlation-id')}`,
+  };
 });
 
 export const handler = async (event: unknown, context: Context) => {

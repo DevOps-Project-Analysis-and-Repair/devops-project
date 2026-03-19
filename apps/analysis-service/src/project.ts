@@ -2,7 +2,9 @@ import { NotFoundError } from '@aws-lambda-powertools/event-handler/http';
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { DynamoDBDocument, GetCommand } from "@aws-sdk/lib-dynamodb";
-import { existsSync, mkdirSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from "fs";
+import { tmpdir } from "os";
+import { latest, Project} from "shared";
 import path from "path";
 
 
@@ -10,25 +12,14 @@ const s3Client = new S3Client({});
 const db = new DynamoDBClient({});
 const doc = DynamoDBDocument.from(db);
 
-export type ProjectFile = {
-    id: string,
-    url: string, // s3 bucket url
-    filename: string,
-    mimetype: string,
-}
-
-export type Project = {
-    id: string,
-    name: string,
-    files: ProjectFile[];
-    createdAt: number,
-    analysisId?: string
-};
-
 // TODO: Move to env.
 const TABLE_PROJECTS = "Projects-upload-stack";
 const FILES_BUCKET = "files-upload-stack";
-const API_BASE_URL = "https://1wk9q92xx1.execute-api.eu-west-1.amazonaws.com";
+
+export function createUniqueAnalysisDir(): string {
+    const prefix = path.join(tmpdir(), "analysis-");
+    return mkdtempSync(prefix);
+}
 
 // Fetch project from project ID, or fail.
 export async function getProjectFromDb(projectId: string): Promise<Project> {
@@ -38,6 +29,20 @@ export async function getProjectFromDb(projectId: string): Promise<Project> {
     if (!res.Item) { throw new NotFoundError(); }
 
     return res.Item as Project;
+}
+
+export async function getLatestProjectFromDb(projectId: string): Promise<Project> {
+  const project = await getProjectFromDb(projectId);
+
+  project.files = project.files.map(x => {
+    if (x.id in project.repairedFiles) {
+      return latest(project.repairedFiles[x.id]) ?? x;
+    }
+
+    return x;
+  });
+
+  return project;
 }
 
 function ensureDirectoryExistence(filePath: string) {
@@ -52,7 +57,7 @@ function ensureDirectoryExistence(filePath: string) {
 // Download a project from the S3 bucket into a local directory.
 export async function downloadProjectFiles(projectId: string, targetProjectLocation: string): Promise<void> {
 
-    const project = await getProjectFromDb(projectId);
+    const project = await getLatestProjectFromDb(projectId);
 
     mkdirSync(targetProjectLocation, { recursive: true });
 
@@ -74,14 +79,4 @@ export async function downloadProjectFiles(projectId: string, targetProjectLocat
 
         console.log('write successful');
     }
-}
-
-export async function uploadAnalysisId(projectId: string, analysisId: string): Promise<void> {
-    await fetch(`${API_BASE_URL}/upload/projects/${projectId}/analysis/sonar`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ analysisId: analysisId })
-    });
 }

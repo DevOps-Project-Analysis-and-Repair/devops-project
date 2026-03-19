@@ -1,9 +1,8 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocument, GetCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
-import { RepairedFile, Project, ProjectFile } from "./types";
-import { TABLE_PROJECTS } from ".";
+import { RepairedFile, Project, ProjectFile, SonarAnalysisUpload, ProjectAnalysis, latest } from "shared";
+import { TABLE_PROJECTS, TABLE_ANALYSIS } from ".";
 import { NotFoundError } from "@aws-lambda-powertools/event-handler/http";
-import { latest } from "./util";
 
 export async function getProjectFromDb(doc: DynamoDBDocument, projectId: string): Promise<Project> {
   const cmd = new GetCommand({ TableName: TABLE_PROJECTS, Key: { id: projectId }});
@@ -16,8 +15,7 @@ export async function getProjectFromDb(doc: DynamoDBDocument, projectId: string)
     name: res.Item.name,
     files: res.Item.files,
     createdAt: res.Item.createdAt,
-    repairedFiles: res.Item.repairedFiles ?? {},
-    analysis: res.Item.analysis ?? { sonarIds: [] }
+    repairedFiles: res.Item.repairedFiles ?? {}
   }
 }
 
@@ -63,4 +61,27 @@ export async function appendRepairedFile(db: DynamoDBClient, projectId: string, 
     },
     ConditionExpression: "attribute_exists(id)",
   }));
+}
+
+export async function getProjectAnalysis(doc: DynamoDBClient, projectId: string): Promise<ProjectAnalysis> {
+  const cmd = new GetCommand({ TableName: TABLE_ANALYSIS, Key: { projectId }});
+  const res = await doc.send(cmd);
+
+  if (!res.Item) { throw new NotFoundError(); }
+
+  return { sonar: res.Item.analysis.sonar };
+}
+
+export async function appendSonarReport(doc: DynamoDBClient, projectId: string, sonarReport: SonarAnalysisUpload): Promise<void> {
+  const cmd = new UpdateCommand({
+    TableName: TABLE_ANALYSIS,
+    Key: { projectId },
+    UpdateExpression: "SET analysis.sonar = list_append(if_not_exists(analysis.sonar, :empty), :newReport)",
+    ExpressionAttributeValues: {
+      ":newReport": [sonarReport],
+      ":empty": [],
+    },
+  });
+
+  await doc.send(cmd);
 }

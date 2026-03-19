@@ -11,8 +11,7 @@ import {
   ListItemText,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import { performAnalysis } from "../../services/analysisService";
-import { fixFile } from "../../services/fixService";
+import { API_BASE_URL } from "../../api";
 
 export type AnalyzeAndRepairData = { projectId: string; fileId: string };
 
@@ -43,12 +42,45 @@ const ACTION_STATE = {
 } as const;
 
 
+const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
+
 export function AnalyzeAndRepairDialog({
   data,
   onComplete,
 }: AnalyzeAndRepairDialogProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [actions, setActions] = useState<AnalyzeAction[]>([]);
+
+  async function doAnalysis(data: AnalyzeAndRepairData) {
+    const resp = await fetch(`${API_BASE_URL}/analysis/${data.projectId}`, {
+      method: "POST",
+    });
+
+    const result = await resp.json();
+
+    if (!result.analysisId) { throw new Error("Unable to get analysis id"); }
+
+    let found = false;
+
+    while (!found) {
+      await sleep(1000);
+
+      const analysisResults = await (await fetch(`${API_BASE_URL}/upload/projects/${data.projectId}/analysis`)).json();
+      
+      if (Object.keys(analysisResults).length === 0) { continue; }
+
+      found = analysisResults.sonar.some((x: { projectAnalysisId: string }) => x.projectAnalysisId === result.analysisId);
+    }
+  }
+
+  async function fixFile(data: AnalyzeAndRepairData) {
+    await fetch(
+      `${API_BASE_URL}/fix/projects/${data.projectId}/files/${data.fileId}`,
+      {
+        method: "POST",
+      },
+    );
+  }
 
   function isComplete(actions: AnalyzeAction[]): boolean {
     if (actions.length === 0) {
@@ -96,18 +128,12 @@ export function AnalyzeAndRepairDialog({
     }
 
     const initialActions: AnalyzeAction[] = [
+      { name: "Fix file (1/2)", handler: fixFile, state: "pending" },
       {
-        name: "Analyze current project (1/4)",
-        handler: (data) => performAnalysis(data.projectId),
+        name: "Analyze updated project (2/2)",
+        handler: doAnalysis,
         state: "pending",
-      },
-      { name: "Fix file (2/4)", handler: (data) => fixFile(data.projectId,data.fileId), state: "pending" },
-      {
-        name: "Analyze updated project (3/4)",
-        handler: (data) => performAnalysis(data.projectId),
-        state: "pending",
-      },
-      { name: "Fix file (4/4)", handler: (data) => fixFile(data.projectId,data.fileId), state: "pending" },
+      }
     ];
 
     setActions(initialActions);
