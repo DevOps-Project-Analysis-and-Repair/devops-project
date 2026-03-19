@@ -5,11 +5,9 @@ import fs from "fs/promises";
 import path from "path";
 import { SonarAnalysisUpload, SonarRepairIssue } from "shared";
 
-const SONAR_ORG = "devops-software-engineering";
-// const SONAR_PROJECT_KEY = "devops-software-engineering_just-testing";
-// const SONAR_PROJECT_NAME = "just-testing";
-const SONAR_TOKEN = "bcd02910cbccb25134ac49d377a55bea5c0ebaa8";
-const SONAR_HOST = "https://sonarcloud.io";
+const SONAR_ORG = process.env.SONARORG;
+const SONAR_TOKEN = process.env.SONAR_TOKEN;
+const SONAR_HOST = process.env.SONAR_HOST;
 
 const SONAR_AUTH = `Bearer ${SONAR_TOKEN}`;
 const API_BASE_URL = "https://1wk9q92xx1.execute-api.eu-west-1.amazonaws.com";

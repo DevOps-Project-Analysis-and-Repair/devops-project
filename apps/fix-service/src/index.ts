@@ -4,10 +4,9 @@ import { Context } from 'aws-lambda';
 import { fixCode } from './client';
 import { Project, ProjectAnalysis, SonarRepairIssue, findFile } from 'shared';
 
-export const serviceName = 'fix';
-
-const logger = new Logger({ serviceName });
-const app = new Router({ logger });
+export const SERVICE_NAME = process.env.SERVICE_NAME
+const logger = new Logger({ serviceName: SERVICE_NAME });
+const app = new Router({ logger: logger });
 
 const API_SERVICE_URL = "https://1wk9q92xx1.execute-api.eu-west-1.amazonaws.com";
 
@@ -56,7 +55,7 @@ function getLatestSonarIssues(analysis: ProjectAnalysis, filePath: string): Sona
   return latest.issues.filter(x => x.filePath === filePath) ?? [];
 }
 
-app.post(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ params: { projectId, fileId } }) => {
+app.post(`/${SERVICE_NAME}/projects/:projectId/files/:fileId`, async ({ params: { projectId, fileId } }) => {
   // Step 1: Download file
   const input = await downloadFile(projectId, fileId);
   const project = await downloadProject(projectId);
@@ -80,7 +79,7 @@ app.post(`/${serviceName}/projects/:projectId/files/:fileId`, async ({ params: {
   return { ok: true };
 });
 
-app.get(`/${serviceName}/health`, async () => {
+app.get(`/${SERVICE_NAME}/health`, async () => {
   return { ok: true };
 });
 

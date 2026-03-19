@@ -58,7 +58,10 @@ jobs:
           working-directory: ./apps/upload-service
           template-file: ./apps/upload-service/upload-stack.yml
           stack-name: upload-stack
-          parameter-overrides: UploadServiceImageUri=${{ env.ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/upload-service:${{ env.GIT_HASH }}
+          parameter-overrides: |
+            "JwtPrivateKey=${{ secrets.JWT_PRIVATE_KEY }}" \
+            "JwtPublicKey=${{ secrets.JWT_PUBLIC_KEY }}" \
+            "UploadServiceImageUri=${{ env.ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/upload-service:${{ env.GIT_HASH }}"
 
   deploy_analysis_stack:
     needs: [deploy_vpc_stack]
@@ -80,7 +83,11 @@ jobs:
           working-directory: ./apps/analysis-service
           template-file: ./apps/analysis-service/analysis-stack.yml
           stack-name: analysis-stack
-          parameter-overrides: AnalysisServiceImageUri=${{ env.ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/analysis-service:${{ env.GIT_HASH }}
+          parameter-overrides: |
+            "JwtPrivateKey=${{ secrets.JWT_PRIVATE_KEY }}" \
+            "JwtPublicKey=${{ secrets.JWT_PUBLIC_KEY }}" \
+            "SonarToken=${{ secrets.SONAR_ORG }}"
+            "AnalysisServiceImageUri=${{ env.ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/analysis-service:${{ env.GIT_HASH }}"
 
   deploy_fix_stack:
     needs: [deploy_vpc_stack]

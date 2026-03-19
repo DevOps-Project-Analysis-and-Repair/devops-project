@@ -3,6 +3,16 @@ Description: >
   This template deploys a Lambda function using a Docker image, with S3 and DynamoDB access.
 
 Parameters:
+  ServiceName:
+    Description: Name of the service
+    Type: String
+    Default: upload
+  JwtPrivateKey:
+    Description: Private key for the JWT
+    Type: String
+  JwtPublicKey:
+    Description: Public key for the JWT
+    Type: String
   UploadServiceImageUri:
     Description: Uri to the image
     Type: String
@@ -86,7 +96,6 @@ Resources:
                 Resource:
                   - !ImportValue Analysis-TableArn
 
-
   LambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
@@ -104,8 +113,11 @@ Resources:
           - !ImportValue PrivateSubnet
       Environment:
         Variables:
+          SERVICE_NAME: !Ref ServiceName
+          JWT_PRIVATE_KEY: !Ref JwtPrivateKey
+          JWT_PUBLIC_KEY: !Ref JwtPublicKey
           S3_BUCKET_NAME: !Ref S3Bucket
-          DYNAMODB_TABLE_NAME: !Ref DynamoDBTable
+          UPLOAD_TABLE_NAME: !Ref DynamoDBTable
           ANALYSIS_TABLE_NAME: !ImportValue Analysis-TableName
 
 Outputs:
