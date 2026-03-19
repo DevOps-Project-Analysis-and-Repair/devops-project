@@ -6,7 +6,7 @@ Parameters:
   ServiceName:
     Description: Name of the service
     Type: String
-    Default: upload
+    Default: analysis
   JwtPrivateKey:
     Description: Private key for the JWT
     Type: String
