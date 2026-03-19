@@ -85,11 +85,8 @@ function buildMetricMap(report?: SonarReport): MetricMap {
 export function extractSonarMetrics(json: ProjectJson): ExtractedSonarMetrics {
   const sonarReports = json.sonar ?? [];
 
-  const firstReport = sonarReports[0];
-  const lastReport =
-    sonarReports.length > 1
-      ? sonarReports[sonarReports.length - 1]
-      : undefined;
+  const firstReport = sonarReports.at(0);
+  const lastReport = sonarReports.length > 1 ? sonarReports.at(-1) : undefined;
 
   return {
     first: firstReport ? buildMetricMap(firstReport) : undefined,
@@ -101,7 +98,7 @@ export function groupIssuesByPath(json: ProjectJson): Map<string, IssueItem[]> {
   const sonarReports = json.sonar ?? [];
   const map = new Map<string, IssueItem[]>();
 
-  const latest = sonarReports[sonarReports.length - 1];
+  const latest = sonarReports.at(-1);
 
   if (!latest) { return map; }
 
