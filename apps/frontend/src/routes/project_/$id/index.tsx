@@ -3,60 +3,43 @@ import TroubleshootIcon from "@mui/icons-material/Troubleshoot";
 import {
   Box,
   Button,
-  ButtonGroup,
   CircularProgress,
   Divider,
-  Typography,
+  Typography
 } from "@mui/material";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { API_BASE_URL, type UploadProject } from "../../../api";
+import { type UploadProject } from "../../../api";
 import {
   CodeViewer,
   type CodeViewerProps,
 } from "../../../components/CodeViewer";
 import { FileTree } from "../../../components/FileTree";
+import { MenuButtonGroup, type MenuButtonItem } from "../../../components/MenuButtonGroup";
 import {
   AnalyzeAndRepairDialog,
   type AnalyzeAndRepairData,
 } from "../../../components/partials/AnalyzeAndRepairDialog";
-// import { MetricsView } from "../../../components/partials/MetricsView";
+import { CodeIssuesView } from "../../../components/partials/CodeIssuesView";
+import { ComparisonMetricsView } from "../../../components/partials/ComparisonMetricsView";
 import { Container } from "../../../components/ui/Container";
 import {
-  downloadFile,
   getFileExtension,
   uploadFilesToFileSystemTree,
   type FileSystemFile,
 } from "../../../filesystem";
+import { getAnalysis, getAnalysisResults } from "../../../services/analysisService";
 import { extractSonarMetrics, groupIssuesByPath, mapMetricsForView, type ExtractedSonarMetrics, type IssueItem } from "../../../services/analytics";
-import { ComparisonMetricsView } from "../../../components/partials/ComparisonMetricsView";
-import { CodeIssuesView } from "../../../components/partials/CodeIssuesView";
+import { downloadFile, getProject, getProjectAnalysis } from "../../../services/uploadService";
+import { sleep } from "../../../util";
 
 export const Route = createFileRoute("/project_/$id/")({
   component: Project,
 });
 
-type FileIterationData = { id: string; iteration: number };
+
 const flex110 = { flexGrow: 1, flexShrink: 1, flexBasis: 0 };
 
-function FileIterations(props: {
-  iterations: FileIterationData[];
-  handler: (id: string) => void;
-}) {
-  const { iterations, handler } = props;
-
-  return (
-    <>
-      <ButtonGroup variant="outlined">
-        {iterations.map((x) => (
-          <Button key={x.id} onClick={() => handler(x.id)}>
-            {x.iteration}
-          </Button>
-        ))}
-      </ButtonGroup>
-    </>
-  );
-}
 
 
 function Project() {
@@ -75,29 +58,20 @@ function Project() {
   const { id } = Route.useParams();
 
   async function downloadProject() {
-    const projectResp = await fetch(`${API_BASE_URL}/upload/projects/${id}`);
-    const projectJson = await projectResp.json();
-
-    setProject(projectJson);
+    const project = await getProject(id);
+    setProject(project);
   }
 
   async function downloadAnalytics(signal: AbortSignal) {
-    const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
-
-    const resp = await fetch(`${API_BASE_URL}/upload/projects/${id}/analysis`);
-    const result = await resp.json();
-
+    const result = await getProjectAnalysis(id);
+    
     if (Object.keys(result).length >= 1) {
       setSonarMetrics(extractSonarMetrics(result));
       setSonarIssues(groupIssuesByPath(result));
       return;
     }
-
-    const analyticsResp = await fetch(`${API_BASE_URL}/analysis/${id}`, {
-      method: "POST",
-    });
-
-    const analyticsResult = await analyticsResp.json();
+    
+    const analyticsResult = await getAnalysisResults(id);
 
     if (!analyticsResult.analysisId) { throw new Error("Unable to get analysis id"); }
     
@@ -105,8 +79,8 @@ function Project() {
       if (signal.aborted) { return; }
       await sleep(1000);
     
-      const analysisResults = await (await fetch(`${API_BASE_URL}/upload/projects/${id}/analysis`)).json();
-          
+      const analysisResults = await getAnalysis(id);
+    
       if (Object.keys(analysisResults).length === 0) { continue; }
 
       if (analysisResults.sonar) {
@@ -137,9 +111,8 @@ function Project() {
     setFileContent(null);
     setIterationContent(null);
 
-    const content = await downloadFile(
-      `${API_BASE_URL}/upload/projects/${id}/files/${file.downloadId}`,
-    );
+    const content = await downloadFile(id, file?.downloadId || ''); 
+    
     const fileExtension = getFileExtension(file.name);
 
     if (!fileExtension) {
@@ -149,23 +122,17 @@ function Project() {
     setFileContent({ content, language: fileExtension, id: file.downloadId, filepath: file.path });
   }
 
-  function getFileIterations(
-    project: UploadProject,
-    fileId: string,
-  ): FileIterationData[] {
+  function getFileIterations(project: UploadProject, fileId: string): MenuButtonItem[] {
     const iterations = (project.repairedFiles[fileId] ??= []);
 
     return iterations.map((x) => {
-      return { id: x.id, iteration: x.iteration };
+      return { id: x.id, label: x.iteration };
     });
   }
 
   async function onFileIterationClick(fileId: string) {
-    const content = await downloadFile(
-      `${API_BASE_URL}/upload/projects/${id}/files/${fileId}`,
-    );
-
-    // using filecontent here is the biggest hack of 2k26
+    const content = await downloadFile(id, fileId);
+    
     setIterationContent({
       content,
       language: fileContent!.language,
@@ -174,13 +141,10 @@ function Project() {
   }
 
   async function analyzeProject() {
-    if (!project) {
+    if (!project || !fileContent || !fileContent.id) {
       return;
     }
-    if (!fileContent || !fileContent.id) {
-      return;
-    }
-
+    
     setAnalyzeProject({ projectId: project.id, fileId: fileContent.id });
   }
 
@@ -278,9 +242,9 @@ function Project() {
 
               <Box sx={{ display: "flex", overflowY: "auto", ...flex110 }}>
                 <Box p={2} sx={{ minWidth: "100%" }}>
-                  <FileIterations
-                    iterations={getFileIterations(project, fileContent.id!)}
-                    handler={onFileIterationClick}
+                  <MenuButtonGroup
+                    items={getFileIterations(project, fileContent.id!)}
+                    onItemClick={onFileIterationClick}
                   />
 
                   {iterationContent && (

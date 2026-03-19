@@ -11,7 +11,9 @@ import {
   ListItemText,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import { API_BASE_URL } from "../../api";
+import { getAnalysis, performAnalysis } from "../../services/analysisService";
+import { fixFile } from "../../services/fixService";
+import { sleep } from "../../util";
 
 export type AnalyzeAndRepairData = { projectId: string; fileId: string };
 
@@ -20,39 +22,26 @@ export type AnalyzeAndRepairDialogProps = {
   onComplete: () => void;
 };
 
-type AnalyzeActionState = "pending" | "running" | "complete";
-
 type AnalyzeAction = {
   name: string;
   handler: (data: AnalyzeAndRepairData) => Promise<void>;
-  state: AnalyzeActionState;
+  state: "pending" | "running" | "complete";
 };
 
-function AvatarOnState(props: { state: AnalyzeActionState }) {
-  const sx = { width: 64, height: 64 };
-
-  switch (props.state) {
-    case "pending":
-      return <Avatar sx={sx} src="/icons/viktor_pending.png" />;
-    case "running":
-      return <Avatar sx={sx} src="/icons/viktor_running.png" />;
-    case "complete":
-      return <Avatar sx={sx} src="/icons/viktor_complete.png" />;
-  }
-}
-
-function TextOnState(props: { state: AnalyzeActionState; text: string }) {
-  switch (props.state) {
-    case "pending":
-      return <span style={{ color: "#7a7a7a" }}>{props.text}</span>;
-    case "running":
-      return <span style={{ color: "#ffb71c" }}>{props.text}</span>;
-    case "complete":
-      return <span style={{ color: "#0bb81c" }}>{props.text}</span>;
-  }
-}
-
-const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
+const ACTION_STATE = {
+  pending: {
+    src: "/icons/viktor_pending.png",
+    color: "#7a7a7a",
+  },
+  running: {
+    src: "/icons/viktor_running.png",
+    color: "#ffb71c",
+  },
+  complete: {
+    src: "/icons/viktor_complete.png",
+    color: "#0bb81c",
+  },
+} as const;
 
 export function AnalyzeAndRepairDialog({
   data,
@@ -62,11 +51,7 @@ export function AnalyzeAndRepairDialog({
   const [actions, setActions] = useState<AnalyzeAction[]>([]);
 
   async function doAnalysis(data: AnalyzeAndRepairData) {
-    const resp = await fetch(`${API_BASE_URL}/analysis/${data.projectId}`, {
-      method: "POST",
-    });
-
-    const result = await resp.json();
+    const result = await performAnalysis(data.projectId);
 
     if (!result.analysisId) { throw new Error("Unable to get analysis id"); }
 
@@ -75,21 +60,12 @@ export function AnalyzeAndRepairDialog({
     while (!found) {
       await sleep(1000);
 
-      const analysisResults = await (await fetch(`${API_BASE_URL}/upload/projects/${data.projectId}/analysis`)).json();
+      const analysisResults = await getAnalysis(data.projectId);
       
       if (Object.keys(analysisResults).length === 0) { continue; }
 
       found = analysisResults.sonar.some((x: { projectAnalysisId: string }) => x.projectAnalysisId === result.analysisId);
     }
-  }
-
-  async function fixFile(data: AnalyzeAndRepairData) {
-    await fetch(
-      `${API_BASE_URL}/fix/projects/${data.projectId}/files/${data.fileId}`,
-      {
-        method: "POST",
-      },
-    );
   }
 
   function isComplete(actions: AnalyzeAction[]): boolean {
@@ -138,7 +114,7 @@ export function AnalyzeAndRepairDialog({
     }
 
     const initialActions: AnalyzeAction[] = [
-      { name: "Fix file (1/2)", handler: fixFile, state: "pending" },
+      { name: "Fix file (1/2)", handler: (data) => fixFile(data.projectId,data.fileId), state: "pending" },
       {
         name: "Analyze updated project (2/2)",
         handler: doAnalysis,
@@ -156,16 +132,20 @@ export function AnalyzeAndRepairDialog({
 
       <DialogContent>
         <List sx={{ width: "100%" }}>
-          {actions.map((x, i) => (
+          {actions.map((action, i) => {
+            const actionState = ACTION_STATE[action.state]; 
+            const defaultState = ACTION_STATE['pending'];
+            
+            return (
             <ListItem key={i}>
               <ListItemAvatar sx={{ minWidth: "72px" }}>
-                <AvatarOnState state={x.state} />
+                  <Avatar sx={{ width: 64, height: 64 }} src={actionState.src || defaultState.src} />;
               </ListItemAvatar>
               <ListItemText>
-                <TextOnState state={x.state} text={x.name} />
+                  <span style={{ color: actionState.color || defaultState.color }}>{action.name}</span>;
               </ListItemText>
             </ListItem>
-          ))}
+)})}
         </List>
       </DialogContent>
 
