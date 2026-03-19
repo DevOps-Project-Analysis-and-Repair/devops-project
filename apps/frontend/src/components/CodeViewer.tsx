@@ -11,15 +11,13 @@ export type CodeViewerProps = Readonly<{
 
 export function CodeViewer(params: CodeViewerProps): JSX.Element {
   return (
-    <>
-      <SyntaxHighlighter
-        showLineNumbers
-        wrapLongLines
-        language={params.language}
-        style={cb}
-      >
-        {params.content}
-      </SyntaxHighlighter>
-    </>
+    <SyntaxHighlighter
+      showLineNumbers
+      wrapLongLines
+      language={params.language}
+      style={cb}
+    >
+      {params.content}
+    </SyntaxHighlighter>
   );
 }
