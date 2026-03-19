@@ -273,24 +273,6 @@ export const mapSonarIssueForRepair = (issue: any): SonarRepairIssue => ({
     tags: issue.tags,
 });
 
-// export const groupIssuesByFile = (issues: any[]) => {
-//     const map: Record<string, any[]> = {};
-
-//     for (const issue of issues) {
-//         const fileKey = issue.component;
-
-//         if (!map[fileKey]) {
-//             map[fileKey] = [];
-//         }
-
-//         map[fileKey].push(issue);
-//     }
-
-//     return map;
-// };
-
-
-
 export const createAnalysisReport = async (projectId: string, analysisId: string, projectAnalysisId: string): Promise<SonarAnalysisUpload> => {
 
     const projectKey = `${SONAR_ORG}_${projectId}`;
