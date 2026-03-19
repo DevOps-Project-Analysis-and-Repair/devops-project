@@ -134,7 +134,7 @@ function Project() {
     const fileExtension = getFileExtension(file.name);
 
     if (!fileExtension) {
-      throw "Invalid file name";
+      throw new Error("Invalid file name");
     }
 
     setFileContent({ content, language: fileExtension, id: file.downloadId, filepath: file.path });
