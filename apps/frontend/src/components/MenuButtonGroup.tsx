@@ -1,18 +1,17 @@
 import Button from "@mui/material/Button";
 import ButtonGroup from "@mui/material/ButtonGroup";
 
-export interface MenuButtonItem { 
-  id: string; 
-  label: number 
+export interface MenuButtonItem {
+  id: string;
+  label: number;
 };
 
 export interface MenuButtonGroupProps {
-  items: MenuButtonItem[];
+  items: ReadonlyArray<MenuButtonItem>;
   onItemClick: (id: string) => void;
 }
 
-export function MenuButtonGroup ({ items, onItemClick }: MenuButtonGroupProps) {
-
+export function MenuButtonGroup({ items, onItemClick }: Readonly<MenuButtonGroupProps>) {
   return (
     <ButtonGroup variant="outlined">
       {items.map((item) => (
