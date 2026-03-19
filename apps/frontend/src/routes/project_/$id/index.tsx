@@ -270,7 +270,7 @@ function Project() {
               <Box sx={{ display: "flex", overflowY: "auto", ...flex110 }}>
                 <Box p={2} sx={{ minWidth: "100%" }}>
                   <FileIterations
-                    iterations={getFileIterations(project, fileContent.id!)}
+                    iterations={getFileIterations(project, fileContent.id)}
                     handler={onFileIterationClick}
                   />
 
