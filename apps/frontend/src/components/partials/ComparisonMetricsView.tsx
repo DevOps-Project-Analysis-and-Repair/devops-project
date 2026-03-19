@@ -12,27 +12,27 @@ import {
 } from "@mui/material";
 
 interface Metric {
-  id: string;
-  name: string;
-  value: string;
-  bestValue?: boolean;
+  readonly id: string;
+  readonly name: string;
+  readonly value: string;
+  readonly bestValue?: boolean;
 }
 
 interface ComparisonMetricsViewProps {
-  first?: Metric[];
-  last?: Metric[];
+  readonly first?: ReadonlyArray<Metric>;
+  readonly last?: ReadonlyArray<Metric>;
 }
 
 type Trend = "better" | "worse" | "same" | "unknown";
 
-const higherIsBetterMetricIds = new Set<string>([
+const higherIsBetterMetricIds: ReadonlySet<string> = new Set<string>([
   "coverage",
   "line_coverage",
   "branch_coverage",
   "test_success_density",
 ]);
 
-const lowerIsBetterMetricIds = new Set<string>([
+const lowerIsBetterMetricIds: ReadonlySet<string> = new Set<string>([
   "bugs",
   "vulnerabilities",
   "code_smells",
@@ -128,15 +128,15 @@ function getTrendIcon(trend: Trend) {
 export function ComparisonMetricsView({
   first = [],
   last = [],
-}: ComparisonMetricsViewProps) {
+}: Readonly<ComparisonMetricsViewProps>) {
   const map = new Map<
     string,
     {
-      name: string;
-      first?: string;
-      last?: string;
-      firstBestValue?: boolean;
-      lastBestValue?: boolean;
+      readonly name: string;
+      readonly first?: string;
+      readonly last?: string;
+      readonly firstBestValue?: boolean;
+      readonly lastBestValue?: boolean;
     }
   >();
 
