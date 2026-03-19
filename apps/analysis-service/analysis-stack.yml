@@ -19,6 +19,7 @@ Parameters:
     Default: devops-software-engineering
   SonarToken:
     Description: Access token to the sonar host 
+    Type: String
   SonarHost:
     Type: String
     Default: https://sonarcloud.io
