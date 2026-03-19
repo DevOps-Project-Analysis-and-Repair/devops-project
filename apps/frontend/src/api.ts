@@ -1,4 +1,4 @@
-export const API_BASE_URL = "https://1wk9q92xx1.execute-api.eu-west-1.amazonaws.com";
+export const API_BASE_URL = import.meta.env.DEV ? "https://1wk9q92xx1.execute-api.eu-west-1.amazonaws.com" : import.meta.env.BASE_URL;
 
 export interface UploadProject {
   files: UploadedFile[];
