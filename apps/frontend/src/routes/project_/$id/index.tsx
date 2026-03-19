@@ -9,7 +9,6 @@ import {
 } from "@mui/material";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { type UploadProject } from "../../../api";
 import {
   CodeViewer,
   type CodeViewerProps,
@@ -23,15 +22,16 @@ import {
 import { CodeIssuesView } from "../../../components/partials/CodeIssuesView";
 import { ComparisonMetricsView } from "../../../components/partials/ComparisonMetricsView";
 import { Container } from "../../../components/ui/Container";
-import {
-  getFileExtension,
-  uploadFilesToFileSystemTree,
-  type FileSystemFile,
-} from "../../../filesystem";
 import { getAnalysis, getAnalysisResults } from "../../../services/analysisService";
 import { downloadFile, getProject, getProjectAnalysis } from "../../../services/uploadService";
 import { sleep } from "../../../utils";
 import { extractSonarMetrics, groupIssuesByPath, mapMetricsForView, type ExtractedSonarMetrics, type IssueItem } from "../../../utils/analytics";
+import { type UploadProject } from "../../../utils/api";
+import {
+  getFileExtension,
+  uploadFilesToFileSystemTree,
+  type FileSystemFile,
+} from "../../../utils/filesystem";
 
 export const Route = createFileRoute("/project_/$id/")({
   component: Project,

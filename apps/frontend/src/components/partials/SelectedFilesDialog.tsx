@@ -13,7 +13,7 @@ import {
   getFileExtension,
   type FileSystemDirectory,
   type FileSystemFile,
-} from "../../filesystem";
+} from "../../utils/filesystem";
 import { CodeViewer, type CodeViewerProps } from "../CodeViewer";
 import { FileTree } from "../FileTree";
 

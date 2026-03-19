@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "../api";
+import { API_BASE_URL } from "../utils/api";
 
 export async function fixFile(projectId: string, fileId: string) {
     await fetch(

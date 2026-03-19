@@ -8,8 +8,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type ChangeEvent } from "react";
 import { SelectedFilesDialog } from "../components/partials/SelectedFilesDialog";
 import { Container } from "../components/ui/Container";
-import { filesToFileSystemTree, type FileSystemDirectory } from "../filesystem";
 import { createProject } from "../services/uploadService";
+import { filesToFileSystemTree, type FileSystemDirectory } from "../utils/filesystem";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
