@@ -12,7 +12,7 @@ export const Route = createFileRoute("/project_/$id/results_/$file/")({
 });
 
 function parseMarkdownCodeBlock(str: string) {
-  const normalized = str.replace(/\\n/g, "\n");
+  const normalized = str.replaceAll("\\n", "\n");
   const match = normalized.match(/```(\w+)?\n([\s\S]*?)```/);
   if (!match) return null;
 
