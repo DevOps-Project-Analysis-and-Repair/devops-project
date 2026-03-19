@@ -27,7 +27,7 @@ describe("AnalyzeAndRepairDialog", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // default mocks
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     (fixFile as any).mockResolvedValue(undefined);
 
     (performAnalysis as any).mockResolvedValue({
@@ -39,6 +39,7 @@ describe("AnalyzeAndRepairDialog", () => {
     });
 
     (sleep as any).mockResolvedValue(undefined);
+    /* eslint-enable @typescript-eslint/no-explicit-any */
   });
 
   it("opens dialog when data is provided", () => {
