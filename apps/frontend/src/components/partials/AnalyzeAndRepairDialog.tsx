@@ -77,36 +77,8 @@ export function AnalyzeAndRepairDialog({
     return actions.every((x) => x.state === "complete");
   }
 
-  async function processActions(
-    data: AnalyzeAndRepairData,
-    actions: AnalyzeAction[],
-  ) {
-    const workingActions = [...actions];
-
-    function firstActiveActionIndex(actions: AnalyzeAction[]): number {
-      return actions.findIndex((x) => x.state === "pending");
-    }
-
-    while (!isComplete(workingActions)) {
-      const index = firstActiveActionIndex(workingActions);
-      const action = workingActions[index];
-
-      workingActions[index].state = "running";
-      setActions([...workingActions]);
-
-      await action.handler(data);
-
-      workingActions[index].state = "complete";
-      setActions([...workingActions]);
-    }
-  }
-
-  function handleComplete() {
-    onComplete();
-  }
-
   useEffect(() => {
-    setIsOpen(data !== null); // eslint-disable-line react-hooks/set-state-in-effect
+    setIsOpen(data !== null);
     if (data === null) {
       return;
     }
@@ -117,8 +89,37 @@ export function AnalyzeAndRepairDialog({
     ];
 
     setActions(initialActions);
+
+    async function processActions(
+      data: AnalyzeAndRepairData,
+      actions: AnalyzeAction[],
+    ) {
+      const workingActions = [...actions];
+
+      function firstActiveActionIndex(actions: AnalyzeAction[]): number {
+        return actions.findIndex((x) => x.state === "pending");
+      }
+
+      while (!isComplete(workingActions)) {
+        const index = firstActiveActionIndex(workingActions);
+        const action = workingActions[index];
+
+        workingActions[index].state = "running";
+        setActions([...workingActions]);
+
+        await action.handler(data);
+
+        workingActions[index].state = "complete";
+        setActions([...workingActions]);
+      }
+    }
+
     processActions(structuredClone(data), initialActions);
   }, [data]);
+
+  function handleComplete() {
+    onComplete();
+  }
 
   return (
     <Dialog open={isOpen} maxWidth="lg" fullWidth>
