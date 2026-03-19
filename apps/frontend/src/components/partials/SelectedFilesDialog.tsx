@@ -50,39 +50,37 @@ export function SelectedFilesDialog({
   }
 
   return (
-    <>
-      <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
-        <DialogTitle>Selected files</DialogTitle>
-        <DialogContent>
-          <Stack direction="row">
-            <FileTree directory={files} onFileClick={onFileClick} />
-            {fileContent && (
-              <CodeViewer
-                content={fileContent.content}
-                language={fileContent.language}
-              />
-            )}
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button disabled={isUploading.uploading} onClick={handleClose}>Cancel</Button>
-          <Button disabled={isUploading.uploading} onClick={onClickAction} autoFocus>
-            Start Upload
-          </Button>
-        </DialogActions>
+    <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
+      <DialogTitle>Selected files</DialogTitle>
+      <DialogContent>
+        <Stack direction="row">
+          <FileTree directory={files} onFileClick={onFileClick} />
+          {fileContent && (
+            <CodeViewer
+              content={fileContent.content}
+              language={fileContent.language}
+            />
+          )}
+        </Stack>
+      </DialogContent>
+      <DialogActions>
+        <Button disabled={isUploading.uploading} onClick={handleClose}>Cancel</Button>
+        <Button disabled={isUploading.uploading} onClick={onClickAction} autoFocus>
+          Start Upload
+        </Button>
+      </DialogActions>
 
-        <Backdrop
-          open={isUploading.uploading}
-          sx={{
-            position: 'absolute',
-            zIndex: (theme) => theme.zIndex.drawer + 1,
-            color: '#fff',
-            borderRadius: 'inherit',
-          }}
-        >
-          <CircularProgress color="inherit" />
-        </Backdrop>
-      </Dialog>
-    </>
+      <Backdrop
+        open={isUploading.uploading}
+        sx={{
+          position: 'absolute',
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+          color: '#fff',
+          borderRadius: 'inherit',
+        }}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+    </Dialog>
   );
 }
