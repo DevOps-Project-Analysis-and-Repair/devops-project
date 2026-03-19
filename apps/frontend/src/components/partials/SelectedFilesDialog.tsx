@@ -18,11 +18,11 @@ import { CodeViewer, type CodeViewerProps } from "../CodeViewer";
 import { FileTree } from "../FileTree";
 
 interface SelectedFilesDialogProps {
-  open: boolean;
-  isUploading: { uploading: boolean, progress: number },
-  setOpen: Dispatch<SetStateAction<boolean>>;
-  onClickAction: () => void;
-  files: FileSystemDirectory;
+  readonly open: boolean;
+  readonly isUploading: Readonly<{ uploading: boolean; progress: number }>;
+  readonly setOpen: Dispatch<SetStateAction<boolean>>;
+  readonly onClickAction: () => void;
+  readonly files: FileSystemDirectory;
 }
 
 export function SelectedFilesDialog({
@@ -31,7 +31,7 @@ export function SelectedFilesDialog({
   setOpen,
   onClickAction,
   files,
-}: SelectedFilesDialogProps) {
+}: Readonly<SelectedFilesDialogProps>) {
   const [fileContent, setFileContent] = useState<CodeViewerProps | null>(null);
 
   const handleClose = () => {
