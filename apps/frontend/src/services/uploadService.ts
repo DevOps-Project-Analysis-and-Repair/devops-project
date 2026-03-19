@@ -8,9 +8,18 @@ const UPLOAD_SERVICE_URL = `${API_BASE_URL}/upload`;
 
 export async function listAllProjects(): Promise<UploadProject[]> {
   const resp = await fetch(`${UPLOAD_SERVICE_URL}/projects`, { method: 'GET' });
-
   if (!resp.ok) { throw new Error("Failed listing projects from Upload Service"); }
 
+  return await resp.json();
+}
+
+export async function getProject(projectId: string) {
+  const resp = await fetch(`${API_BASE_URL}/upload/projects/${projectId}`);
+  return await resp.json();
+}
+
+export async function getProjectAnalysis(projectId: string) {
+  const resp = await fetch(`${API_BASE_URL}/upload/projects/${projectId}/analysis`);
   return await resp.json();
 }
 
