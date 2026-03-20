@@ -13,18 +13,18 @@ const dbClient = new DynamoDBClient({});
 const doc = DynamoDBDocument.from(dbClient);
 
 export function createUniqueAnalysisDir(): string {
-    const prefix = path.join(tmpdir(), "analysis-");
-    return mkdtempSync(prefix);
+  const prefix = path.join(tmpdir(), "analysis-");
+  return mkdtempSync(prefix);
 }
 
 // Fetch project from project ID, or fail.
 export async function getProjectFromDb(projectId: string): Promise<Project> {
-    const cmd = new GetCommand({ TableName: TABLE_PROJECTS, Key: { id: projectId } });
-    const res = await doc.send(cmd);
+  const cmd = new GetCommand({ TableName: TABLE_PROJECTS, Key: { id: projectId } });
+  const res = await doc.send(cmd);
 
-    if (!res.Item) { throw new NotFoundError(); }
+  if (!res.Item) { throw new NotFoundError(); }
 
-    return res.Item as Project;
+  return res.Item as Project;
 }
 
 export async function getLatestProjectFromDb(projectId: string): Promise<Project> {
@@ -42,37 +42,37 @@ export async function getLatestProjectFromDb(projectId: string): Promise<Project
 }
 
 function ensureDirectoryExistence(filePath: string) {
-    const dirname = path.dirname(filePath);
-    if (existsSync(dirname)) {
-        return true;
-    }
-    ensureDirectoryExistence(dirname);
-    mkdirSync(dirname);
+  const dirname = path.dirname(filePath);
+
+  if (existsSync(dirname)) {
+    return true;
+  }
+
+  ensureDirectoryExistence(dirname);
+  mkdirSync(dirname);
 }
 
 // Download a project from the S3 bucket into a local directory.
 export async function downloadProjectFiles(projectId: string, targetProjectLocation: string): Promise<void> {
+  const project = await getLatestProjectFromDb(projectId);
 
-    const project = await getLatestProjectFromDb(projectId);
+  mkdirSync(targetProjectLocation, { recursive: true });
 
-    mkdirSync(targetProjectLocation, { recursive: true });
+  // Write each file to the target directory.
+  for (const file of project.files) {
+    const fileContents = await s3Client.send(new GetObjectCommand({ Bucket: FILES_BUCKET, Key: file.id }));
 
-    // Write each file to the target directory.
-    for (const file of project.files) {
+    if (!fileContents.Body) throw new NotFoundError;
 
-        const fileContents = await s3Client.send(new GetObjectCommand({ Bucket: FILES_BUCKET, Key: file.id }));
+    const targetFileLocation = path.join(targetProjectLocation, file.filename);
 
-        if (!fileContents.Body) throw new NotFoundError;
+    console.log(targetFileLocation);
 
-        const targetFileLocation = path.join(targetProjectLocation, file.filename);
+    const bytes = await fileContents.Body.transformToByteArray();
 
-        console.log(targetFileLocation);
+    ensureDirectoryExistence(targetFileLocation);
+    writeFileSync(targetFileLocation, bytes);
 
-        const bytes = await fileContents.Body.transformToByteArray();
-
-        ensureDirectoryExistence(targetFileLocation);
-        writeFileSync(targetFileLocation, bytes);
-
-        console.log('write successful');
-    }
+    console.log('write successful');
+  }
 }
