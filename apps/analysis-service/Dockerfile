@@ -36,7 +36,7 @@ ENV PATH="/opt/sonar-scanner/bin:${PATH}"
 ENV SONAR_USER_HOME="/tmp/.sonar"
 ENV SONAR_SCANNER_OPTS="-Xmx2048m"
 
-ENV SONARORG=""
+ENV SONAR_ORG=""
 ENV SONAR_TOKEN=""
 ENV SONAR_HOST=""
 
