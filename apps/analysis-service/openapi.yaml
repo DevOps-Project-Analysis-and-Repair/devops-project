@@ -1,0 +1,84 @@
+openapi: 3.0.3
+info:
+  title: Analysis Service
+  version: 1.0.0
+  description: API endpoints for the analysis service.
+
+paths:
+  /analysis/health:
+    get:
+      tags: [analysis]
+      summary: Health check
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: boolean
+
+  /analysis/{projectId}:
+    post:
+      tags: [analysis]
+      summary: Trigger asynchronous Sonar scan for a project
+      description: |
+        Initiates a Sonar analysis job. The actual scan is executed asynchronously
+        via a background process.
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Scan triggered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  analysisId:
+                    type: string
+
+  /analysis/{projectId}/sonar/{projectAnalysisId}:
+    post:
+      tags: [analysis]
+      summary: Execute Sonar analysis pipeline
+      description: |
+        Runs full Sonar pipeline:
+        - downloads project files
+        - ensures Sonar project exists
+        - runs scanner
+        - polls SonarCloud
+        - generates report
+        - uploads analysis report
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: projectAnalysisId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Analysis completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+
+components:
+  schemas:
+    SonarAnalysisResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
