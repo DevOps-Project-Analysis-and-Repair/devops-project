@@ -14,7 +14,7 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
-import type { IssueItem } from "../../services/analytics";
+import type { IssueItem } from "../../utils/analytics";
 
 interface CodeIssuesViewProps {
   issues?: ReadonlyArray<IssueItem>;

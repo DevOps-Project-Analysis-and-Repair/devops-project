@@ -2,7 +2,7 @@ import { styled } from "@mui/material";
 import { TreeItem } from "@mui/x-tree-view";
 import { SimpleTreeView } from "@mui/x-tree-view/SimpleTreeView";
 import type { JSX } from "react";
-import type { FileSystemDirectory, FileSystemFile } from "../filesystem";
+import type { FileSystemDirectory, FileSystemFile } from "../utils/filesystem";
 
 export interface FileTreeProps {
   readonly directory: FileSystemDirectory;
