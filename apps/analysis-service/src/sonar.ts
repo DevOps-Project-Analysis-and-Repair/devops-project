@@ -5,7 +5,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { SonarAnalysisUpload, SonarRepairIssue } from "shared";
 
-const SONAR_ORG = process.env.SONARORG as string;
+const SONAR_ORG = process.env.SONAR_ORG as string;
 const SONAR_TOKEN = process.env.SONAR_TOKEN as string;
 const SONAR_HOST = process.env.SONAR_HOST as string;
 
