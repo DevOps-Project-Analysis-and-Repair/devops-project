@@ -4,18 +4,18 @@ info:
   version: 1.0.0
   description: All routes of the fix, upload, and analysis service.
 tags:
-  - name: Fix_service_fix
+  - name: fix
     x-displayName: fix
-  - name: Upload_service_other
-    x-displayName: other
-  - name: Analysis_Service_other
-    x-displayName: other
+  - name: upload
+    x-displayName: upload
+  - name: analysis
+    x-displayName: analysis
 paths:
   /fix/projects/{projectId}/files/{fileId}:
     servers: []
     post:
       tags:
-        - Fix_service_fix
+        - fix
       summary: Repair a project file using analysis and AI fix
       parameters:
         - name: projectId
@@ -52,7 +52,7 @@ paths:
     servers: []
     get:
       tags:
-        - Fix_service_fix
+        - fix
       summary: Health check endpoint
       responses:
         '200':
@@ -68,6 +68,8 @@ paths:
   /upload/health:
     servers: []
     get:
+      tags:
+        - upload
       summary: Health check
       responses:
         '200':
@@ -76,11 +78,11 @@ paths:
             application/json:
               schema:
                 type: boolean
-      tags:
-        - Upload_service_other
   /upload/projects:
     servers: []
     get:
+      tags:
+        - upload
       summary: List all projects
       responses:
         '200':
@@ -91,9 +93,9 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Project'
-      tags:
-        - Upload_service_other
     post:
+      tags:
+        - upload
       summary: Create a new project
       responses:
         '200':
@@ -107,11 +109,11 @@ paths:
                     type: string
                   token:
                     type: string
-      tags:
-        - Upload_service_other
   /upload/projects/{projectId}:
     servers: []
     get:
+      tags:
+        - upload
       summary: Get project by ID
       parameters:
         - name: projectId
@@ -126,11 +128,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Project'
-      tags:
-        - Upload_service_other
   /upload/projects/{projectId}/latest:
     servers: []
     get:
+      tags:
+        - upload
       summary: Get project with latest repaired files resolved
       parameters:
         - name: projectId
@@ -145,11 +147,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Project'
-      tags:
-        - Upload_service_other
   /upload/projects/{projectId}/files:
     servers: []
     post:
+      tags:
+        - upload
       summary: Upload a new file to a project
       parameters:
         - name: projectId
@@ -189,11 +191,11 @@ paths:
                 properties:
                   ok:
                     type: boolean
-      tags:
-        - Upload_service_other
   /upload/projects/{projectId}/files/{fileId}/repaired:
     servers: []
     post:
+      tags:
+        - upload
       summary: Upload a repaired version of a file
       parameters:
         - name: projectId
@@ -223,11 +225,11 @@ paths:
                 properties:
                   ok:
                     type: boolean
-      tags:
-        - Upload_service_other
   /upload/projects/{projectId}/analysis/sonar:
     servers: []
     post:
+      tags:
+        - upload
       summary: Upload Sonar analysis report
       parameters:
         - name: projectId
@@ -251,11 +253,11 @@ paths:
                 properties:
                   ok:
                     type: boolean
-      tags:
-        - Upload_service_other
   /upload/projects/{projectId}/analysis:
     servers: []
     get:
+      tags:
+        - upload
       summary: Get project analysis (including Sonar reports)
       parameters:
         - name: projectId
@@ -270,11 +272,11 @@ paths:
             application/json:
               schema:
                 type: object
-      tags:
-        - Upload_service_other
   /upload/projects/{projectId}/files/{fileId}:
     servers: []
     get:
+      tags:
+        - upload
       summary: Download original file content
       parameters:
         - name: projectId
@@ -295,11 +297,11 @@ paths:
               schema:
                 type: string
                 format: binary
-      tags:
-        - Upload_service_other
   /upload/projects/{projectId}/files/{fileId}/latest:
     servers: []
     get:
+      tags:
+        - upload
       summary: Download latest version of a file (including repairs)
       parameters:
         - name: projectId
@@ -320,11 +322,11 @@ paths:
               schema:
                 type: string
                 format: binary
-      tags:
-        - Upload_service_other
   /analysis/health:
     servers: []
     get:
+      tags:
+        - analysis
       summary: Health check
       responses:
         '200':
@@ -333,11 +335,11 @@ paths:
             application/json:
               schema:
                 type: boolean
-      tags:
-        - Analysis_Service_other
   /analysis/{projectId}:
     servers: []
     post:
+      tags:
+        - analysis
       summary: Trigger asynchronous Sonar scan for a project
       description: >
         Initiates a Sonar analysis job. The actual scan is executed
@@ -360,11 +362,11 @@ paths:
                 properties:
                   analysisId:
                     type: string
-      tags:
-        - Analysis_Service_other
   /analysis/{projectId}/sonar/{projectAnalysisId}:
     servers: []
     post:
+      tags:
+        - analysis
       summary: Execute Sonar analysis pipeline
       description: |
         Runs full Sonar pipeline:
@@ -395,8 +397,6 @@ paths:
                 properties:
                   ok:
                     type: boolean
-      tags:
-        - Analysis_Service_other
 components:
   schemas:
     ErrorResponse:
@@ -450,10 +450,10 @@ components:
 x-tagGroups:
   - name: Fix service
     tags:
-      - Fix_service_fix
+      - fix
   - name: Upload service
     tags:
-      - Upload_service_other
+      - upload
   - name: Analysis Service
     tags:
-      - Analysis_Service_other
+      - analysis

@@ -7,6 +7,7 @@ info:
 paths:
   /analysis/health:
     get:
+      tags: [analysis]
       summary: Health check
       responses:
         "200":
@@ -18,6 +19,7 @@ paths:
 
   /analysis/{projectId}:
     post:
+      tags: [analysis]
       summary: Trigger asynchronous Sonar scan for a project
       description: |
         Initiates a Sonar analysis job. The actual scan is executed asynchronously
@@ -41,6 +43,7 @@ paths:
 
   /analysis/{projectId}/sonar/{projectAnalysisId}:
     post:
+      tags: [analysis]
       summary: Execute Sonar analysis pipeline
       description: |
         Runs full Sonar pipeline:

@@ -7,7 +7,7 @@ info:
 paths:
   /upload/health:
     get:
-      
+      tags: [upload]
       summary: Health check
       responses:
         "200":
@@ -19,6 +19,7 @@ paths:
 
   /upload/projects:
     get:
+      tags: [upload]
       summary: List all projects
       responses:
         "200":
@@ -31,6 +32,7 @@ paths:
                   $ref: "#/components/schemas/Project"
 
     post:
+      tags: [upload]
       summary: Create a new project
       responses:
         "200":
@@ -47,6 +49,7 @@ paths:
 
   /upload/projects/{projectId}:
     get:
+      tags: [upload]
       summary: Get project by ID
       parameters:
         - name: projectId
@@ -64,6 +67,7 @@ paths:
 
   /upload/projects/{projectId}/latest:
     get:
+      tags: [upload]
       summary: Get project with latest repaired files resolved
       parameters:
         - name: projectId
@@ -81,6 +85,7 @@ paths:
 
   /upload/projects/{projectId}/files:
     post:
+      tags: [upload]
       summary: Upload a new file to a project
       parameters:
         - name: projectId
@@ -123,6 +128,7 @@ paths:
 
   /upload/projects/{projectId}/files/{fileId}/repaired:
     post:
+      tags: [upload]
       summary: Upload a repaired version of a file
       parameters:
         - name: projectId
@@ -155,6 +161,7 @@ paths:
 
   /upload/projects/{projectId}/analysis/sonar:
     post:
+      tags: [upload]
       summary: Upload Sonar analysis report
       parameters:
         - name: projectId
@@ -181,6 +188,7 @@ paths:
 
   /upload/projects/{projectId}/analysis:
     get:
+      tags: [upload]
       summary: Get project analysis (including Sonar reports)
       parameters:
         - name: projectId
@@ -198,6 +206,7 @@ paths:
 
   /upload/projects/{projectId}/files/{fileId}:
     get:
+      tags: [upload]
       summary: Download original file content
       parameters:
         - name: projectId
@@ -221,6 +230,7 @@ paths:
 
   /upload/projects/{projectId}/files/{fileId}/latest:
     get:
+      tags: [upload]
       summary: Download latest version of a file (including repairs)
       parameters:
         - name: projectId
