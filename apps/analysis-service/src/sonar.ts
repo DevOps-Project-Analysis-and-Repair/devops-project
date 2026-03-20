@@ -14,10 +14,6 @@ const API_BASE_URL = "https://1wk9q92xx1.execute-api.eu-west-1.amazonaws.com";
 
 // Run the scanner and send the results to the Sonar server.
 export const runSonarScanner = async (projectPath: string, projectId: string): Promise<string> => {
-  console.log(SONAR_ORG);
-  console.log(SONAR_TOKEN);
-  console.log(SONAR_HOST);
-
   const proc = spawn("sonar-scanner", [
     "-Dsonar.organization=" + SONAR_ORG,
     "-Dsonar.projectKey=" + `${SONAR_ORG}_${projectId}`,
