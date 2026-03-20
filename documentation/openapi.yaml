@@ -1,0 +1,459 @@
+openapi: 3.0.3
+info:
+  title: API Backend
+  version: 1.0.0
+  description: All routes of the fix, upload, and analysis service.
+tags:
+  - name: Fix_service_fix
+    x-displayName: fix
+  - name: Upload_service_other
+    x-displayName: other
+  - name: Analysis_Service_other
+    x-displayName: other
+paths:
+  /fix/projects/{projectId}/files/{fileId}:
+    servers: []
+    post:
+      tags:
+        - Fix_service_fix
+      summary: Repair a project file using analysis and AI fix
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Repair completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /fix/health:
+    servers: []
+    get:
+      tags:
+        - Fix_service_fix
+      summary: Health check endpoint
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+  /upload/health:
+    servers: []
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: boolean
+      tags:
+        - Upload_service_other
+  /upload/projects:
+    servers: []
+    get:
+      summary: List all projects
+      responses:
+        '200':
+          description: List of projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Project'
+      tags:
+        - Upload_service_other
+    post:
+      summary: Create a new project
+      responses:
+        '200':
+          description: Project created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  projectId:
+                    type: string
+                  token:
+                    type: string
+      tags:
+        - Upload_service_other
+  /upload/projects/{projectId}:
+    servers: []
+    get:
+      summary: Get project by ID
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Project data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+      tags:
+        - Upload_service_other
+  /upload/projects/{projectId}/latest:
+    servers: []
+    get:
+      summary: Get project with latest repaired files resolved
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Latest project state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+      tags:
+        - Upload_service_other
+  /upload/projects/{projectId}/files:
+    servers: []
+    post:
+      summary: Upload a new file to a project
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: X-Project-Token
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-File-Name
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-Mime-Type
+          in: header
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: File uploaded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+      tags:
+        - Upload_service_other
+  /upload/projects/{projectId}/files/{fileId}/repaired:
+    servers: []
+    post:
+      summary: Upload a repaired version of a file
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: Repaired file uploaded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+      tags:
+        - Upload_service_other
+  /upload/projects/{projectId}/analysis/sonar:
+    servers: []
+    post:
+      summary: Upload Sonar analysis report
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SonarAnalysisUpload'
+      responses:
+        '200':
+          description: Analysis uploaded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+      tags:
+        - Upload_service_other
+  /upload/projects/{projectId}/analysis:
+    servers: []
+    get:
+      summary: Get project analysis (including Sonar reports)
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Project analysis data
+          content:
+            application/json:
+              schema:
+                type: object
+      tags:
+        - Upload_service_other
+  /upload/projects/{projectId}/files/{fileId}:
+    servers: []
+    get:
+      summary: Download original file content
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: File stream
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+      tags:
+        - Upload_service_other
+  /upload/projects/{projectId}/files/{fileId}/latest:
+    servers: []
+    get:
+      summary: Download latest version of a file (including repairs)
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Latest file stream
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+      tags:
+        - Upload_service_other
+  /analysis/health:
+    servers: []
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: boolean
+      tags:
+        - Analysis_Service_other
+  /analysis/{projectId}:
+    servers: []
+    post:
+      summary: Trigger asynchronous Sonar scan for a project
+      description: >
+        Initiates a Sonar analysis job. The actual scan is executed
+        asynchronously
+
+        via a background process.
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Scan triggered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  analysisId:
+                    type: string
+      tags:
+        - Analysis_Service_other
+  /analysis/{projectId}/sonar/{projectAnalysisId}:
+    servers: []
+    post:
+      summary: Execute Sonar analysis pipeline
+      description: |
+        Runs full Sonar pipeline:
+        - downloads project files
+        - ensures Sonar project exists
+        - runs scanner
+        - polls SonarCloud
+        - generates report
+        - uploads analysis report
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: projectAnalysisId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Analysis completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+      tags:
+        - Analysis_Service_other
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+    Project:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        createdAt:
+          type: number
+        files:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectFile'
+        repairedFiles:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              $ref: '#/components/schemas/ProjectFile'
+    ProjectFile:
+      type: object
+      properties:
+        id:
+          type: string
+        filename:
+          type: string
+        url:
+          type: string
+        mimetype:
+          type: string
+        createdAt:
+          type: number
+        iteration:
+          type: number
+    SonarAnalysisUpload:
+      type: object
+      additionalProperties: true
+      description: Raw Sonar analysis payload (structure not strictly defined)
+    SonarAnalysisResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+x-tagGroups:
+  - name: Fix service
+    tags:
+      - Fix_service_fix
+  - name: Upload service
+    tags:
+      - Upload_service_other
+  - name: Analysis Service
+    tags:
+      - Analysis_Service_other

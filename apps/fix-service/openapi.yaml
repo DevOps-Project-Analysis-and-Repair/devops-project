@@ -1,0 +1,67 @@
+openapi: 3.0.3
+info:
+  title: Fix service 
+  version: 1.0.0
+  description: All routes of the fix service.
+
+paths:
+  /fix/projects/{projectId}/files/{fileId}:
+    post:
+      tags: [fix]
+      summary: Repair a project file using analysis and AI fix
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Repair completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+
+  /fix/health:
+    get:
+      tags: [fix]
+      summary: Health check endpoint
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                    
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
