@@ -1,11 +1,10 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AnalyzeAndRepairDialog } from "./AnalyzeAndRepairDialog";
-
-
-import { getAnalysis, performAnalysis } from "../../services/analysisService";
+import { performAnalysis } from "../../services/analysisService";
 import { fixFile } from "../../services/fixService";
 import { sleep } from "../../utils";
+import { getAnalysis } from "../../services/uploadService";
 
 vi.mock("../../services/analysisService", () => ({
     performAnalysis: vi.fn(),

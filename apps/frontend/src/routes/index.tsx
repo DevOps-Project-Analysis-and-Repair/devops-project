@@ -55,9 +55,13 @@ function Index() {
   function onChange(
     event: ChangeEvent<HTMLInputElement>,
   ): void {
-    // TODO: Filter files, only keep text based files (utf-8, ascii)
     const files: File[] = [...(event.target.files ?? [])];
-    const directory = filesToFileSystemTree(files);
+
+    // Do not allow images, as they only cost bandwidth
+    // In the future it might be better to actually inspect the contents, and filter on that data instead
+    const filteredFiles = files.filter(x => !x.type.startsWith("image"));
+
+    const directory = filesToFileSystemTree(filteredFiles);
     if (!directory) {
       console.error("Could not convert to directory");
       return;
