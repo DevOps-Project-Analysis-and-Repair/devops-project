@@ -5,9 +5,9 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { SonarAnalysisUpload, SonarRepairIssue } from "shared";
 
-const SONAR_ORG = process.env.SONARORG;
-const SONAR_TOKEN = process.env.SONAR_TOKEN;
-const SONAR_HOST = process.env.SONAR_HOST;
+const SONAR_ORG = process.env.SONAR_ORG as string;
+const SONAR_TOKEN = process.env.SONAR_TOKEN as string;
+const SONAR_HOST = process.env.SONAR_HOST as string;
 
 const SONAR_AUTH = `Bearer ${SONAR_TOKEN}`;
 const API_BASE_URL = "https://1wk9q92xx1.execute-api.eu-west-1.amazonaws.com";
@@ -53,6 +53,7 @@ export const createSonarProject = async (projectId: string): Promise<boolean> =>
       Authorization: SONAR_AUTH,
       "Content-Type": "application/x-www-form-urlencoded"
     },
+
     body: new URLSearchParams({
       organization: SONAR_ORG,
       project: `${SONAR_ORG}_${projectId}`,

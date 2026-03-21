@@ -139,10 +139,10 @@ export function AnalyzeAndRepairDialog({
             return (
             <ListItem key={i}>
               <ListItemAvatar sx={{ minWidth: "72px" }}>
-                  <Avatar sx={{ width: 64, height: 64 }} src={actionState.src || defaultState.src} />;
+                  <Avatar sx={{ width: 64, height: 64 }} src={actionState.src || defaultState.src} />
               </ListItemAvatar>
               <ListItemText>
-                  <span style={{ color: actionState.color || defaultState.color }}>{action.name}</span>;
+                  <span style={{ color: actionState.color || defaultState.color }}>{action.name}</span>
               </ListItemText>
             </ListItem>
 )})}
