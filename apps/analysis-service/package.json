@@ -30,7 +30,7 @@
     "fs": "^0.0.1-security",
     "jsonwebtoken": "^9.0.3",
     "path": "^0.12.7",
-    "shared": "file:lib/shared",
+    "shared": "file:../shared",
     "uuid": "^13.0.0"
   }
 }
