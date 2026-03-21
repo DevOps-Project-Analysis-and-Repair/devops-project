@@ -1,9 +1,12 @@
 FROM public.ecr.aws/lambda/nodejs:24 AS builder
 WORKDIR /usr/app
-COPY package.json ./package.json
-COPY src/ ./src/
-COPY lib/ ./lib/
-RUN npm install
+
+COPY shared/ ../shared/
+COPY upload-service/package-lock.json ./package-lock.json
+COPY upload-service/package.json ./package.json
+COPY upload-service/src/ ./src/
+
+RUN npm ci
 RUN npm run build
     
 FROM public.ecr.aws/lambda/nodejs:24
