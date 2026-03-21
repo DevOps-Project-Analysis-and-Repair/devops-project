@@ -1,8 +1,8 @@
 FROM public.ecr.aws/lambda/nodejs:24 AS builder
 WORKDIR /usr/app
-COPY package.json ./package.json
-COPY src/ ./src/
-COPY lib/ ./lib/
+COPY shared/ ../shared/
+COPY fix-service/package.json ./package.json
+COPY fix-service/src/ ./src/
 RUN npm install
 RUN npm run build
     
