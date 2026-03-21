@@ -23,7 +23,9 @@ function getLatestSonarIssues(analysis: ProjectAnalysis, filePath: string): Sona
   if (analysis.sonar.length === 0) { return []; }
   const latest = analysis.sonar[analysis.sonar.length - 1];
 
-  return latest.issues.filter(x => x.filePath === filePath) ?? [];
+  const activeIssues = latest.issues.filter(x => !(x.status === "CLOSED" || x.status === "RESOLVED")) ?? [];
+
+  return activeIssues.filter(x => x.filePath === filePath);
 }
 
 app.post(`/${SERVICE_NAME}/projects/:projectId/files/:fileId`, async ({ params: { projectId, fileId } }) => {
