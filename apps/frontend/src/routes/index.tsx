@@ -57,9 +57,22 @@ function Index() {
   ): void {
     const files: File[] = [...(event.target.files ?? [])];
 
-    // Do not allow images, as they only cost bandwidth
+    // Do not allow images or other often not analyzed files (.DS_Store, node_modules/*), as they only cost bandwidth
     // In the future it might be better to actually inspect the contents, and filter on that data instead
-    const filteredFiles = files.filter(x => !x.type.startsWith("image"));
+    const isNodeModules = (file: File) => file.webkitRelativePath.includes("node_modules");
+    const isDist = (file: File) => file.webkitRelativePath.includes("dist");
+
+    const isImage = (file: File) => file.type.startsWith("image");
+    const isDSStore = (file: File) => file.name === ".DS_Store";
+
+    const filteredFiles = files.filter(x => 
+        !(
+          isNodeModules(x)
+          || isDist(x)
+          || isImage(x)
+          || isDSStore(x)
+        )
+      );
 
     const directory = filesToFileSystemTree(filteredFiles);
     if (!directory) {
