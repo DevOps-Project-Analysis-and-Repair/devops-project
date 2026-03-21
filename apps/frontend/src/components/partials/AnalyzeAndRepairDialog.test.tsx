@@ -7,17 +7,20 @@ import { sleep } from "../../utils";
 import { getAnalysis } from "../../services/uploadService";
 
 vi.mock("../../services/analysisService", () => ({
-    performAnalysis: vi.fn(),
-    getAnalysis: vi.fn(),
-  }));
+  performAnalysis: vi.fn(),
+}));
+
+vi.mock("../../services/uploadService", () => ({
+  getAnalysis: vi.fn(),
+}));
   
-  vi.mock("../../services/fixService", () => ({
-    fixFile: vi.fn(),
-  }));
+vi.mock("../../services/fixService", () => ({
+  fixFile: vi.fn(),
+}));
   
-  vi.mock("../../utils", () => ({
-    sleep: vi.fn(),
-  }));
+vi.mock("../../utils", () => ({
+  sleep: vi.fn(),
+}));
   
 
 describe("AnalyzeAndRepairDialog", () => {
