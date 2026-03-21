@@ -6,7 +6,7 @@ COPY fix-service/package-lock.json ./package-lock.json
 COPY fix-service/package.json ./package.json
 COPY fix-service/src/ ./src/
 
-RUN npm ci
+RUN npm install
 RUN npm run build
     
 FROM public.ecr.aws/lambda/nodejs:24
