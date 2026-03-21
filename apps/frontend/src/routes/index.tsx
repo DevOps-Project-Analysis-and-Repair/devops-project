@@ -55,9 +55,26 @@ function Index() {
   function onChange(
     event: ChangeEvent<HTMLInputElement>,
   ): void {
-    // TODO: Filter files, only keep text based files (utf-8, ascii)
     const files: File[] = [...(event.target.files ?? [])];
-    const directory = filesToFileSystemTree(files);
+
+    // Do not allow images or other often not analyzed files (.DS_Store, node_modules/*), as they only cost bandwidth
+    // In the future it might be better to actually inspect the contents, and filter on that data instead
+    const isNodeModules = (file: File) => file.webkitRelativePath.includes("node_modules");
+    const isDist = (file: File) => file.webkitRelativePath.includes("dist");
+
+    const isImage = (file: File) => file.type.startsWith("image");
+    const isDSStore = (file: File) => file.name === ".DS_Store";
+
+    const filteredFiles = files.filter(x => 
+        !(
+          isNodeModules(x)
+          || isDist(x)
+          || isImage(x)
+          || isDSStore(x)
+        )
+      );
+
+    const directory = filesToFileSystemTree(filteredFiles);
     if (!directory) {
       console.error("Could not convert to directory");
       return;

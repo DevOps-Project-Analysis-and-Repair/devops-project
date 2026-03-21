@@ -1,7 +1,7 @@
 import * as jwt from 'jsonwebtoken';
 
-const PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
-const PUBLIC_KEY = process.env.JWT_PUBLIC_KEY;
+const PRIVATE_KEY = process.env.JWT_PRIVATE_KEY!;
+const PUBLIC_KEY = process.env.JWT_PUBLIC_KEY!;
 
 export function createToken(projectId: string): string {
   const currentTime = Math.floor(Date.now() / 1000);

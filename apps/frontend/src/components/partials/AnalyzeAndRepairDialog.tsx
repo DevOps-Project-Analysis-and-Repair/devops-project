@@ -11,9 +11,10 @@ import {
   ListItemText,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import { getAnalysis, performAnalysis } from "../../services/analysisService";
+import { performAnalysis } from "../../services/analysisService";
 import { fixFile } from "../../services/fixService";
 import { sleep } from "../../utils";
+import { getAnalysis } from "../../services/uploadService";
 
 export type AnalyzeAndRepairData = { projectId: string; fileId: string };
 

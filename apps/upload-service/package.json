@@ -28,7 +28,7 @@
     "@aws-sdk/lib-dynamodb": "^3.997.0",
     "@aws-sdk/lib-storage": "^3.998.0",
     "jsonwebtoken": "^9.0.3",
-    "shared": "file:lib/shared",
+    "shared": "file:../shared",
     "uuid": "^13.0.0"
   }
 }

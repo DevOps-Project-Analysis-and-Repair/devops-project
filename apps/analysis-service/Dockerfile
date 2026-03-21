@@ -7,9 +7,12 @@ FROM public.ecr.aws/lambda/nodejs:24 AS builder
 
 # Build service API.
 WORKDIR /usr/app
-COPY package.json package-lock.json ./
-COPY src/ ./src/
-COPY lib/ ./lib/
+
+COPY shared/ ../shared/
+COPY analysis-service/package-lock.json ./package-lock.json
+COPY analysis-service/package.json ./package.json
+COPY analysis-service/src/ ./src/
+
 RUN npm ci
 RUN npm run build
 
@@ -35,10 +38,6 @@ ENV PATH="/opt/sonar-scanner/bin:${PATH}"
 # Let sonar-scanner store cache in writable location (/tmp).
 ENV SONAR_USER_HOME="/tmp/.sonar"
 ENV SONAR_SCANNER_OPTS="-Xmx2048m"
-
-ENV SONAR_ORG=""
-ENV SONAR_TOKEN=""
-ENV SONAR_HOST=""
 
 # Configure the Lambda runtime to execute the handler.
 WORKDIR ${LAMBDA_TASK_ROOT}

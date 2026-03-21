@@ -84,3 +84,8 @@ export async function downloadFile(projectId: string, fileId: string): Promise<s
 
   return await response.text();
 }
+
+export async function getAnalysis(projectId: string) {
+  const res = await fetch(`${API_BASE_URL}/upload/projects/${projectId}/analysis`);
+  return await res.json();
+}

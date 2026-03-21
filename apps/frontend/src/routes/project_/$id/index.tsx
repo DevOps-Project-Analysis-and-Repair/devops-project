@@ -22,8 +22,8 @@ import {
 import { CodeIssuesView } from "../../../components/partials/CodeIssuesView";
 import { ComparisonMetricsView } from "../../../components/partials/ComparisonMetricsView";
 import { Container } from "../../../components/ui/Container";
-import { getAnalysis, getAnalysisResults } from "../../../services/analysisService";
-import { downloadFile, getProject, getProjectAnalysis } from "../../../services/uploadService";
+import { getAnalysisResults } from "../../../services/analysisService";
+import { downloadFile, getAnalysis, getProject, getProjectAnalysis } from "../../../services/uploadService";
 import { sleep } from "../../../utils";
 import { extractSonarMetrics, groupIssuesByPath, mapMetricsForView, type ExtractedSonarMetrics, type IssueItem } from "../../../utils/analytics";
 import { type UploadProject } from "../../../utils/api";
