@@ -1,5 +1,9 @@
 # devops-project
 
+## Preview
+A YouTube video of the final product can be watched here:
+[![devops-video](https://img.youtube.com/vi/KuFuvvfqTkA/0.jpg)](https://www.youtube.com/watch?v=KuFuvvfqTkA)
+
 ## Frontend
 The frontend is a SPA application that is deployed on AWS CDN (cloudfront). The architecture of the application is a React app with the Tan-stack router. For the UI library React-MUI is used.
 
